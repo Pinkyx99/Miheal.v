@@ -1,0 +1,89 @@
+.pc-card {
+    width: 200px;
+    height: 250px;
+    position: relative;
+    border-radius: 14px;
+    overflow: hidden;
+    background: #112240; /* sidebar bg */
+    border: 1px solid rgba(100, 255, 218, 0.1);
+    cursor: pointer;
+    
+    /* Enable 3D space for children */
+    transform-style: preserve-3d;
+    /* Define initial values for rotation */
+    --rotate-x: 0deg;
+    --rotate-y: 0deg;
+    
+    /* Smooth transition for transform and shadow */
+    transition: transform 0.4s cubic-bezier(0.1, 0.8, 0.2, 1), box-shadow 0.4s ease;
+}
+
+.pc-card:hover {
+    /* Apply 3D rotation and lift */
+    transform: perspective(1000px) rotateX(var(--rotate-x)) rotateY(var(--rotate-y)) translateY(-5px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4), 0 0 25px rgba(100, 255, 218, 0.25); /* Enhance shadow */
+}
+
+/* Bring child elements forward in the 3D space to prevent clipping/flattening */
+.pc-image-wrapper, .pc-spotlight, .pc-content, .pc-coming-soon-badge {
+    transform: translateZ(20px);
+}
+
+.pc-image-wrapper {
+    position: absolute;
+    inset: 0;
+    border-radius: 14px;
+    overflow: hidden;
+}
+
+.pc-avatar {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.4s ease;
+}
+
+.pc-card:hover .pc-avatar {
+    transform: scale(1.05);
+}
+
+.pc-spotlight {
+    position: absolute;
+    inset: 0;
+    border-radius: 14px;
+    background: radial-gradient(
+        circle 120px at var(--pointer-x) var(--pointer-y),
+        rgba(255, 255, 255, 0.1),
+        transparent 80%
+    );
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    pointer-events: none;
+}
+
+.pc-card:hover .pc-spotlight {
+    opacity: 1;
+}
+
+/* Coming Soon Styles */
+.pc-coming-soon {
+    cursor: not-allowed;
+}
+
+.pc-coming-soon .pc-avatar {
+    filter: grayscale(80%) brightness(0.7);
+}
+
+.pc-coming-soon-badge {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: rgba(0,0,0,0.7);
+    color: white;
+    font-size: 0.7rem;
+    font-weight: bold;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    z-index: 2;
+    text-transform: uppercase;
+}
