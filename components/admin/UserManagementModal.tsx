@@ -1,6 +1,7 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState } from 'react';
 import { supabase } from '../../lib/supabaseClient';
-import { AdminUser, Role, MuteBanRecord } from '../../types';
+import { AdminUser } from '../../types';
+import { calculateLevelInfo } from '../../lib/leveling';
 
 interface UserManagementModalProps {
     user: AdminUser;
@@ -19,78 +20,20 @@ const Button = ({ children, ...props }: React.ButtonHTMLAttributes<HTMLButtonEle
 );
 
 export const UserManagementModal: React.FC<UserManagementModalProps> = ({ user, onClose, onUpdate }) => {
-    const [activeTab, setActiveTab] = useState('moderation');
+    const [activeTab, setActiveTab] = useState('account');
     
-    // Moderation state
-    const [duration, setDuration] = useState('1h');
-    const [reason, setReason] = useState('');
-    const [moderationHistory, setModerationHistory] = useState<MuteBanRecord[]>([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
     // Account state
-    const [roles, setRoles] = useState<Role[]>([]);
-    const [selectedRoleId, setSelectedRoleId] = useState<string>('');
     const [adjustmentAmount, setAdjustmentAmount] = useState('0.00');
     const [adjustmentReason, setAdjustmentReason] = useState('');
 
-    useEffect(() => {
-        const fetchRoles = async () => {
-            const { data } = await supabase.rpc('get_all_roles');
-            if (data) {
-                setRoles(data);
-                const userRole = data.find((r: Role) => r.name === user.role);
-                if (userRole) setSelectedRoleId(userRole.id);
-            }
-        };
-
-        const fetchHistory = async () => {
-            const { data } = await supabase
-                .from('mutes_bans')
-                .select(`*, moderator:moderator_id(username)`)
-                .eq('user_id', user.id)
-                .order('created_at', { ascending: false });
-            if (data) setModerationHistory(data as any);
-        }
-
-        fetchRoles();
-        fetchHistory();
-    }, [user.id, user.role]);
-
-    const handleModerationAction = async (type: 'mute' | 'ban') => {
-        setLoading(true);
-        setError(null);
-        const { error: rpcError } = await supabase.rpc('moderate_user', {
-            target_user_id: user.id,
-            type_in: type,
-            duration_in: duration,
-            reason_in: reason
-        });
-        if (rpcError) {
-            setError(rpcError.message);
-        } else {
-            setReason('');
-            onUpdate(); // Refresh user list
-            onClose(); // Close modal
-        }
-        setLoading(false);
-    };
-
-    const handleRoleUpdate = async () => {
-        setLoading(true);
-        setError(null);
-        const { error: rpcError } = await supabase.rpc('update_user_role', {
-            target_user_id: user.id,
-            new_role_id: selectedRoleId
-        });
-        if (rpcError) setError(rpcError.message);
-        else {
-            onUpdate();
-            onClose();
-        }
-        setLoading(false);
-    };
-
+    // Stats & Rewards state
+    const [wagered, setWagered] = useState(user.wagered.toString());
+    const [gamesPlayed, setGamesPlayed] = useState(user.games_played.toString());
+    const levelInfo = calculateLevelInfo(Number(wagered));
+    
     const handleBalanceUpdate = async () => {
         setLoading(true);
         setError(null);
@@ -100,16 +43,18 @@ export const UserManagementModal: React.FC<UserManagementModalProps> = ({ user, 
             setLoading(false);
             return;
         }
-        const { error: rpcError } = await supabase.rpc('adjust_user_balance', {
-            target_user_id: user.id,
-            amount_in: amount,
-            reason_in: adjustmentReason,
-        });
+        const { error: rpcError } = await supabase.rpc('adjust_user_balance', { target_user_id: user.id, amount_in: amount, reason_in: adjustmentReason });
         if (rpcError) setError(rpcError.message);
-        else {
-            onUpdate();
-            onClose();
-        }
+        else { onUpdate(); onClose(); }
+        setLoading(false);
+    }
+
+    const handleStatsUpdate = async (clearRanks = false) => {
+        setLoading(true);
+        setError(null);
+        const { error: rpcError } = await supabase.rpc('update_user_stats_as_admin', { target_user_id: user.id, new_wagered: Number(wagered), new_games_played: Number(gamesPlayed), new_claimed_ranks: clearRanks ? [] : (user.claimed_ranks || []) });
+        if (rpcError) setError(rpcError.message);
+        else { onUpdate(); onClose(); }
         setLoading(false);
     }
 
@@ -124,72 +69,42 @@ export const UserManagementModal: React.FC<UserManagementModalProps> = ({ user, 
                             <p className="text-xs text-text-muted">{user.email}</p>
                         </div>
                     </div>
-                     <button onClick={onClose} className="p-2 text-text-muted hover:text-white" aria-label="Close">
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                    </button>
+                     <button onClick={onClose} className="p-2 text-text-muted hover:text-white" aria-label="Close"><svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
                 </header>
                 <div className="border-b border-border-color flex">
-                    <button onClick={() => setActiveTab('moderation')} className={`px-4 py-2 text-sm font-medium ${activeTab === 'moderation' ? 'text-white border-b-2 border-primary' : 'text-text-muted'}`}>Moderation</button>
                     <button onClick={() => setActiveTab('account')} className={`px-4 py-2 text-sm font-medium ${activeTab === 'account' ? 'text-white border-b-2 border-primary' : 'text-text-muted'}`}>Account</button>
+                    <button onClick={() => setActiveTab('stats')} className={`px-4 py-2 text-sm font-medium ${activeTab === 'stats' ? 'text-white border-b-2 border-primary' : 'text-text-muted'}`}>Stats & Rewards</button>
                 </div>
                 
                 <main className="p-6 overflow-y-auto space-y-6">
                     {error && <div className="bg-red-500/20 text-red-400 p-3 rounded-md text-sm">{error}</div>}
                     
-                    {activeTab === 'moderation' && (
-                        <div className="space-y-6">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
-                                    <label className="text-xs font-semibold text-text-muted">Duration (e.g., 5m, 1h, 7d, perm)</label>
-                                    <Input value={duration} onChange={e => setDuration(e.target.value)} placeholder="1h" />
-                                </div>
-                                <div>
-                                    <label className="text-xs font-semibold text-text-muted">Reason</label>
-                                    <Input value={reason} onChange={e => setReason(e.target.value)} placeholder="Reason for action" />
-                                </div>
-                            </div>
-                            <div className="flex space-x-4">
-                                <Button onClick={() => handleModerationAction('mute')} disabled={loading || !reason}>Mute</Button>
-                                <Button onClick={() => handleModerationAction('ban')} disabled={loading || !reason} className="!bg-red-600 hover:!opacity-90">Ban</Button>
-                            </div>
-                            <div>
-                                <h4 className="font-semibold text-white mb-2">History</h4>
-                                <div className="space-y-2 max-h-48 overflow-y-auto">
-                                    {moderationHistory.length > 0 ? moderationHistory.map(record => (
-                                        <div key={record.id} className="bg-background p-2 rounded-md text-xs">
-                                            <span className={`font-bold ${record.type === 'ban' ? 'text-red-400' : 'text-yellow-400'}`}>{record.type.toUpperCase()}</span> by {record.moderator?.username || 'System'} for "{record.reason}" - Expires: {record.expires_at ? new Date(record.expires_at).toLocaleString() : 'Permanent'}
-                                        </div>
-                                    )) : <p className="text-text-muted text-sm">No moderation history found.</p>}
-                                </div>
-                            </div>
-                        </div>
-                    )}
-
-                    {activeTab === 'account' && (
-                        <div className="space-y-6">
+                    {activeTab === 'account' && ( 
+                        <div className="space-y-6"> 
                             <div>
                                 <label className="text-xs font-semibold text-text-muted">Role</label>
-                                <select value={selectedRoleId} onChange={e => setSelectedRoleId(e.target.value)} className="w-full bg-background border border-border-color rounded-md p-2 text-sm focus:ring-1 focus:ring-primary focus:outline-none">
-                                    {roles.map(role => <option key={role.id} value={role.id}>{role.name}</option>)}
-                                </select>
-                                <Button onClick={handleRoleUpdate} disabled={loading} className="mt-2">Update Role</Button>
-                            </div>
-                             <div>
-                                <h4 className="font-semibold text-white mb-2">Adjust Balance</h4>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div>
-                                        <label className="text-xs font-semibold text-text-muted">Amount (+/-)</label>
-                                        <Input type="number" step="0.01" value={adjustmentAmount} onChange={e => setAdjustmentAmount(e.target.value)} placeholder="10.00 or -5.00" />
-                                    </div>
-                                     <div>
-                                        <label className="text-xs font-semibold text-text-muted">Reason</label>
-                                        <Input value={adjustmentReason} onChange={e => setAdjustmentReason(e.target.value)} placeholder="e.g., Bonus or Correction" />
-                                    </div>
+                                <div className="w-full bg-background border border-border-color rounded-md p-2 mt-1 text-sm text-white">
+                                    {user.role}
                                 </div>
-                                <Button onClick={handleBalanceUpdate} disabled={loading} className="mt-2">Adjust Balance</Button>
                             </div>
-                        </div>
+                            <div> 
+                                <h4 className="font-semibold text-white mb-2">Adjust Balance</h4> 
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4"> 
+                                    <div> 
+                                        <label className="text-xs font-semibold text-text-muted">Amount (+/-)</label> 
+                                        <Input type="number" step="0.01" value={adjustmentAmount} onChange={e => setAdjustmentAmount(e.target.value)} placeholder="10.00 or -5.00" /> 
+                                    </div> 
+                                    <div> 
+                                        <label className="text-xs font-semibold text-text-muted">Reason</label> 
+                                        <Input value={adjustmentReason} onChange={e => setAdjustmentReason(e.target.value)} placeholder="e.g., Bonus or Correction" /> 
+                                    </div> 
+                                </div> 
+                                <Button onClick={handleBalanceUpdate} disabled={loading} className="mt-2">Adjust Balance</Button> 
+                            </div> 
+                        </div> 
                     )}
+
+                    {activeTab === 'stats' && ( <div className="space-y-6"> <div> <h4 className="font-semibold text-white mb-2">Progression</h4> <div className="bg-background p-3 rounded-lg border border-border-color"> <div className="flex justify-between items-center text-sm text-text-muted mb-1"> <span>Level {levelInfo.level}</span> <span>{levelInfo.progress.toFixed(2)}%</span> </div> <div className="w-full bg-sidebar rounded-full h-2"> <div className="bg-primary h-2 rounded-full" style={{ width: `${levelInfo.progress}%` }}></div> </div> </div> </div> <div className="grid grid-cols-1 md:grid-cols-2 gap-4"> <div> <label className="text-xs font-semibold text-text-muted">Wagered Amount ($)</label> <Input type="number" step="0.01" value={wagered} onChange={e => setWagered(e.target.value)} /> </div> <div> <label className="text-xs font-semibold text-text-muted">Games Played</label> <Input type="number" value={gamesPlayed} onChange={e => setGamesPlayed(e.target.value)} /> </div> </div> <div> <h4 className="font-semibold text-white mb-2">Claimed Ranks</h4> <div className="bg-background p-3 rounded-lg border border-border-color min-h-[60px]"> {user.claimed_ranks && user.claimed_ranks.length > 0 ? ( <div className="flex flex-wrap gap-2"> {user.claimed_ranks.map(rank => ( <span key={rank} className="bg-primary/20 text-primary text-xs font-semibold px-2 py-1 rounded-full">{rank}</span> ))} </div> ) : ( <p className="text-text-muted text-sm">No ranks claimed yet.</p> )} </div> <Button onClick={() => handleStatsUpdate(true)} disabled={loading} className="mt-2 !bg-red-600 hover:!opacity-90"> Clear All Ranks </Button> </div> <Button onClick={() => handleStatsUpdate(false)} disabled={loading} className="w-full"> Save Stats </Button> </div> )}
                 </main>
             </div>
         </div>

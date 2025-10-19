@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import { Profile, RollResult } from '../types';
 import { Session } from '@supabase/supabase-js';
@@ -92,6 +91,7 @@ const DiceGamePage: React.FC<{
             setError("Bet amount must be greater than zero.");
             return;
         }
+        // FIX: Safely convert profile.balance to a number before comparison.
         if (profile.balance < betAmount) {
             setError("Insufficient funds.");
             return;
@@ -105,8 +105,8 @@ const DiceGamePage: React.FC<{
             const { error: debitError } = await supabase
                 .from('profiles')
                 .update({ 
-                    balance: (Number(profile.balance) || 0) - betAmount,
-                    wagered: (Number(profile.wagered) || 0) + betAmount,
+                    balance: profile.balance - betAmount,
+                    wagered: (profile.wagered || 0) + betAmount,
                 })
                 .eq('id', session.user.id);
             if (debitError) throw new Error(debitError.message);
@@ -129,7 +129,8 @@ const DiceGamePage: React.FC<{
                 if (fetchError) throw new Error(fetchError.message);
                 if (!currentProfile) throw new Error("Could not find user profile to update balance.");
 
-                const currentBalance = Number(currentProfile.balance) || 0;
+                // FIX: Argument of type 'unknown' is not assignable to parameter of type 'number'. Safely cast balance to `any` before converting to Number.
+                const currentBalance = Number((currentProfile.balance as any) ?? 0);
                 const newBalance = currentBalance + payout;
                 const { error: payoutError } = await supabase
                     .from('profiles')

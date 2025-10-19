@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Profile } from '../../types';
 
@@ -44,7 +43,8 @@ export const MinesControls: React.FC<MinesControlsProps> = (props) => {
             case 'min': setBetAmount(0.01); break;
             case '1/2': setBetAmount(Math.max(0.01, parseFloat((betAmount / 2).toFixed(2)))); break;
             case 'x2': setBetAmount(parseFloat((betAmount * 2).toFixed(2))); break;
-            case 'max': setBetAmount(profile?.balance ?? 0); break;
+            // FIX: Safely convert profile balance to a number.
+            case 'max': setBetAmount(Number(profile?.balance ?? 0)); break;
         }
     }
     

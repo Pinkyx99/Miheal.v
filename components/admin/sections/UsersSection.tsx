@@ -19,26 +19,16 @@ export const UsersSection: React.FC = () => {
         setLoading(true);
         setError(null);
 
-        const { data, error: fetchError } = await supabase
-            .from('detailed_profiles')
-            .select('*')
-            .order('last_seen', { ascending: false, nullsFirst: false });
+        const { data, error: rpcError } = await supabase.rpc('get_all_users_for_admin');
 
-        if (fetchError) {
-            console.error("Error fetching users:", fetchError);
-            setError("Failed to load user data. This might be due to RLS permissions on the 'detailed_profiles' view.");
+        if (rpcError) {
+            console.error("Error fetching users via RPC:", rpcError);
+            setError("Failed to load user data. Ensure you have admin privileges and the 'get_all_users_for_admin' function exists.");
             setUsers([]);
         } else if (data) {
             const mappedUsers: AdminUser[] = data.map((user: any) => {
-                let status: UserStatus = 'Offline';
-                if (user.banned_until) {
-                    if (user.banned_until === 'infinity' || new Date(user.banned_until) > new Date()) {
-                        status = 'Banned';
-                    }
-                } 
-                else if (user.last_seen && new Date(user.last_seen) > new Date(Date.now() - 5 * 60 * 1000)) {
-                     status = 'Online';
-                }
+                const isOnline = user.last_seen && new Date(user.last_seen) > new Date(Date.now() - 5 * 60 * 1000);
+                const status: UserStatus = isOnline ? 'Online' : 'Offline';
 
                 return {
                     id: user.id,
@@ -49,6 +39,9 @@ export const UsersSection: React.FC = () => {
                     balance: user.balance || 0,
                     status: status,
                     last_seen: user.last_seen,
+                    wagered: user.wagered || 0,
+                    games_played: user.games_played || 0,
+                    claimed_ranks: user.claimed_ranks || [],
                 };
             });
             setUsers(mappedUsers);
@@ -62,6 +55,7 @@ export const UsersSection: React.FC = () => {
 
 
     const filteredUsers = useMemo(() => {
+        if (!searchTerm) return users;
         return users.filter(user =>
             user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
             (user.email && user.email.toLowerCase().includes(searchTerm.toLowerCase()))
@@ -75,11 +69,10 @@ export const UsersSection: React.FC = () => {
 
     const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
 
-    const getStatusColor = (status: 'Online' | 'Offline' | 'Banned') => {
+    const getStatusColor = (status: UserStatus) => {
         switch (status) {
             case 'Online': return 'bg-green-500';
             case 'Offline': return 'bg-gray-500';
-            case 'Banned': return 'bg-red-500';
         }
     };
 
@@ -151,7 +144,7 @@ export const UsersSection: React.FC = () => {
                                                 {user.status}
                                             </div>
                                         </td>
-                                        <td className="px-6 py-4">{user.last_seen ? new Date(user.last_seen).toLocaleDateString() : 'Never'}</td>
+                                        <td className="px-6 py-4">{user.last_seen ? new Date(user.last_seen).toLocaleString() : 'Never'}</td>
                                         <td className="px-6 py-4 text-right">
                                             <button onClick={() => setSelectedUser(user)} className="font-medium text-primary hover:underline">Edit</button>
                                         </td>

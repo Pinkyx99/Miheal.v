@@ -25,3 +25,34 @@ export function parseDurationToPostgresInterval(durationStr: string): string | n
         default: return null;
     }
 }
+
+/**
+ * Calculates an expiration timestamp from a duration string.
+ * @param durationStr The duration string (e.g., "30m", "12h", "7d", "perm").
+ * @returns An ISO string for the future date, or null for a permanent duration.
+ */
+export function calculateExpiryDate(durationStr: string): string | null {
+    if (!durationStr || durationStr.toLowerCase() === 'perm' || durationStr.toLowerCase() === 'permanent') {
+        return null; // Permanent
+    }
+
+    const match = durationStr.match(/^(\d+)(m|h|d|w)$/i); // minutes, hours, days, weeks
+    if (!match) {
+        // As a safeguard, return null (permanent) for invalid formats to avoid accidentally short-lived announcements
+        return null;
+    }
+
+    const value = parseInt(match[1], 10);
+    const unit = match[2].toLowerCase();
+    const date = new Date();
+
+    switch (unit) {
+        case 'm': date.setMinutes(date.getMinutes() + value); break;
+        case 'h': date.setHours(date.getHours() + value); break;
+        case 'd': date.setDate(date.getDate() + value); break;
+        case 'w': date.setDate(date.getDate() + value * 7); break;
+        default: return null;
+    }
+
+    return date.toISOString();
+}

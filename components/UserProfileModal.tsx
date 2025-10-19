@@ -6,12 +6,11 @@ import { ChartBarIcon } from './icons';
 interface UserProfileModalProps {
   userId: string | null;
   onClose: () => void;
-  onTipUser: (recipient: { id: string; username: string }) => void;
 }
 
 type UserProfile = Pick<Profile, 'id' | 'username' | 'avatar_url' | 'games_played' | 'wagered'>;
 
-export const UserProfileModal: React.FC<UserProfileModalProps> = ({ userId, onClose, onTipUser }) => {
+export const UserProfileModal: React.FC<UserProfileModalProps> = ({ userId, onClose }) => {
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -41,13 +40,6 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ userId, onCl
   }, [userId]);
 
   if (!userId) return null;
-
-  const handleTip = () => {
-    if (userProfile) {
-        onTipUser({ id: userProfile.id, username: userProfile.username });
-        onClose();
-    }
-  }
   
   // Mock net profit based on a simulated 1.3% house edge
   const netProfit = userProfile ? (userProfile.wagered || 0) * -0.013 : 0;
@@ -96,12 +88,9 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ userId, onCl
                     </div>
                 </div>
 
-                <div className="w-full grid grid-cols-2 gap-4">
-                    <button onClick={handleTip} className="w-full bg-accent-green text-white font-semibold py-3 rounded-md transition-opacity hover:opacity-90">
-                        Tip user
-                    </button>
+                <div className="w-full">
                     <button className="w-full bg-card border border-outline text-text-muted font-semibold py-3 rounded-md hover:bg-white/5 transition-colors">
-                        Ignore
+                        Ignore User
                     </button>
                 </div>
             </div>

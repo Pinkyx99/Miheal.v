@@ -6,7 +6,6 @@ import { UsersSection } from '../components/admin/sections/UsersSection';
 import { GamesSection } from '../components/admin/sections/GamesSection';
 import { FinancialsSection } from '../components/admin/sections/FinancialsSection';
 import { SettingsSection } from '../components/admin/sections/SettingsSection';
-import { AnnouncementsSection } from '../components/admin/sections/AnnouncementsSection';
 import { AuditLogSection } from '../components/admin/sections/AuditLogSection';
 
 interface AdminPageProps {
@@ -15,12 +14,11 @@ interface AdminPageProps {
     onClose: () => void;
 }
 
-type AdminView = 'dashboard' | 'users' | 'games' | 'financials' | 'settings' | 'announcements' | 'audit_log';
+type AdminView = 'dashboard' | 'users' | 'games' | 'financials' | 'settings' | 'audit_log';
 
 const AdminPage: React.FC<AdminPageProps> = ({ profile, show, onClose }) => {
     const [activeView, setActiveView] = useState<AdminView>('dashboard');
     
-    // State for draggable modal
     const [position, setPosition] = useState({ x: 0, y: 0 });
     const [isDragging, setIsDragging] = useState(false);
     const [offset, setOffset] = useState({ x: 0, y: 0 });
@@ -50,7 +48,6 @@ const AdminPage: React.FC<AdminPageProps> = ({ profile, show, onClose }) => {
                 x: e.clientX - modalRect.left,
                 y: e.clientY - modalRect.top
             });
-            // Bring modal to front
             modalRef.current.style.zIndex = '51';
         }
     }, []);
@@ -93,7 +90,6 @@ const AdminPage: React.FC<AdminPageProps> = ({ profile, show, onClose }) => {
             case 'games': return <GamesSection />;
             case 'financials': return <FinancialsSection />;
             case 'settings': return <SettingsSection />;
-            case 'announcements': return <AnnouncementsSection />;
             case 'audit_log': return <AuditLogSection />;
             default: return <DashboardSection />;
         }

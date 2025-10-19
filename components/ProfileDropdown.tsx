@@ -11,9 +11,9 @@ interface ProfileDropdownProps {
     onOpenAdminPanel: () => void;
 }
 
-// Mock check for admin/owner role
+// Check for admin/owner role based on the profile data from the database
 const isAdmin = (profile: Profile | null) => {
-    return profile?.email === 'userr.98a@gmail.com';
+    return !!profile?.is_admin;
 }
 
 export const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ profile, onNavigate, onLogout, onOpenAdminPanel }) => {

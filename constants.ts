@@ -1,18 +1,15 @@
-
-
 import React from 'react';
 import { SidebarNavItem, ProfileLink, RoyaltyRank, Game } from './types';
-import { HomeIcon, UserCircleIcon, ChartBarIcon, ArrowsRightLeftIcon, BellIcon, CogIcon, UsersIcon, ShieldCheckIcon, ArrowRightOnRectangleIcon, DiceIcon, CrashIcon, RouletteIcon, PlinkoIcon, MinesIcon, BlackjackIcon, SlotMachineIcon, TrophyIcon, ShieldExclamationIcon, Squares2X2Icon, CurrencyDollarIcon, MegaphoneIcon, ClipboardDocumentListIcon } from './components/icons';
+import { HomeIcon, UserCircleIcon, ChartBarIcon, ArrowsRightLeftIcon, BellIcon, CogIcon, UsersIcon, ShieldCheckIcon, ArrowRightOnRectangleIcon, DiceIcon, CrashIcon, RouletteIcon, PlinkoIcon, MinesIcon, SlotMachineIcon, TrophyIcon, ShieldExclamationIcon, Squares2X2Icon, CurrencyDollarIcon, ClipboardDocumentListIcon } from './components/icons';
 import { UsdIcon, GoogleIcon } from './components/icons';
 
 
 export const SIDEBAR_NAV_ITEMS: SidebarNavItem[] = [
   { name: 'Home', href: '#', icon: HomeIcon, active: true },
   { name: 'Crash', href: '#', icon: CrashIcon },
-  { name: 'Mines', href: '#', icon: MinesIcon },
   { name: 'Roulette', href: '#', icon: RouletteIcon },
   { name: 'Dice', href: '#', icon: DiceIcon },
-  { name: 'Blackjack', href: '#', icon: BlackjackIcon },
+  { name: 'Mines', href: '#', icon: MinesIcon },
   { name: 'Slots', href: '#', icon: SlotMachineIcon },
   { name: 'Rewards', href: '#', icon: TrophyIcon },
 ];
@@ -42,8 +39,6 @@ export const WALLET_BET_CURRENCIES = [
     'USD', 'EUR', 'RUB', 'JPY', 'CAD', 'KRW', 'TRY', 'NGN', 'NZD', 'PLN', 'CZK', 'INR'
 ];
 
-// FIX: Added missing constants for WalletModal
-// FIX: Replaced JSX with React.createElement to prevent parsing errors in .ts file.
 const VisaIcon = () => React.createElement('img', { src: "https://img.icons8.com/color/48/visa.png", alt: "Visa", className: "w-8 h-8" });
 const MastercardIcon = () => React.createElement('img', { src: "https://img.icons8.com/color/48/mastercard.png", alt: "Mastercard", className: "w-8 h-8" });
 export const PAYMENT_CATEGORIES = [
@@ -64,11 +59,9 @@ export const PAYMENT_CATEGORIES = [
     }
 ];
 
-// FIX: Added missing PROFILE_LINKS constant
 export const PROFILE_LINKS: ProfileLink[] = [
     { name: 'Profile', icon: UserCircleIcon },
     { name: 'Statistics', icon: ChartBarIcon },
-    { name: 'Transactions', icon: ArrowsRightLeftIcon },
     { name: 'Notifications', icon: BellIcon },
     { name: 'Settings', icon: CogIcon },
     { name: 'Affiliates', icon: UsersIcon },
@@ -81,13 +74,11 @@ export const ADMIN_SIDEBAR_NAV_ITEMS: SidebarNavItem[] = [
   { name: 'Users', href: '#', icon: UsersIcon },
   { name: 'Games', href: '#', icon: DiceIcon },
   { name: 'Financials', href: '#', icon: CurrencyDollarIcon },
-  { name: 'Announcements', href: '#', icon: MegaphoneIcon },
   { name: 'Settings', href: '#', icon: CogIcon },
   { name: 'Audit Log', href: '#', icon: ClipboardDocumentListIcon },
 ];
 
 
-// FIX: Added missing constants for Rewards pages
 export const REWARDS_HERO_SLIDES = [
     { preTitle: 'Daily', title: 'Rakeback', subtitle: 'Claim your rakeback every day!', imageUrl: 'https://i.imgur.com/L4pP31z.png', textColor: 'text-white' },
     { preTitle: 'Weekly', title: 'Cashback', subtitle: 'Get a percentage of your losses back every week.', imageUrl: 'https://i.imgur.com/fO2Iq3a.jpeg', textColor: 'text-white' },
@@ -119,11 +110,11 @@ export const ROYALTY_RANKS: RoyaltyRank[] = [
 ];
 
 export const ORIGINAL_GAMES: ({ name: string; image: string; rtp: number; blobColor: string; comingSoon?: boolean })[] = [
-  { name: 'Mines', image: 'https://i.imgur.com/GzQSFH0.png', rtp: 99, blobColor: '#64ffda' },
   { name: 'Crash', image: 'https://i.imgur.com/D4qpkPt.png', rtp: 99, blobColor: '#ef4444' },
   { name: 'Roulette', image: 'https://i.imgur.com/0rDInCq.png', rtp: 97.3, blobColor: '#8b5cf6' },
+  { name: 'Dice', image: 'https://i.imgur.com/t30tExi.png', rtp: 99, blobColor: '#3b82f6' },
+  { name: 'Mines', image: 'https://i.imgur.com/y21aUD5.png', rtp: 99, blobColor: '#ec4899' },
   { name: 'Slots', image: 'https://i.imgur.com/UQVF1x6.png', rtp: 96, blobColor: '#f59e0b', comingSoon: true },
-  { name: 'Blackjack', image: 'https://i.imgur.com/ESlUshO.png', rtp: 99.5, blobColor: '#a78bfa' },
 ];
 
 export const GAMES: Game[] = [

@@ -18,21 +18,16 @@ export interface Profile {
   games_played: number;
   has_claimed_welcome_bonus: boolean;
   claimed_ranks: string[] | null;
-  role_name: string | null;
+  is_admin: boolean;
 }
 
-// FIX: Added missing ProfileLink type definition
 export interface ProfileLink {
-    name: 'Profile' | 'Statistics' | 'Transactions' | 'Notifications' | 'Settings' | 'Affiliates' | 'Privacy' | 'Log out';
+    name: 'Profile' | 'Statistics' | 'Notifications' | 'Settings' | 'Affiliates' | 'Privacy' | 'Log out';
     icon: React.FC<{ className?: string }>;
 }
 
-// FIX: Added missing GameState type definition
-// General Game State
 export type GameState = 'connecting' | 'waiting' | 'running' | 'crashed' | 'resetting';
 
-// FIX: Added missing Crash game type definitions
-// Crash Game Specific Types
 export interface CrashRound {
     id: string;
     created_at: string;
@@ -72,8 +67,6 @@ export interface CrashHistoryItem {
     multiplier: number;
 }
 
-// FIX: Added missing Roulette game type definitions
-// Roulette Game Specific Types
 export type RouletteColor = 'red' | 'green' | 'black';
 export type RouletteGameState = 'betting' | 'spinning' | 'ended';
 
@@ -105,8 +98,6 @@ export interface RouletteHistoryItem {
     winning_number: number;
 }
 
-// FIX: Added missing Rewards type definitions
-// Rewards Page Specific Types
 export interface RoyaltyRank {
     name: string;
     tier: 'Bronze' | 'Silver' | 'Gold' | 'Emerald' | 'Sapphire' | 'Ruby' | 'Diamond' | 'Opal';
@@ -138,55 +129,41 @@ export interface ChatMessage {
   };
 }
 
-export interface MinesRoundResult {
-    id: string;
-    betAmount: number;
-    cashedOutAt: number | null; // gems found
-    payout: number;
-    busted: boolean;
-}
-
-// FIX: Added RollResult type for Dice game
-export interface RollResult {
-    id: string;
-    value: number;
-    win: boolean;
-    betAmount: number;
-    payout: number;
-    multiplier: number;
-    isRollOver: boolean;
-    rollValue: number;
-    createdAt: string;
-}
-
 // Admin Panel Types
-export type AdminRole = 'Owner' | 'Admin' | 'Moderator' | 'Support' | 'User';
-export type UserStatus = 'Online' | 'Offline' | 'Banned';
+export type UserStatus = 'Online' | 'Offline';
 
 export interface AdminUser {
     id: string;
     username: string;
     email: string | null;
     avatar_url: string;
-    role: AdminRole | string | null;
+    role: string | null;
     balance: number;
     status: UserStatus;
     last_seen: string | null;
+    wagered: number;
+    games_played: number;
+    claimed_ranks: string[] | null;
 }
 
-// Added for the User Management Modal
-export interface Role {
-    id: string;
-    name: string;
+// FIX: Add RollResult type for Dice game components
+export interface RollResult {
+  id: string;
+  value: number;
+  win: boolean;
+  betAmount: number;
+  payout: number;
+  multiplier: number;
+  isRollOver: boolean;
+  rollValue: number;
+  createdAt: string;
 }
 
+// FIX: Add MuteBanRecord type for BannedOverlay component
 export interface MuteBanRecord {
-    id: string;
-    type: 'mute' | 'ban';
-    reason: string;
-    expires_at: string | null;
-    created_at: string;
-    moderator: {
-        username: string;
-    } | null;
+  reason: string | null;
+  expires_at: string | null;
+  moderator: {
+    username: string;
+  } | null;
 }

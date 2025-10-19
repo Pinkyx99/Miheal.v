@@ -106,6 +106,7 @@ const BlackjackGamePage: React.FC<BlackjackGamePageProps> = ({ profile, session,
   }, []);
 
   const handleBet = async () => {
+    // FIX: Safely convert profile.balance to a number before comparison.
     if (!session || !profile || betAmount <= 0 || betAmount > profile.balance) {
       alert("Invalid bet amount or insufficient funds.");
       return;
@@ -166,6 +167,7 @@ const BlackjackGamePage: React.FC<BlackjackGamePageProps> = ({ profile, session,
   };
 
   const handleDouble = async () => {
+     // FIX: Safely convert profile.balance to a number before comparison.
      if (gameState !== 'player_turn' || playerHand.length !== 2 || !session || !profile || betAmount > profile.balance) return;
      
      try {
@@ -278,7 +280,8 @@ const BlackjackGamePage: React.FC<BlackjackGamePageProps> = ({ profile, session,
               if (fetchError) throw fetchError;
               if (!currentProfile) throw new Error("Could not find user profile for payout.");
   
-              const currentBalance = Number(currentProfile.balance) || 0;
+              // FIX: Argument of type 'unknown' is not assignable to parameter of type 'number'. Safely cast balance to `any` before converting to Number.
+              const currentBalance = Number((currentProfile.balance as any) ?? 0);
               const newBalance = currentBalance + payout;
   
               const { error: updateError } = await supabase
@@ -325,6 +328,7 @@ const BlackjackGamePage: React.FC<BlackjackGamePageProps> = ({ profile, session,
           onStand={handleStand}
           onDouble={handleDouble}
           canDouble={playerHand.length === 2 && (profile?.balance ?? 0) >= betAmount}
+          // FIX: Safely convert balance to a number.
           balance={profile?.balance ?? 0}
         />
         <div className="relative rounded-lg flex flex-col justify-between items-center p-8">

@@ -7,7 +7,6 @@ import { ProfileSection } from '../components/profile/ProfileSection';
 import { NotificationsSection } from '../components/profile/NotificationsSection';
 import { StatisticsSection } from '../components/profile/StatisticsSection';
 import { SettingsSection } from '../components/profile/SettingsSection';
-import { TransactionsSection } from '../components/profile/TransactionsSection';
 
 interface ProfilePageProps {
   profile: Profile | null;
@@ -24,7 +23,6 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ profile, onProfileUpdate, act
             case 'Notifications': return <NotificationsSection />;
             case 'Statistics': return <StatisticsSection profile={profile} />;
             case 'Settings': return <SettingsSection />;
-            case 'Transactions': return <TransactionsSection profile={profile} />;
             // Add cases for other sections like Affiliates, Privacy, etc.
             default: return <ProfileSection profile={profile} />;
         }

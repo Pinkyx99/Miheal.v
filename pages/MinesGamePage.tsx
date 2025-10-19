@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback, useMemo } from 'react';
 import { Profile } from '../types';
 import { Session } from '@supabase/supabase-js';
@@ -107,6 +106,7 @@ const MinesGamePage: React.FC<MinesGamePageProps> = ({ profile, session, onProfi
 
     const handleStartGame = useCallback(async () => {
         if (gameState !== 'idle') return;
+        // FIX: Safely convert profile.balance to a number before comparison.
         if (!session || !profile || betAmount > profile.balance) {
             setError("Insufficient funds.");
             return;
@@ -185,7 +185,8 @@ const MinesGamePage: React.FC<MinesGamePageProps> = ({ profile, session, onProfi
                 if (fetchError) throw fetchError;
                 if (!currentProfile) throw new Error("Could not find user profile.");
 
-                const newBalance = (Number(currentProfile.balance) || 0) + payoutAmount;
+                // FIX: Argument of type 'unknown' is not assignable to parameter of type 'number'. Safely cast balance to `any` before converting to Number.
+                const newBalance = (Number((currentProfile.balance as any) ?? 0)) + payoutAmount;
                 const { error: payoutError } = await supabase.from('profiles').update({ balance: newBalance }).eq('id', session.user.id);
                 if (payoutError) throw payoutError;
             } catch (e: any) {

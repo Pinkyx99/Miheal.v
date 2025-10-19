@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { SectionShell } from '../../profile/shared/SectionShell';
 import { UsersIcon, CurrencyDollarIcon, DiceIcon, ChatBubbleIcon } from '../../icons';
+import { supabase } from '../../../lib/supabaseClient';
 
 const StatCard: React.FC<{ title: string; value: string; icon: React.ReactNode; change?: string; changeType?: 'increase' | 'decrease' }> = ({ title, value, icon, change, changeType }) => {
     return (
@@ -22,10 +23,27 @@ const StatCard: React.FC<{ title: string; value: string; icon: React.ReactNode; 
 };
 
 export const DashboardSection: React.FC = () => {
+    const [totalUsers, setTotalUsers] = useState(0);
+
+    useEffect(() => {
+        const fetchTotalUsers = async () => {
+            const { count, error } = await supabase
+                .from('profiles')
+                .select('*', { count: 'exact', head: true });
+            
+            if (error) {
+                console.error("Error fetching total user count:", error);
+            } else {
+                setTotalUsers(count || 0);
+            }
+        };
+        fetchTotalUsers();
+    }, []);
+
     return (
         <SectionShell title="Admin Dashboard">
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-                <StatCard title="Online Users" value="1,234" icon={<UsersIcon className="w-6 h-6" />} change="+5.4%" changeType="increase" />
+                <StatCard title="Total Accounts" value={totalUsers.toLocaleString()} icon={<UsersIcon className="w-6 h-6" />} />
                 <StatCard title="Today's Wager" value="$125,430" icon={<CurrencyDollarIcon className="w-6 h-6" />} change="+12.1%" changeType="increase" />
                 <StatCard title="Active Games" value="78" icon={<DiceIcon className="w-6 h-6" />} change="-2" changeType="decrease" />
                 <StatCard title="Chat Messages" value="8,912" icon={<ChatBubbleIcon className="w-6 h-6" />} change="+8.2%" changeType="increase" />

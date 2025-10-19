@@ -1,15 +1,15 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import { Session } from '@supabase/supabase-js';
-import { ChatMessage } from '../types';
+import { ChatMessage, Profile } from '../types';
 import { ChatUserContextMenu } from './ChatUserContextMenu';
 import { FaceSmileIcon, PlayCircleIcon, SearchIcon, StarIcon } from './icons';
 import { calculateLevelInfo, getRankForLevel } from '../lib/leveling';
 
 interface ChatRailProps {
   session: Session | null;
+  profile: Profile | null;
   onClose?: () => void;
-  onTipUser: (recipient: { id: string; username: string }) => void;
   onViewProfile: (userId: string) => void;
 }
 
@@ -361,7 +361,7 @@ const Message: React.FC<{ msg: ChatMessage, onUserClick: (event: React.MouseEven
     );
 });
 
-export const ChatRail: React.FC<ChatRailProps> = ({ session, onClose, onTipUser, onViewProfile }) => {
+export const ChatRail: React.FC<ChatRailProps> = ({ session, profile, onClose, onViewProfile }) => {
     const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [newMessage, setNewMessage] = useState('');
     const [loading, setLoading] = useState(false);
@@ -370,13 +370,6 @@ export const ChatRail: React.FC<ChatRailProps> = ({ session, onClose, onTipUser,
     const [contextMenu, setContextMenu] = useState<{ user: { id: string; username: string }, position: { x: number, y: number } } | null>(null);
     const [isPickerOpen, setIsPickerOpen] = useState(false);
     const chatFormRef = useRef<HTMLDivElement>(null);
-
-    // Anti-spam state
-    const [canSendMessage, setCanSendMessage] = useState(true);
-    const [messageTimestamps, setMessageTimestamps] = useState<number[]>([]);
-    const [isMuted, setIsMuted] = useState(false);
-    const [muteEndTime, setMuteEndTime] = useState(0);
-    const [timeUntilUnmute, setTimeUntilUnmute] = useState(0);
     const inputRef = useRef<HTMLInputElement>(null);
 
     const scrollToBottom = () => {
@@ -396,131 +389,57 @@ export const ChatRail: React.FC<ChatRailProps> = ({ session, onClose, onTipUser,
                 .single()
                 .then(({ data: profileData }) => {
                     if (!profileData) return;
-                    const finalMessage: ChatMessage = {
-                        ...newMsg,
-                        profiles: profileData as any
-                    };
-                    
-                    setMessages(currentMessages => {
-                        if (currentMessages.some(msg => msg.id === finalMessage.id)) {
-                            return currentMessages;
-                        }
-                        return [...currentMessages, finalMessage];
-                    });
+                    const finalMessage: ChatMessage = { ...newMsg, profiles: profileData as any };
+                    setMessages(currentMessages => [...currentMessages, finalMessage]);
                 });
         };
 
         const channel = supabase
             .channel(channelName)
-            .on(
-                'postgres_changes',
-                { event: 'INSERT', schema: 'public', table: 'chat_messages' },
-                handleNewMessage
-            )
-            .subscribe(async (status, err) => {
-                if (err) {
-                     console.error(`Real-time chat subscription error on channel ${channelName}:`, err);
-                     return;
-                }
-                
+            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_messages' }, handleNewMessage)
+            .subscribe(async (status) => {
                 if (status === 'SUBSCRIBED') {
-                    const { data, error } = await supabase
-                        .from('chat_messages')
-                        .select(`*, profiles(username, avatar_url, wagered)`)
-                        .order('created_at', { ascending: true })
-                        .limit(100);
-                    
-                    if (error) {
-                        console.error("Error fetching initial messages:", error);
-                    } else if (data) {
-                        setMessages(data as any);
-                    }
+                    const { data } = await supabase.from('chat_messages').select(`*, profiles(username, avatar_url, wagered)`).order('created_at', { ascending: true }).limit(100);
+                    if (data) setMessages(data as any);
                 }
             });
 
-        return () => {
-            supabase.removeChannel(channel);
-        };
+        return () => { supabase.removeChannel(channel); };
     }, [channelName]);
 
     const handleSendMessage = async (e?: React.FormEvent, contentOverride?: string) => {
         if (e) e.preventDefault();
-        if (!session || !canSendMessage || isMuted || loading) return;
+        if (!session || loading) return;
 
         const messageContent = contentOverride || newMessage.trim();
         if (messageContent === '') return;
 
-        const now = Date.now();
-        const recentTimestamps = [...messageTimestamps, now].filter(ts => now - ts < 5000);
-        setMessageTimestamps(recentTimestamps);
-
-        if (recentTimestamps.length > 4) {
-            setIsMuted(true);
-            setMuteEndTime(now + 10000);
-            setMessageTimestamps([]);
-            setNewMessage('');
-            return;
-        }
-
         setLoading(true);
-        setCanSendMessage(false);
+        if (!contentOverride) setNewMessage('');
+        setIsPickerOpen(false);
 
-        if (!contentOverride) {
-            setNewMessage('');
-            setIsPickerOpen(false);
-        }
-
-        const { error } = await supabase.from('chat_messages').insert({
-            user_id: session.user.id,
-            message: messageContent,
-        });
+        const { error } = await supabase.from('chat_messages').insert({ user_id: session.user.id, message: messageContent });
         
         setLoading(false);
-        setTimeout(() => setCanSendMessage(true), 2000);
-
         if (error) {
-            if (!contentOverride) {
-                setNewMessage(messageContent);
-            }
+            if (!contentOverride) setNewMessage(messageContent);
             console.error("Error sending message:", error);
         }
     };
     
-    useEffect(() => {
-        if (!isMuted) return;
-        const interval = setInterval(() => {
-            const timeLeft = Math.ceil((muteEndTime - Date.now()) / 1000);
-            if (timeLeft <= 0) {
-                setIsMuted(false);
-                clearInterval(interval);
-            } else {
-                setTimeUntilUnmute(timeLeft);
-            }
-        }, 500);
-        setTimeUntilUnmute(Math.ceil((muteEndTime - Date.now()) / 1000));
-        return () => clearInterval(interval);
-    }, [isMuted, muteEndTime]);
-    
     const handleUserClick = (event: React.MouseEvent, user: { id: string; username: string }) => {
         event.preventDefault();
         const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
-        setContextMenu({
-            user,
-            position: { x: rect.left - 150, y: rect.top } 
-        });
+        setContextMenu({ user, position: { x: rect.left - 150, y: rect.top } });
     };
 
-    const handleIgnore = (userId: string) => {
-        console.log(`Ignoring user ${userId}`);
-    };
-
+    const handleIgnore = (userId: string) => console.log(`Ignoring user ${userId}`);
     const handleEmojiSelect = (emoji: string) => {
         setNewMessage(prev => prev + emoji);
         inputRef.current?.focus();
     };
-
     const handleGifSelect = (gifUrl: string) => {
-        if (!session || !canSendMessage || isMuted || loading) return;
+        if (!session || loading) return;
         handleSendMessage(undefined, gifUrl);
         setIsPickerOpen(false);
     };
@@ -537,16 +456,7 @@ export const ChatRail: React.FC<ChatRailProps> = ({ session, onClose, onTipUser,
 
     return (
         <div className="bg-sidebar h-full flex flex-col border-l border-border-color">
-            {contextMenu && (
-                <ChatUserContextMenu
-                    user={contextMenu.user}
-                    position={contextMenu.position}
-                    onClose={() => setContextMenu(null)}
-                    onProfile={onViewProfile}
-                    onTip={onTipUser}
-                    onIgnore={handleIgnore}
-                />
-            )}
+            {contextMenu && <ChatUserContextMenu user={contextMenu.user} position={contextMenu.position} onClose={() => setContextMenu(null)} onProfile={onViewProfile} onIgnore={handleIgnore} />}
             <header className="flex-shrink-0 flex items-center justify-between p-4 border-b border-border-color">
                 <div>
                     <h2 className="font-bold text-white">Chat</h2>
@@ -555,64 +465,26 @@ export const ChatRail: React.FC<ChatRailProps> = ({ session, onClose, onTipUser,
                         <span>2,345 Online</span>
                     </div>
                 </div>
-                {onClose && (
-                     <button onClick={onClose} className="p-2 text-text-muted hover:text-white xl:hidden" aria-label="Close chat">
-                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                    </button>
-                )}
+                {onClose && <button onClick={onClose} className="p-2 text-text-muted hover:text-white xl:hidden" aria-label="Close chat"><svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>}
             </header>
             
             <div className="flex-1 min-h-0 overflow-y-auto no-scrollbar p-2">
-                {messages.map(msg => (
-                    <Message key={msg.id} msg={msg} onUserClick={handleUserClick} />
-                ))}
+                {messages.map(msg => <Message key={msg.id} msg={msg} onUserClick={handleUserClick} />)}
                 <div ref={messagesEndRef} />
             </div>
 
             <div ref={chatFormRef} className="p-4 flex-shrink-0">
                 {session ? (
-                     isMuted ? (
-                        <div className="text-center text-sm text-red-400 p-4 bg-red-900/20 rounded-lg border border-red-500/30">
-                            You are muted for spamming.
-                            <br />
-                            Please wait <span className="font-bold">{timeUntilUnmute}s</span>.
-                        </div>
-                    ) : (
-                        <form onSubmit={handleSendMessage} className="relative">
-                            {isPickerOpen && <MediaPicker onEmojiSelect={handleEmojiSelect} onGifSelect={handleGifSelect} />}
-                            <input
-                                ref={inputRef}
-                                type="text"
-                                value={newMessage}
-                                onChange={e => setNewMessage(e.target.value)}
-                                placeholder="Type a message..."
-                                className="w-full bg-background border border-border-color rounded-lg py-3 pl-4 pr-24 text-sm placeholder-text-muted focus:ring-2 focus:ring-primary focus:outline-none transition"
-                            />
-                             <div className="absolute inset-y-0 right-0 flex items-center">
-                                 <button 
-                                    type="button" 
-                                    onClick={() => setIsPickerOpen(o => !o)} 
-                                    className="px-3 text-text-muted hover:text-white"
-                                    aria-label="Open emoji and GIF picker"
-                                 >
-                                    <FaceSmileIcon className="w-6 h-6" />
-                                 </button>
-                                 <button
-                                     type="submit"
-                                     disabled={loading || !canSendMessage || newMessage.trim() === ''}
-                                     className="px-3 text-primary disabled:text-text-muted"
-                                     aria-label="Send message"
-                                     title={!canSendMessage ? 'Sending too fast' : 'Send'}
-                                 >
-                                     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 5l7 7-7 7M5 5l7 7-7 7" /></svg>
-                                 </button>
-                             </div>
-                        </form>
-                    )
+                    <form onSubmit={handleSendMessage} className="relative">
+                        {isPickerOpen && <MediaPicker onEmojiSelect={handleEmojiSelect} onGifSelect={handleGifSelect} />}
+                        <input ref={inputRef} type="text" value={newMessage} onChange={e => setNewMessage(e.target.value)} placeholder="Type a message..." className="w-full bg-background border border-border-color rounded-lg py-3 pl-4 pr-24 text-sm placeholder-text-muted focus:ring-2 focus:ring-primary focus:outline-none transition" />
+                         <div className="absolute inset-y-0 right-0 flex items-center">
+                             <button type="button" onClick={() => setIsPickerOpen(o => !o)} className="px-3 text-text-muted hover:text-white" aria-label="Open emoji and GIF picker"><FaceSmileIcon className="w-6 h-6" /></button>
+                             <button type="submit" disabled={loading || newMessage.trim() === ''} className="px-3 text-primary disabled:text-text-muted" aria-label="Send message" title="Send"><svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 5l7 7-7 7M5 5l7 7-7 7" /></svg></button>
+                         </div>
+                    </form>
                 ) : (
-                    <div className="text-center text-sm text-text-muted p-4 bg-background rounded-lg">
-                        Please <span className="font-bold text-primary">log in</span> to chat.
-                    </div>
+                    <div className="text-center text-sm text-text-muted p-4 bg-background rounded-lg">Please <span className="font-bold text-primary">log in</span> to chat.</div>
                 )}
             </div>
         </div>
