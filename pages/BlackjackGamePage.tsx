@@ -106,14 +106,13 @@ const BlackjackGamePage: React.FC<BlackjackGamePageProps> = ({ profile, session,
   }, []);
 
   const handleBet = async () => {
-    // FIX: Safely convert profile.balance to a number before comparison.
-    if (!session || !profile || betAmount <= 0 || betAmount > profile.balance) {
+    if (!session || !profile || betAmount <= 0 || betAmount > Number(profile.balance)) {
       alert("Invalid bet amount or insufficient funds.");
       return;
     }
 
     try {
-        const { error } = await supabase.from('profiles').update({ balance: profile.balance - betAmount }).eq('id', session.user.id);
+        const { error } = await supabase.from('profiles').update({ balance: Number(profile.balance) - betAmount }).eq('id', session.user.id);
         if (error) throw error;
         onProfileUpdate();
         
@@ -167,12 +166,11 @@ const BlackjackGamePage: React.FC<BlackjackGamePageProps> = ({ profile, session,
   };
 
   const handleDouble = async () => {
-     // FIX: Safely convert profile.balance to a number before comparison.
-     if (gameState !== 'player_turn' || playerHand.length !== 2 || !session || !profile || betAmount > profile.balance) return;
+     if (gameState !== 'player_turn' || playerHand.length !== 2 || !session || !profile || betAmount > Number(profile.balance)) return;
      
      try {
         const newBet = betAmount * 2;
-        const { error } = await supabase.from('profiles').update({ balance: profile.balance - betAmount }).eq('id', session.user.id);
+        const { error } = await supabase.from('profiles').update({ balance: Number(profile.balance) - betAmount }).eq('id', session.user.id);
         if (error) throw error;
         onProfileUpdate();
         setBetAmount(newBet);
@@ -270,7 +268,6 @@ const BlackjackGamePage: React.FC<BlackjackGamePageProps> = ({ profile, session,
   
         if (payout > 0) {
           try {
-              // Fetch the latest balance to prevent updates based on stale state.
               const { data: currentProfile, error: fetchError } = await supabase
                 .from('profiles')
                 .select('balance')
@@ -280,8 +277,7 @@ const BlackjackGamePage: React.FC<BlackjackGamePageProps> = ({ profile, session,
               if (fetchError) throw fetchError;
               if (!currentProfile) throw new Error("Could not find user profile for payout.");
   
-              // FIX: Argument of type 'unknown' is not assignable to parameter of type 'number'. Safely cast balance to `any` before converting to Number.
-              const currentBalance = Number((currentProfile.balance as any) ?? 0);
+              const currentBalance = Number(currentProfile.balance ?? 0);
               const newBalance = currentBalance + payout;
   
               const { error: updateError } = await supabase
@@ -294,11 +290,10 @@ const BlackjackGamePage: React.FC<BlackjackGamePageProps> = ({ profile, session,
               onProfileUpdate();
             } catch (error) {
               console.error("Blackjack payout error:", error);
-              onProfileUpdate(); // Attempt to re-sync balance on error
+              onProfileUpdate();
             }
         }
   
-        // Wait for animations/user to see result, then reset for next round.
         resetTimer = window.setTimeout(() => {
           resetGame();
         }, 4000);
@@ -309,8 +304,7 @@ const BlackjackGamePage: React.FC<BlackjackGamePageProps> = ({ profile, session,
     return () => {
         if (resetTimer) clearTimeout(resetTimer);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [gameState]);
+  }, [gameState, session, profile, playerHand, dealerHand, betAmount, resetGame, onProfileUpdate]);
 
   return (
     <div className="flex w-full h-full justify-center items-center p-4" style={{
@@ -327,9 +321,8 @@ const BlackjackGamePage: React.FC<BlackjackGamePageProps> = ({ profile, session,
           onHit={handleHit}
           onStand={handleStand}
           onDouble={handleDouble}
-          canDouble={playerHand.length === 2 && (profile?.balance ?? 0) >= betAmount}
-          // FIX: Safely convert balance to a number.
-          balance={profile?.balance ?? 0}
+          canDouble={playerHand.length === 2 && Number(profile?.balance ?? 0) >= betAmount}
+          balance={Number(profile?.balance ?? 0)}
         />
         <div className="relative rounded-lg flex flex-col justify-between items-center p-8">
             

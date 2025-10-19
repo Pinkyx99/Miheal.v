@@ -21,8 +21,9 @@ import RewardsPage from './pages/RewardsPage';
 import AdminPage from './pages/AdminPage';
 import DiceGamePage from './pages/DiceGamePage';
 import MinesGamePage from './pages/MinesGamePage';
+import BlackjackGamePage from './pages/BlackjackGamePage';
 
-type View = 'home' | 'crash' | 'roulette' | 'roulette-info' | 'slots' | 'rewards' | 'dice' | 'mines' | ProfileLink['name'];
+type View = 'home' | 'crash' | 'roulette' | 'roulette-info' | 'slots' | 'rewards' | 'dice' | 'mines' | 'blackjack' | ProfileLink['name'];
 
 const App: React.FC = () => {
   const [session, setSession] = useState<Session | null>(null);
@@ -59,7 +60,7 @@ const App: React.FC = () => {
       const hash = window.location.hash.substring(1);
       const path = hash.startsWith('/') ? hash.substring(1).toLowerCase() : hash.toLowerCase();
       
-      const validGameViews = ['crash', 'roulette', 'roulette-info', 'slots', 'rewards', 'dice', 'mines'];
+      const validGameViews = ['crash', 'roulette', 'roulette-info', 'slots', 'rewards', 'dice', 'mines', 'blackjack'];
       const validProfileViews = PROFILE_LINKS.map(l => l.name.toLowerCase().replace(' ', '-'));
       
       let view: View = 'home';
@@ -177,7 +178,7 @@ const App: React.FC = () => {
 
   const handleGameSelect = (gameName: string) => {
     const game = gameName.toLowerCase();
-    if (['crash', 'roulette', 'slots', 'dice', 'mines'].includes(game)) {
+    if (['crash', 'roulette', 'slots', 'dice', 'mines', 'blackjack'].includes(game)) {
       navigateTo(game as View);
     }
   };
@@ -191,6 +192,7 @@ const App: React.FC = () => {
         case 'rewards': return 'bg-background';
         case 'dice': return 'bg-[#081018]';
         case 'mines': return 'bg-[#0b1016]';
+        case 'blackjack': return 'bg-[#081018]';
         default: return 'bg-background';
     }
   }
@@ -215,6 +217,8 @@ const App: React.FC = () => {
         return <DiceGamePage profile={profile} session={session} onProfileUpdate={handleProfileUpdate} />;
       case 'mines':
         return <MinesGamePage profile={profile} session={session} onProfileUpdate={handleProfileUpdate} />;
+      case 'blackjack':
+        return <BlackjackGamePage profile={profile} session={session} onProfileUpdate={handleProfileUpdate} />;
       case 'slots':
         return <SlotsPage session={session} onSignInClick={() => openAuthModal('signIn')} />;
       case 'rewards':
