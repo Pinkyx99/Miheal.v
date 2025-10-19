@@ -90,6 +90,7 @@ interface BlackjackGamePageProps {
 const BlackjackGamePage: React.FC<BlackjackGamePageProps> = ({ profile, session, onProfileUpdate }) => {
   const [gameState, setGameState] = useState<GameState>('betting');
   const [betAmount, setBetAmount] = useState(0.10);
+  const [roundBetAmount, setRoundBetAmount] = useState(0.10);
   const [deck, setDeck] = useState<Card[]>([]);
   const [playerHand, setPlayerHand] = useState<Card[]>([]);
   const [dealerHand, setDealerHand] = useState<Card[]>([]);
@@ -107,13 +108,12 @@ const BlackjackGamePage: React.FC<BlackjackGamePageProps> = ({ profile, session,
     }
 
     try {
-        // Reset visuals from previous round
+        setRoundBetAmount(betAmount);
         setGameResult(null);
         setPlayerHand([]);
         setDealerHand([]);
         setPayoutProcessed(false);
-        // Deck will be reset in the 'dealing' useEffect
-
+        
         const { error } = await supabase.from('profiles').update({ balance: (profile.balance ?? 0) - betAmount }).eq('id', session.user.id);
         if (error) throw error;
         onProfileUpdate();
@@ -137,12 +137,10 @@ const BlackjackGamePage: React.FC<BlackjackGamePageProps> = ({ profile, session,
       setTimeout(() => { dHand.push(newDeck.pop()!); setDealerHand([...dHand]); setDeck(newDeck); }, 1200);
       
       setTimeout(() => {
-        // Check for immediate blackjacks after dealing
         const initialPlayerScore = calculateHandValue(pHand);
         const initialDealerScore = calculateHandValue(dHand);
         
         if ((pHand.length === 2 && initialPlayerScore === 21) || (dHand.length === 2 && initialDealerScore === 21)) {
-            // If either has blackjack, the round ends immediately. Player can't hit.
             setGameState('finished');
         } else {
             setGameState('player_turn');
@@ -171,25 +169,27 @@ const BlackjackGamePage: React.FC<BlackjackGamePageProps> = ({ profile, session,
      if (gameState !== 'player_turn' || playerHand.length !== 2 || !session || !profile || betAmount > (profile.balance ?? 0)) return;
      
      try {
-        const newBet = betAmount * 2;
         const { error } = await supabase.from('profiles').update({ balance: (profile.balance ?? 0) - betAmount }).eq('id', session.user.id);
         if (error) throw error;
         onProfileUpdate();
-        setBetAmount(newBet);
+        
+        setRoundBetAmount(prev => prev * 2);
         
         const newDeck = [...deck];
         const newHand = [...playerHand, newDeck.pop()!];
         setPlayerHand(newHand);
         setDeck(newDeck);
+        
         setTimeout(() => {
             if (calculateHandValue(newHand) > 21) {
                 setGameState('finished');
             } else {
                 setGameState('dealer_turn');
             }
-        }, 500);
+        }, 800);
      } catch (e) {
          console.error("Error doubling down:", e);
+         onProfileUpdate();
      }
   };
 
@@ -230,7 +230,7 @@ const BlackjackGamePage: React.FC<BlackjackGamePageProps> = ({ profile, session,
     setPayoutProcessed(true);
 
     const determineWinnerAndPayout = async () => {
-        let payout = 0; // This is the TOTAL amount to be returned to the user
+        let payout = 0;
         let result: GameResult = null;
   
         const finalPlayerScore = calculateHandValue(playerHand);
@@ -240,42 +240,41 @@ const BlackjackGamePage: React.FC<BlackjackGamePageProps> = ({ profile, session,
   
         if (finalPlayerScore > 21) {
           result = 'lose';
-          payout = 0; // Player busts
+          payout = 0;
         } else if (isPlayerBlackjack) {
             if (isDealerBlackjack) {
-              result = 'push'; // Both have blackjack
-              payout = betAmount;
+              result = 'push';
+              payout = roundBetAmount;
             } else {
-              result = 'win'; // Player has blackjack, dealer does not
-              payout = betAmount * 2.5; // Blackjack pays 3:2
+              result = 'win';
+              payout = roundBetAmount * 2.5;
             }
         } else if (isDealerBlackjack) {
-            result = 'lose'; // Dealer has blackjack, player does not
+            result = 'lose';
             payout = 0;
         } else if (finalDealerScore > 21) {
-          result = 'win'; // Dealer busts
-          payout = betAmount * 2;
+          result = 'win';
+          payout = roundBetAmount * 2;
         } else if (finalPlayerScore > finalDealerScore) {
-          result = 'win'; // Player has higher score
-          payout = betAmount * 2;
+          result = 'win';
+          payout = roundBetAmount * 2;
         } else if (finalPlayerScore < finalDealerScore) {
-          result = 'lose'; // Dealer has higher score
+          result = 'lose';
           payout = 0;
-        } else { // Scores are equal, no one has blackjack
+        } else {
           result = 'push';
-          payout = betAmount;
+          payout = roundBetAmount;
         }
   
         setGameResult(result);
 
-        // Log game result for live feed
         try {
             await supabase.from('game_bets').insert({
                 user_id: session.user.id,
                 game_name: 'Blackjack',
-                bet_amount: betAmount,
+                bet_amount: roundBetAmount,
                 payout: payout,
-                multiplier: payout > 0 ? payout / betAmount : 0,
+                multiplier: payout > 0 ? payout / roundBetAmount : 0,
             });
         } catch (logError) {
             console.error("Error logging blackjack bet:", (logError as Error).message);
@@ -309,13 +308,14 @@ const BlackjackGamePage: React.FC<BlackjackGamePageProps> = ({ profile, session,
             }
         }
         
-        // After the round is finished, immediately allow the user to bet again.
-        setGameState('betting');
+        setTimeout(() => {
+          setGameState('betting');
+        }, 3000);
     };
 
     determineWinnerAndPayout();
 
-  }, [gameState, session, profile, playerHand, dealerHand, betAmount, onProfileUpdate, payoutProcessed]);
+  }, [gameState, session, profile, playerHand, dealerHand, roundBetAmount, onProfileUpdate, payoutProcessed]);
 
   return (
     <div className="flex w-full h-full justify-center items-center p-4" style={{
@@ -337,7 +337,6 @@ const BlackjackGamePage: React.FC<BlackjackGamePageProps> = ({ profile, session,
         />
         <div className="relative rounded-lg flex flex-col justify-between items-center p-8">
             
-            {/* Dealer's Hand */}
             <BlackjackHand
                 hand={dealerHand}
                 scoreDisplay={dealerScore}
@@ -347,13 +346,11 @@ const BlackjackGamePage: React.FC<BlackjackGamePageProps> = ({ profile, session,
                 hideHoleCard={gameState !== 'dealer_turn' && gameState !== 'finished' && gameResult === null}
             />
             
-            {/* Game Info */}
             <div className="text-center text-white/80 font-semibold space-y-1 my-4 bg-black/50 px-4 py-2 rounded-lg shadow-lg">
                 <p className="text-xs tracking-wider uppercase">Blackjack pays 3 to 2</p>
                 <p className="text-xs tracking-wider uppercase">Insurance pays 2 to 1</p>
             </div>
 
-            {/* Player's Hand */}
             <BlackjackHand
                 hand={playerHand}
                 scoreDisplay={playerScore}
