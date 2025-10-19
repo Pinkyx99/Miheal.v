@@ -92,6 +92,7 @@ const BlackjackGamePage: React.FC<BlackjackGamePageProps> = ({ profile, session,
   const [playerHand, setPlayerHand] = useState<Card[]>([]);
   const [dealerHand, setDealerHand] = useState<Card[]>([]);
   const [gameResult, setGameResult] = useState<GameResult>(null);
+  const [payoutProcessed, setPayoutProcessed] = useState(false);
 
   const playerScore = getScoreDisplay(playerHand);
   const dealerScore = getScoreDisplay(dealerHand);
@@ -103,6 +104,7 @@ const BlackjackGamePage: React.FC<BlackjackGamePageProps> = ({ profile, session,
     setDealerHand([]);
     setDeck(shuffleDeck(createDeck()));
     setGameState('betting');
+    setPayoutProcessed(false);
   }, []);
 
   const handleBet = async () => {
@@ -221,9 +223,11 @@ const BlackjackGamePage: React.FC<BlackjackGamePageProps> = ({ profile, session,
   
   // Determine winner and handle payouts
   useEffect(() => {
-    if (gameState !== 'finished' || !session || !profile) {
+    if (gameState !== 'finished' || !session || !profile || payoutProcessed) {
       return;
     }
+    
+    setPayoutProcessed(true);
     
     let resetTimer: number;
 
@@ -304,7 +308,7 @@ const BlackjackGamePage: React.FC<BlackjackGamePageProps> = ({ profile, session,
     return () => {
         if (resetTimer) clearTimeout(resetTimer);
     }
-  }, [gameState, session, profile, playerHand, dealerHand, betAmount, resetGame, onProfileUpdate]);
+  }, [gameState, session, profile, playerHand, dealerHand, betAmount, resetGame, onProfileUpdate, payoutProcessed]);
 
   return (
     <div className="flex w-full h-full justify-center items-center p-4" style={{
