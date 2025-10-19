@@ -89,27 +89,16 @@ const App: React.FC = () => {
     const user = session.user;
 
     try {
-        // Fetch core profile data and admin status in parallel
-        const [profileResult, adminResult] = await Promise.all([
-            supabase
-                .from('profiles')
-                .select('id, username, avatar_url, balance, wagered, games_played, has_claimed_welcome_bonus, claimed_ranks')
-                .eq('id', user.id)
-                .single(),
-            supabase.rpc('is_admin', { p_user_id: user.id })
-        ]);
-
-        const { data: profileData, error: profileError } = profileResult;
-        const { data: isAdmin, error: adminError } = adminResult;
+        // Fetch core profile data including admin status
+        const { data: profileData, error: profileError } = await supabase
+            .from('profiles')
+            .select('id, username, avatar_url, balance, wagered, games_played, has_claimed_welcome_bonus, claimed_ranks, is_admin')
+            .eq('id', user.id)
+            .single();
 
         if (profileError) {
             // If the profile doesn't exist, it's a critical issue.
             throw profileError;
-        }
-
-        if (adminError) {
-            // Non-critical, we can assume the user is not an admin.
-            console.warn("Could not check admin status, defaulting to false:", adminError.message);
         }
 
         if (profileData) {
@@ -123,17 +112,21 @@ const App: React.FC = () => {
                 has_claimed_welcome_bonus: profileData.has_claimed_welcome_bonus,
                 claimed_ranks: profileData.claimed_ranks,
                 email: user.email!, // Email is guaranteed to be on the user object
-                is_admin: !!isAdmin, // Coerce to boolean, defaulting to false on error
+                is_admin: profileData.is_admin ?? false, // Directly use the column
             };
             setProfile(fullProfile);
         } else {
             // This case shouldn't be reached if profileError is handled, but as a safeguard.
             throw new Error("Profile data is null for authenticated user.");
         }
-    } catch (error) {
-        console.error("Error getting profile:", error);
+    } catch (error: any) {
+        console.error("Error getting profile:", error.message);
         // This is a critical failure, sign out to prevent being stuck in a broken state.
-        supabase.auth.signOut();
+        if (error.message.includes('column "is_admin" does not exist')) {
+            console.error("DATABASE SETUP ERROR: The 'is_admin' column is missing from the 'profiles' table. Please run the ALTER TABLE script provided in the documentation.");
+        } else {
+            supabase.auth.signOut();
+        }
     }
   }, []);
 

@@ -1,4 +1,3 @@
-
 // This Deno edge function is the complete server-side heartbeat of the Crash game.
 // It should be scheduled to run every 2 seconds via a cron job (e.g., using pg_cron).
 // It replaces a faulty RPC by implementing the entire game loop, including a

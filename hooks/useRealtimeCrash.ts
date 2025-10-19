@@ -118,6 +118,27 @@ export const useRealtimeCrash = (session: Session | null, onProfileUpdate: () =>
 
         const handleRoundUpdate = (payload: any) => {
             const newRound = payload.new as CrashRound;
+
+            // Log losses on crash
+            if (newRound.status === 'crashed' && currentRound?.status !== 'crashed') {
+                if (session?.user?.id) {
+                    const userBetsForRound = allBets.filter(b => b.round_id === newRound.id && b.user_id === session.user.id);
+                    userBetsForRound.forEach(bet => {
+                        if (!bet.cashout_multiplier) { // If a bet wasn't cashed out, it's a loss
+                            supabase.from('game_bets').insert({
+                                user_id: bet.user_id,
+                                game_name: 'Crash',
+                                bet_amount: bet.bet_amount,
+                                payout: 0,
+                                multiplier: 0,
+                            }).then(({ error }) => {
+                                if (error) console.error("Error logging Crash loss:", error.message);
+                            });
+                        }
+                    });
+                }
+            }
+
             processRoundUpdate(newRound);
         };
 
@@ -151,7 +172,7 @@ export const useRealtimeCrash = (session: Session | null, onProfileUpdate: () =>
             supabase.removeChannel(roundChannel);
             if (roundStateTimer.current) clearTimeout(roundStateTimer.current);
         };
-    }, []);
+    }, [session, allBets, currentRound?.status]);
 
 
     // Bets subscription effect
@@ -163,6 +184,21 @@ export const useRealtimeCrash = (session: Session | null, onProfileUpdate: () =>
              .on('postgres_changes', { event: '*', schema: 'public', table: 'crash_bets', filter: `round_id=eq.${currentRound.id}` },
                 async (payload) => {
                     const newBet = payload.new as CrashBet;
+                    const oldBet = payload.old as CrashBet;
+
+                    // Detect cashout and log it for the live feed
+                    if (newBet.cashout_multiplier && (!oldBet || !oldBet.cashout_multiplier)) {
+                         supabase.from('game_bets').insert({
+                            user_id: newBet.user_id,
+                            game_name: 'Crash',
+                            bet_amount: newBet.bet_amount,
+                            payout: newBet.bet_amount + (newBet.profit || 0),
+                            multiplier: newBet.cashout_multiplier,
+                        }).then(({ error }) => {
+                            if (error) console.error("Error logging Crash win:", error.message);
+                        });
+                    }
+
                      const { data, error } = await supabase
                         .from('profiles')
                         .select('username, avatar_url')

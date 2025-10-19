@@ -106,8 +106,7 @@ const MinesGamePage: React.FC<MinesGamePageProps> = ({ profile, session, onProfi
 
     const handleStartGame = useCallback(async () => {
         if (gameState !== 'idle') return;
-        // FIX: Safely convert profile.balance to a number before comparison.
-        if (!session || !profile || betAmount > profile.balance) {
+        if (!session || !profile || betAmount > (profile.balance ?? 0)) {
             setError("Insufficient funds.");
             return;
         }
@@ -160,6 +159,18 @@ const MinesGamePage: React.FC<MinesGamePageProps> = ({ profile, session, onProfi
         if (mineLocations.has(index)) {
             setGameState('busted');
             showFinalGrid(index);
+            // Log loss for live feed
+            if (session) {
+                supabase.from('game_bets').insert({
+                    user_id: session.user.id,
+                    game_name: 'Mines',
+                    bet_amount: betAmount,
+                    payout: 0,
+                    multiplier: 0,
+                }).then(({ error }) => {
+                    if (error) console.error("Error logging Mines loss:", error.message);
+                });
+            }
         } else {
             newRevealedTiles.add(index);
             setRevealedTiles(newRevealedTiles);
@@ -172,12 +183,25 @@ const MinesGamePage: React.FC<MinesGamePageProps> = ({ profile, session, onProfi
             const newProfit = betAmount * multiplier - betAmount;
             setProfit(newProfit);
         }
-    }, [gameState, mineLocations, gridState, revealedTiles, betAmount, numMines, showFinalGrid]);
+    }, [gameState, mineLocations, gridState, revealedTiles, betAmount, numMines, showFinalGrid, session]);
 
     const handleCashout = useCallback(async () => {
         if (gameState !== 'playing' || revealedTiles.size === 0) return;
 
         const payoutAmount = betAmount + profit;
+
+        // Log win for live feed
+        if (session) {
+            supabase.from('game_bets').insert({
+                user_id: session.user.id,
+                game_name: 'Mines',
+                bet_amount: betAmount,
+                payout: payoutAmount,
+                multiplier: payoutAmount / betAmount,
+            }).then(({ error }) => {
+                if (error) console.error("Error logging Mines win:", error.message);
+            });
+        }
 
         if (payoutAmount > 0 && session) {
             try {
@@ -185,8 +209,7 @@ const MinesGamePage: React.FC<MinesGamePageProps> = ({ profile, session, onProfi
                 if (fetchError) throw fetchError;
                 if (!currentProfile) throw new Error("Could not find user profile.");
 
-                // FIX: Argument of type 'unknown' is not assignable to parameter of type 'number'. Safely cast balance to `any` before converting to Number.
-                const newBalance = (Number((currentProfile.balance as any) ?? 0)) + payoutAmount;
+                const newBalance = (Number((currentProfile as any)?.balance) || 0) + payoutAmount;
                 const { error: payoutError } = await supabase.from('profiles').update({ balance: newBalance }).eq('id', session.user.id);
                 if (payoutError) throw payoutError;
             } catch (e: any) {

@@ -50,7 +50,7 @@ const GIF_LIST: { url: string; alt: string }[] = [
   { url: 'https://media.giphy.com/media/xUPGcJ9uOAL2h5wA5a/giphy.gif', alt: 'drake hotline bling dance dancing approve disapprove' },
   { url: 'https://media.giphy.com/media/l3q2K5jinAlChoCLS/giphy.gif', alt: 'roll safe think about it smart thinking guy' },
   { url: 'https://media.giphy.com/media/d2Z4i1TGqC5_Ab8k/giphy.gif', alt: 'confused nick young what question mark' },
-  { url: 'https://media.giphy.com/media/xTiTnHXbRoaZ1B1Mo8/giphy.gif', alt: 'michael jackson thriller popcorn eating watching drama' },
+  { url: 'https://media.giphy.com/media/xT0xeJpnrWC4XWblEk/giphy.gif', alt: 'michael jackson thriller popcorn eating watching drama' },
   { url: 'https://media.giphy.com/media/94EQmVHkveNck/giphy.gif', alt: 'minions laughing despicable me funny' },
   { url: 'https://media.giphy.com/media/l4Ep6uxU6aedrYUik/giphy.gif', alt: 'crying michael jordan sad basketball' },
   { url: 'https://media.giphy.com/media/3o7aD1zsNcOG26N9fy/giphy.gif', alt: 'blinking guy drew scanlon white guy blinking shocked' },
@@ -371,6 +371,16 @@ export const ChatRail: React.FC<ChatRailProps> = ({ session, profile, onClose, o
     const [isPickerOpen, setIsPickerOpen] = useState(false);
     const chatFormRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLInputElement>(null);
+    const [sendMessageError, setSendMessageError] = useState<string | null>(null);
+
+    useEffect(() => {
+        if (sendMessageError) {
+            const timer = setTimeout(() => {
+                setSendMessageError(null);
+            }, 5000); // Clear error after 5 seconds
+            return () => clearTimeout(timer);
+        }
+    }, [sendMessageError]);
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -399,8 +409,10 @@ export const ChatRail: React.FC<ChatRailProps> = ({ session, profile, onClose, o
             .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_messages' }, handleNewMessage)
             .subscribe(async (status) => {
                 if (status === 'SUBSCRIBED') {
-                    const { data } = await supabase.from('chat_messages').select(`*, profiles(username, avatar_url, wagered)`).order('created_at', { ascending: true }).limit(100);
-                    if (data) setMessages(data as any);
+                    const { data } = await supabase.from('chat_messages').select(`*, profiles(username, avatar_url, wagered)`).order('created_at', { ascending: false }).limit(100);
+                    if (data) {
+                      setMessages((data as any).reverse());
+                    }
                 }
             });
 
@@ -417,6 +429,7 @@ export const ChatRail: React.FC<ChatRailProps> = ({ session, profile, onClose, o
         setLoading(true);
         if (!contentOverride) setNewMessage('');
         setIsPickerOpen(false);
+        setSendMessageError(null);
 
         const { error } = await supabase.from('chat_messages').insert({ user_id: session.user.id, message: messageContent });
         
@@ -424,6 +437,13 @@ export const ChatRail: React.FC<ChatRailProps> = ({ session, profile, onClose, o
         if (error) {
             if (!contentOverride) setNewMessage(messageContent);
             console.error("Error sending message:", error);
+            if (error.code === '42P01') { // relation does not exist
+                setSendMessageError("Chat service is unavailable. Please contact support.");
+            } else if (error.message.includes('violates row-level security policy')) {
+                setSendMessageError("You are not permitted to send this message (you may be muted).");
+            } else {
+                setSendMessageError("Failed to send message. Please try again.");
+            }
         }
     };
     
@@ -477,6 +497,9 @@ export const ChatRail: React.FC<ChatRailProps> = ({ session, profile, onClose, o
                 {session ? (
                     <form onSubmit={handleSendMessage} className="relative">
                         {isPickerOpen && <MediaPicker onEmojiSelect={handleEmojiSelect} onGifSelect={handleGifSelect} />}
+                        {sendMessageError && (
+                            <p className="text-xs text-red-400 text-center mb-2">{sendMessageError}</p>
+                        )}
                         <input ref={inputRef} type="text" value={newMessage} onChange={e => setNewMessage(e.target.value)} placeholder="Type a message..." className="w-full bg-background border border-border-color rounded-lg py-3 pl-4 pr-24 text-sm placeholder-text-muted focus:ring-2 focus:ring-primary focus:outline-none transition" />
                          <div className="absolute inset-y-0 right-0 flex items-center">
                              <button type="button" onClick={() => setIsPickerOpen(o => !o)} className="px-3 text-text-muted hover:text-white" aria-label="Open emoji and GIF picker"><FaceSmileIcon className="w-6 h-6" /></button>

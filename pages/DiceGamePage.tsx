@@ -91,8 +91,7 @@ const DiceGamePage: React.FC<{
             setError("Bet amount must be greater than zero.");
             return;
         }
-        // FIX: Safely convert profile.balance to a number before comparison.
-        if (profile.balance < betAmount) {
+        if ((profile.balance ?? 0) < betAmount) {
             setError("Insufficient funds.");
             return;
         }
@@ -105,7 +104,7 @@ const DiceGamePage: React.FC<{
             const { error: debitError } = await supabase
                 .from('profiles')
                 .update({ 
-                    balance: profile.balance - betAmount,
+                    balance: (profile.balance ?? 0) - betAmount,
                     wagered: (profile.wagered || 0) + betAmount,
                 })
                 .eq('id', session.user.id);
@@ -129,8 +128,7 @@ const DiceGamePage: React.FC<{
                 if (fetchError) throw new Error(fetchError.message);
                 if (!currentProfile) throw new Error("Could not find user profile to update balance.");
 
-                // FIX: Argument of type 'unknown' is not assignable to parameter of type 'number'. Safely cast balance to `any` before converting to Number.
-                const currentBalance = Number((currentProfile.balance as any) ?? 0);
+                const currentBalance = Number((currentProfile as any)?.balance ?? 0);
                 const newBalance = currentBalance + payout;
                 const { error: payoutError } = await supabase
                     .from('profiles')
@@ -151,6 +149,17 @@ const DiceGamePage: React.FC<{
                 rollValue,
                 createdAt: new Date().toISOString(),
             };
+
+            // Log game result for live feed
+            supabase.from('game_bets').insert({
+                user_id: session.user.id,
+                game_name: 'Dice',
+                bet_amount: betAmount,
+                payout: result.payout,
+                multiplier: result.win ? result.multiplier : null,
+            }).then(({ error }) => {
+                if (error) console.error("Error logging Dice bet:", error.message);
+            });
 
             setLastRoll(result);
             setHistory(prev => [result, ...prev].slice(0, 50));

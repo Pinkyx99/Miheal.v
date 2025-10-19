@@ -167,3 +167,17 @@ export interface MuteBanRecord {
     username: string;
   } | null;
 }
+
+export interface GameBet {
+  id: string;
+  created_at: string;
+  user_id: string;
+  game_name: string;
+  bet_amount: number;
+  payout: number | null;
+  multiplier: number | null;
+  profiles: {
+    username: string;
+    avatar_url: string;
+  };
+}

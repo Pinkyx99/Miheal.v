@@ -14,15 +14,17 @@ export interface Card {
 type GameState = 'betting' | 'dealing' | 'player_turn' | 'dealer_turn' | 'finished';
 type GameResult = 'win' | 'lose' | 'push' | null;
 
-const createDeck = (): Card[] => {
+const createDeck = (numDecks: number = 6): Card[] => {
   const suits: Suit[] = ['Hearts', 'Diamonds', 'Clubs', 'Spades'];
   const ranks: Rank[] = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
-  const deck: Card[] = [];
-  suits.forEach(suit => {
-    ranks.forEach(rank => {
-      deck.push({ suit, rank });
+  let deck: Card[] = [];
+  for (let i = 0; i < numDecks; i++) {
+    suits.forEach(suit => {
+      ranks.forEach(rank => {
+        deck.push({ suit, rank });
+      });
     });
-  });
+  }
   return deck;
 };
 
@@ -98,23 +100,21 @@ const BlackjackGamePage: React.FC<BlackjackGamePageProps> = ({ profile, session,
   const dealerScore = getScoreDisplay(dealerHand);
   const dealerUpCardScore = dealerHand.length > 0 ? getScoreDisplay([dealerHand[0]]) : '0';
 
-  const resetGame = useCallback(() => {
-    setGameResult(null);
-    setPlayerHand([]);
-    setDealerHand([]);
-    setDeck(shuffleDeck(createDeck()));
-    setGameState('betting');
-    setPayoutProcessed(false);
-  }, []);
-
   const handleBet = async () => {
-    if (!session || !profile || betAmount <= 0 || betAmount > Number(profile.balance)) {
+    if (!session || !profile || betAmount <= 0 || betAmount > (profile.balance ?? 0)) {
       alert("Invalid bet amount or insufficient funds.");
       return;
     }
 
     try {
-        const { error } = await supabase.from('profiles').update({ balance: Number(profile.balance) - betAmount }).eq('id', session.user.id);
+        // Reset visuals from previous round
+        setGameResult(null);
+        setPlayerHand([]);
+        setDealerHand([]);
+        setPayoutProcessed(false);
+        // Deck will be reset in the 'dealing' useEffect
+
+        const { error } = await supabase.from('profiles').update({ balance: (profile.balance ?? 0) - betAmount }).eq('id', session.user.id);
         if (error) throw error;
         onProfileUpdate();
         
@@ -168,11 +168,11 @@ const BlackjackGamePage: React.FC<BlackjackGamePageProps> = ({ profile, session,
   };
 
   const handleDouble = async () => {
-     if (gameState !== 'player_turn' || playerHand.length !== 2 || !session || !profile || betAmount > Number(profile.balance)) return;
+     if (gameState !== 'player_turn' || playerHand.length !== 2 || !session || !profile || betAmount > (profile.balance ?? 0)) return;
      
      try {
         const newBet = betAmount * 2;
-        const { error } = await supabase.from('profiles').update({ balance: Number(profile.balance) - betAmount }).eq('id', session.user.id);
+        const { error } = await supabase.from('profiles').update({ balance: (profile.balance ?? 0) - betAmount }).eq('id', session.user.id);
         if (error) throw error;
         onProfileUpdate();
         setBetAmount(newBet);
@@ -228,8 +228,6 @@ const BlackjackGamePage: React.FC<BlackjackGamePageProps> = ({ profile, session,
     }
     
     setPayoutProcessed(true);
-    
-    let resetTimer: number;
 
     const determineWinnerAndPayout = async () => {
         let payout = 0; // This is the TOTAL amount to be returned to the user
@@ -269,6 +267,19 @@ const BlackjackGamePage: React.FC<BlackjackGamePageProps> = ({ profile, session,
         }
   
         setGameResult(result);
+
+        // Log game result for live feed
+        try {
+            await supabase.from('game_bets').insert({
+                user_id: session.user.id,
+                game_name: 'Blackjack',
+                bet_amount: betAmount,
+                payout: payout,
+                multiplier: payout > 0 ? payout / betAmount : 0,
+            });
+        } catch (logError) {
+            console.error("Error logging blackjack bet:", (logError as Error).message);
+        }
   
         if (payout > 0) {
           try {
@@ -281,7 +292,7 @@ const BlackjackGamePage: React.FC<BlackjackGamePageProps> = ({ profile, session,
               if (fetchError) throw fetchError;
               if (!currentProfile) throw new Error("Could not find user profile for payout.");
   
-              const currentBalance = Number(currentProfile.balance ?? 0);
+              const currentBalance = Number((currentProfile as any)?.balance ?? 0);
               const newBalance = currentBalance + payout;
   
               const { error: updateError } = await supabase
@@ -297,18 +308,14 @@ const BlackjackGamePage: React.FC<BlackjackGamePageProps> = ({ profile, session,
               onProfileUpdate();
             }
         }
-  
-        resetTimer = window.setTimeout(() => {
-          resetGame();
-        }, 4000);
+        
+        // After the round is finished, immediately allow the user to bet again.
+        setGameState('betting');
     };
 
     determineWinnerAndPayout();
-    
-    return () => {
-        if (resetTimer) clearTimeout(resetTimer);
-    }
-  }, [gameState, session, profile, playerHand, dealerHand, betAmount, resetGame, onProfileUpdate, payoutProcessed]);
+
+  }, [gameState, session, profile, playerHand, dealerHand, betAmount, onProfileUpdate, payoutProcessed]);
 
   return (
     <div className="flex w-full h-full justify-center items-center p-4" style={{
@@ -325,8 +332,8 @@ const BlackjackGamePage: React.FC<BlackjackGamePageProps> = ({ profile, session,
           onHit={handleHit}
           onStand={handleStand}
           onDouble={handleDouble}
-          canDouble={playerHand.length === 2 && Number(profile?.balance ?? 0) >= betAmount}
-          balance={Number(profile?.balance ?? 0)}
+          canDouble={playerHand.length === 2 && (profile?.balance ?? 0) >= betAmount}
+          balance={profile?.balance ?? 0}
         />
         <div className="relative rounded-lg flex flex-col justify-between items-center p-8">
             
@@ -337,7 +344,7 @@ const BlackjackGamePage: React.FC<BlackjackGamePageProps> = ({ profile, session,
                 dealerUpCardScore={dealerUpCardScore}
                 isDealer={true}
                 isTurn={gameState === 'dealer_turn'}
-                hideHoleCard={gameState !== 'dealer_turn' && gameState !== 'finished'}
+                hideHoleCard={gameState !== 'dealer_turn' && gameState !== 'finished' && gameResult === null}
             />
             
             {/* Game Info */}

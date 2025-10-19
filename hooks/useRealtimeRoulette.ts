@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import { RouletteRound, RouletteBet, RouletteColor, RouletteGameState, RouletteHistoryItem } from '../types';
 import { Session } from '@supabase/supabase-js';
+import { getNumberColor } from '../lib/rouletteUtils';
 
 const BETTING_TIME_MS = 15000;
 const SPINNING_TIME_MS = 5000;
@@ -68,6 +69,29 @@ export const useRealtimeRoulette = (session: Session | null, onProfileUpdate: ()
                 if (newRound.status === 'ended' && newRound.winning_number !== null && prevRound?.status !== 'ended') {
                      setHistory(h => [{ winning_number: newRound.winning_number! }, ...h].slice(0, 50));
                      onProfileUpdate(); // Re-fetch profile to get updated balance after payouts
+
+                     // Log game result for live feed
+                     if (session?.user?.id) {
+                        const userBetsForRound = allBets.filter(b => b.round_id === newRound.id && b.user_id === session.user.id);
+                        const winningColor = getNumberColor(newRound.winning_number!);
+
+                        userBetsForRound.forEach(bet => {
+                            const isWin = bet.bet_color === winningColor;
+                            const multiplier = isWin ? (winningColor === 'green' ? 14 : 2) : 0;
+                            const payout = bet.bet_amount * multiplier;
+
+                            supabase.from('game_bets').insert({
+                                user_id: session.user.id,
+                                game_name: 'Roulette',
+                                bet_amount: bet.bet_amount,
+                                payout: payout,
+                                multiplier: multiplier,
+                            }).then(({ error }) => {
+                                if (error) console.error("Error logging Roulette bet:", error.message);
+                            });
+                        });
+                    }
+
                      // Re-fetch all bets for the completed round to get final profit numbers
                      supabase.from('roulette_bets').select(`*, profiles(username, avatar_url)`).eq('round_id', newRound.id)
                         .then(({ data }) => {
@@ -86,7 +110,7 @@ export const useRealtimeRoulette = (session: Session | null, onProfileUpdate: ()
         return () => {
             supabase.removeChannel(roundChannel);
         };
-    }, [fetchInitialData, onProfileUpdate]);
+    }, [fetchInitialData, onProfileUpdate, session, allBets]);
     
     // Bets subscription - separate channel to handle just bets for the current round
     useEffect(() => {
