@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { SIDEBAR_NAV_ITEMS, SIDEBAR_BOTTOM_NAV_ITEMS } from '../constants';
 import { Logo, ChevronDownIcon } from './icons';
 import { SidebarNavItem } from '../types';
+import { SidebarLiveFeed } from './LiveStatsRail';
 
 
 interface SidebarProps {
@@ -49,7 +50,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, setIsSidebarOpe
       </div>
       
       <div className="flex flex-col flex-1 min-h-0">
-          <nav className="flex-1">
+          <nav>
             <ul className="space-y-2">
               {SIDEBAR_NAV_ITEMS.map(item => (
                 <NavItem 
@@ -63,7 +64,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, setIsSidebarOpe
             </ul>
           </nav>
           
-          <div className="flex-shrink-0 mt-4 pt-4 border-t border-border-color">
+          <SidebarLiveFeed isSidebarOpen={isSidebarOpen} />
+          
+          <div className="flex-shrink-0 mt-auto pt-4 border-t border-border-color">
             <ul className="space-y-2">
               {SIDEBAR_BOTTOM_NAV_ITEMS.map(item => (
                 <NavItem 
