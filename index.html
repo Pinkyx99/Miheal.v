@@ -344,6 +344,33 @@
       }
       /* END: Animated Google Button */
 
+      /* START: 16:9 Aspect Ratio Container */
+      html, body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        background-color: #000; /* Black background for pillar/letterboxing */
+        overflow: hidden; /* Prevent scrollbars from appearing on body */
+      }
+
+      body {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      #root {
+        width: 100vw;
+        height: calc(100vw * 9 / 16);
+        max-width: 100%;
+        max-height: 100vh;
+        aspect-ratio: 16 / 9;
+        position: relative;
+        background-color: #0a192f; /* Original background color */
+        overflow: hidden; /* Ensures content inside root doesn't spill out */
+      }
+      /* END: 16:9 Aspect Ratio Container */
+
     </style>
   <script type="importmap">
 {
@@ -351,12 +378,13 @@
     "react": "https://aistudiocdn.com/react@^19.2.0",
     "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
     "react/": "https://aistudiocdn.com/react@^19.2.0/",
-    "@supabase/supabase-js": "https://aistudiocdn.com/@supabase/supabase-js@^2.75.1"
+    "@supabase/supabase-js": "https://aistudiocdn.com/@supabase/supabase-js@^2.75.1",
+    "tslib": "https://aistudiocdn.com/tslib@^2.6.0"
   }
 }
 </script>
 </head>
-  <body class="bg-background">
+  <body class="">
     <div id="loading-screen" style="position: fixed; inset: 0; background-color: #0a192f; z-index: 9999; display: flex; align-items: center; justify-content: center; transition: opacity 0.5s ease-out;">
       <img src="https://i.imgur.com/6U31UIH.png" alt="Mihael.bet Logo" style="height: 6rem; animation: spin 1.5s linear infinite;" />
     </div>
