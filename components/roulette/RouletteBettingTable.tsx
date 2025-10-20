@@ -3,52 +3,77 @@ import { RouletteBet } from '../../types';
 import { getNumberColor } from '../../lib/rouletteUtils';
 
 type BetType = string;
-type BetsByType = Record<BetType, { total: number; players: RouletteBet[] }>;
+type TotalBetsByType = Record<BetType, { total: number; players: RouletteBet[] }>;
+type MyBetsByType = Record<BetType, { total: number }>;
 
 interface RouletteBettingTableProps {
     onBet: (betType: BetType) => void;
-    betsByType: BetsByType;
+    totalBetsByType: TotalBetsByType;
+    myBetsByType: MyBetsByType;
     disabled: boolean;
     winningNumber: number | null;
     selectedChip: number;
 }
 
-const Chip: React.FC<{ amount: number; isPreview?: boolean }> = ({ amount, isPreview }) => {
-    let colorClasses = 'bg-red-600 border-red-800';
-    if (amount >= 5) colorClasses = 'bg-blue-600 border-blue-800';
-    if (amount >= 25) colorClasses = 'bg-green-600 border-green-800';
-    if (amount >= 100) colorClasses = 'bg-gray-800 border-black';
-    if (amount >= 500) colorClasses = 'bg-purple-600 border-purple-800';
+const Chip: React.FC<{ amount: number; isPlayerChip?: boolean; isPreview?: boolean }> = ({ amount, isPlayerChip = false, isPreview = false }) => {
+    let colors = { bg: 'bg-red-500', highlight: 'bg-red-400', shadow: 'bg-red-700' };
+    if (amount >= 5) colors = { bg: 'bg-blue-500', highlight: 'bg-blue-400', shadow: 'bg-blue-700' };
+    if (amount >= 10) colors = { bg: 'bg-orange-500', highlight: 'bg-orange-400', shadow: 'bg-orange-700' };
+    if (amount >= 25) colors = { bg: 'bg-green-500', highlight: 'bg-green-400', shadow: 'bg-green-700' };
+    if (amount >= 100) colors = { bg: 'bg-gray-800', highlight: 'bg-gray-700', shadow: 'bg-black' };
+    if (amount >= 500) colors = { bg: 'bg-purple-600', highlight: 'bg-purple-500', shadow: 'bg-purple-800' };
 
     const formatAmount = (val: number): string => {
-        if (val >= 1000) return `${(val / 1000).toFixed(0)}k`;
-        return val.toString();
-    }
+        if (val >= 1000) return `${(val / 1000).toFixed(val % 1000 !== 0 ? 1 : 0)}k`;
+        return val.toFixed(2).replace(/\.00$/, '');
+    };
+
+    const chipSize = isPlayerChip ? 'w-12 h-12' : 'w-10 h-10';
+    const textSize = isPlayerChip ? 'text-sm' : 'text-xs';
 
     return (
-        <div className={`
-            w-8 h-8 rounded-full flex items-center justify-center font-bold text-white text-[10px]
-            border-[3px] shadow-lg transform transition-all duration-200
-            ${colorClasses} ${isPreview ? 'opacity-70 scale-90' : 'scale-100'}
-        `}>
-            <div className="w-full h-full rounded-full border border-white/30 flex items-center justify-center backdrop-blur-sm">
-                ${formatAmount(amount)}
+        <div 
+            className={`relative ${chipSize} rounded-full transition-all duration-300 ${isPreview ? 'opacity-70 scale-90' : 'scale-100'}`}
+            style={{ filter: 'drop-shadow(0 2px 3px rgba(0,0,0,0.5))' }}
+        >
+            <div className={`absolute inset-0 rounded-full ${colors.shadow} transform translate-y-0.5`}></div>
+            <div className={`absolute inset-0 rounded-full ${colors.bg}`}></div>
+            <div className="absolute inset-1 sm:inset-1.5 rounded-full border-2 border-white/80"></div>
+            <div className={`absolute top-1 left-1 w-3 h-3 sm:w-4 sm:h-4 rounded-full ${colors.highlight} opacity-70 blur-sm`}></div>
+            <div className="absolute inset-0 flex items-center justify-center">
+                <span className={`font-black text-white ${textSize}`} style={{ textShadow: '0 1px 2px rgba(0,0,0,0.7)' }}>
+                    ${formatAmount(amount)}
+                </span>
             </div>
+            {isPlayerChip && (
+                 <div className="absolute -top-1 -right-1 w-4 h-4 bg-primary rounded-full border-2 border-background flex items-center justify-center text-background font-bold text-[8px] leading-none">
+                     P
+                 </div>
+            )}
         </div>
     );
 };
+
 
 const BetSpot: React.FC<{
     betType: BetType;
     label: string | React.ReactNode;
     onBet: (betType: BetType) => void;
-    bets: { total: number };
+    totalBet: { total: number } | undefined;
+    myBet: { total: number } | undefined;
     disabled: boolean;
     isWinner: boolean;
     className?: string;
     selectedChip: number;
-}> = ({ betType, label, onBet, bets, disabled, isWinner, className, selectedChip }) => {
+}> = ({ betType, label, onBet, totalBet, myBet, disabled, isWinner, className, selectedChip }) => {
     
+    const myBetAmount = myBet?.total ?? 0;
+    const totalBetAmount = totalBet?.total ?? 0;
+    const otherPlayersBetAmount = totalBetAmount - myBetAmount;
+
+    const showMyBet = myBetAmount > 0;
+    const showOtherPlayersBet = otherPlayersBetAmount > 0;
+
     let specificClasses = 'bg-black/20 backdrop-blur-sm text-white';
     let labelClasses = 'font-bold text-base';
 
@@ -70,7 +95,6 @@ const BetSpot: React.FC<{
         labelClasses += ' tracking-wider';
     }
 
-
     return (
         <button
             onClick={() => onBet(betType)}
@@ -82,14 +106,27 @@ const BetSpot: React.FC<{
                 ${isWinner ? 'winner-glow' : ''} ${specificClasses} ${className}
             `}
         >
-            <span className={labelClasses}>{label}</span>
+            {/* Hide label if chips are present to avoid overlap */}
+            <span className={`${(showMyBet || showOtherPlayersBet) ? 'opacity-20' : ''} ${labelClasses}`}>{label}</span>
             
-            {bets && (
+            {(showMyBet || showOtherPlayersBet) && (
                 <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
-                    <Chip amount={bets.total} />
+                    <div className="relative w-24 h-12 flex items-center justify-center">
+                        {showOtherPlayersBet && (
+                            <div className="absolute transition-transform duration-200" style={{ transform: showMyBet ? 'translateX(-12px)' : 'translateX(0)' }}>
+                                <Chip amount={otherPlayersBetAmount} />
+                            </div>
+                        )}
+                        {showMyBet && (
+                            <div className="absolute transition-transform duration-200" style={{ transform: showOtherPlayersBet ? 'translateX(12px)' : 'translateX(0)' }}>
+                                <Chip amount={myBetAmount} isPlayerChip={true} />
+                            </div>
+                        )}
+                    </div>
                 </div>
             )}
-            {!bets && !disabled && (
+            
+            {!showMyBet && !showOtherPlayersBet && !disabled && (
                 <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 z-20 pointer-events-none">
                     <Chip amount={selectedChip} isPreview={true} />
                 </div>
@@ -98,7 +135,7 @@ const BetSpot: React.FC<{
     );
 };
 
-export const RouletteBettingTable: React.FC<RouletteBettingTableProps> = ({ onBet, betsByType, disabled, winningNumber, selectedChip }) => {
+export const RouletteBettingTable: React.FC<RouletteBettingTableProps> = ({ onBet, totalBetsByType, myBetsByType, disabled, winningNumber, selectedChip }) => {
     const numbers = Array.from({ length: 36 }, (_, i) => i + 1);
     const row3Numbers = numbers.filter(n => n % 3 === 0).sort((a, b) => a - b);
     const row2Numbers = numbers.filter(n => n % 3 === 2).sort((a, b) => a - b);
@@ -131,7 +168,8 @@ export const RouletteBettingTable: React.FC<RouletteBettingTableProps> = ({ onBe
     const commonProps = (betType: string) => ({
         betType,
         onBet,
-        bets: betsByType[betType],
+        totalBet: totalBetsByType[betType],
+        myBet: myBetsByType[betType],
         disabled,
         isWinner: isWinner(betType),
         selectedChip

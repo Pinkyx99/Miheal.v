@@ -42,7 +42,19 @@ const RouletteGamePage: React.FC<RouletteGamePageProps> = ({ onNavigate, profile
     
     const previousWinningNumber = history[0]?.winning_number ?? ROULETTE_ORDER[0];
 
-    const betsByType = useMemo(() => {
+    const myBets = useMemo(() => allBets.filter(b => b.user_id === session?.user?.id), [allBets, session]);
+
+    const myBetsByType = useMemo(() => {
+        return myBets.reduce<Record<string, { total: number }>>((acc, bet) => {
+            if (!acc[bet.bet_type]) {
+                acc[bet.bet_type] = { total: 0 };
+            }
+            acc[bet.bet_type].total += bet.bet_amount;
+            return acc;
+        }, {});
+    }, [myBets]);
+
+    const totalBetsByType = useMemo(() => {
         return allBets.reduce<Record<string, { total: number, players: RouletteBet[] }>>((acc, bet) => {
             if (!acc[bet.bet_type]) {
                 acc[bet.bet_type] = { total: 0, players: [] };
@@ -52,8 +64,6 @@ const RouletteGamePage: React.FC<RouletteGamePageProps> = ({ onNavigate, profile
             return acc;
         }, {});
     }, [allBets]);
-
-    const myBets = useMemo(() => allBets.filter(b => b.user_id === session?.user?.id), [allBets, session]);
 
     return (
         <div className="flex flex-col flex-1 w-full max-w-[1600px] mx-auto px-4 py-6">
@@ -73,7 +83,8 @@ const RouletteGamePage: React.FC<RouletteGamePageProps> = ({ onNavigate, profile
             <div className="space-y-6">
                 <RouletteBettingTable 
                     onBet={handlePlaceBet}
-                    betsByType={betsByType}
+                    totalBetsByType={totalBetsByType}
+                    myBetsByType={myBetsByType}
                     disabled={gameState !== 'betting'}
                     winningNumber={gameState === 'ended' ? winningNumber : null}
                     selectedChip={selectedChip}
