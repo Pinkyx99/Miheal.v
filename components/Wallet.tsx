@@ -45,7 +45,7 @@ export const Wallet: React.FC<WalletProps> = ({ onWalletButtonClick, balance }) 
 
             <button
                 onClick={onWalletButtonClick}
-                className="bg-primary text-background font-semibold px-6 py-2 rounded-md text-sm transition-transform duration-200 hover:scale-105 active:scale-100"
+                className="bg-primary text-background font-semibold px-5 py-2 rounded-md text-sm transition-transform duration-200 hover:scale-105 active:scale-100"
             >
                 Wallet
             </button>
