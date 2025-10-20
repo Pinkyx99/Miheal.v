@@ -222,13 +222,13 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className={`h-screen font-sans text-text-main transition-colors duration-300 ${getAppBgClass()}`}>
+    <div className={`h-full font-sans text-text-main transition-colors duration-300 ${getAppBgClass()}`}>
       <AuthModal show={showAuthModal} onClose={() => setShowAuthModal(false)} view={authView} setView={setAuthView} />
       <WalletModal show={isWalletModalOpen} onClose={() => setIsWalletModalOpen(false)} />
       <UserProfileModal userId={viewingProfileId} onClose={() => setViewingProfileId(null)} />
       <AdminPage show={isAdminPanelOpen} onClose={() => setIsAdminPanelOpen(false)} profile={profile} />
 
-      <div className="flex h-screen">
+      <div className="flex h-full">
           <Sidebar isSidebarOpen={isSidebarOpen} setIsSidebarOpen={setIsSidebarOpen} onNavigate={(page) => navigateTo(page as View)} currentView={currentView} />
           <div className="flex-1 min-w-0 flex flex-col">
               <Header session={session} profile={profile} onSignInClick={() => openAuthModal('signIn')} onSignUpClick={() => openAuthModal('signUp')} onWalletButtonClick={() => setIsWalletModalOpen(true)} onNavigate={(page) => navigateTo(page as View)} currentView={currentView} onChatToggle={() => setIsChatOpen(true)} onProfileUpdate={handleProfileUpdate} onOpenAdminPanel={() => setIsAdminPanelOpen(true)} />
@@ -238,7 +238,7 @@ const App: React.FC = () => {
           </div>
           
           <div className="hidden xl:block w-[320px] flex-shrink-0">
-            <div className="sticky top-0 h-screen">
+            <div className="sticky top-0 h-full">
                 <ChatRail session={session} profile={profile} onViewProfile={setViewingProfileId} />
             </div>
           </div>

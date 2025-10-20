@@ -86,7 +86,7 @@ export interface RouletteBet {
     user_id: string;
     round_id: string;
     bet_amount: number;
-    bet_color: RouletteColor;
+    bet_type: string; // e.g. 'number_7', 'red', 'column_1'
     profit: number | null;
     profiles: {
         username: string;

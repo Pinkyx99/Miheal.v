@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { RouletteGameState } from '../../types';
 import { MutedSoundIcon, InfoCircleIcon, CheckCircleIcon } from '../icons';
@@ -100,50 +101,56 @@ export const RouletteSpinner: React.FC<RouletteSpinnerProps> = ({ gameState, win
         setReel(Array.from({ length: ROULETTE_ORDER.length * REEL_CYCLES }, (_, i) => ROULETTE_ORDER[i % ROULETTE_ORDER.length]));
     }, []);
     
-    const getTranslateForIndex = useCallback((index: number): number => {
+    const getTranslateForIndex = useCallback((index: number, wobble = 0): number => {
         if (viewportWidth === 0) return 0;
         const centerOffset = viewportWidth / 2 - TILE_WIDTH / 2;
         const targetPosition = index * TILE_STEP;
-        return centerOffset - targetPosition;
+        return centerOffset - targetPosition + wobble;
     }, [viewportWidth]);
 
     useEffect(() => {
         if (reel.length === 0 || viewportWidth === 0) return;
         if (snapTimerRef.current) clearTimeout(snapTimerRef.current);
-
-        // This is the trigger: the game just finished its server-side spin.
-        const justFinishedSpinning = prevGameState === 'spinning' && gameState === 'ended';
-
-        if (justFinishedSpinning && winningNumber !== null) {
+    
+        // This is the trigger: when the game transitions from betting to spinning.
+        const justStartedSpinning = (prevGameState === 'betting' || !prevGameState) && gameState === 'spinning';
+    
+        if (justStartedSpinning && winningNumber !== null) {
             // We have the result. Animate the landing now.
             const targetCycle = 45;
             const targetIndexInOrder = ROULETTE_ORDER.indexOf(winningNumber);
             if (targetIndexInOrder === -1) return;
-
+    
             const targetIndex = (targetCycle * ROULETTE_ORDER.length) + targetIndexInOrder;
-            const finalTranslate = getTranslateForIndex(targetIndex);
-
+            
+            // Add a random wobble for visual effect, which will be corrected on snap
+            const wobble = (Math.random() - 0.5) * (TILE_WIDTH * 0.4);
+            const finalTranslate = getTranslateForIndex(targetIndex, wobble);
+    
             setIsAnimating(true); // Enable CSS transition
             setTranslateX(finalTranslate);
-
-            // Clean up animation flag after the transition ends
+    
+            // After the animation duration, snap to the perfect position without wobble.
+            // This is more reliable than using onTransitionEnd events.
             snapTimerRef.current = window.setTimeout(() => {
-                setIsAnimating(false);
-            }, 5000); // 4500ms animation + 500ms buffer
-
+                const perfectTranslate = getTranslateForIndex(targetIndex, 0);
+                setIsAnimating(false); // Disable animation for the final snap
+                setTranslateX(perfectTranslate);
+            }, 5000); // Animation is 4.5s, 5s gives a safe buffer.
+    
         } else if (gameState === 'betting') {
             // In betting phase, rest on the previous winner without animation.
             const restingCycle = 5;
             const prevWinnerIdx = ROULETTE_ORDER.indexOf(previousWinningNumber);
             if (prevWinnerIdx === -1) return;
             const restingIndex = (restingCycle * ROULETTE_ORDER.length) + prevWinnerIdx;
-
+    
             setIsAnimating(false);
             setTranslateX(getTranslateForIndex(restingIndex));
-
+    
         } else if (gameState === 'ended' && winningNumber !== null) {
-            // Handles cases where the component loads/re-renders directly into an 'ended' state.
-            // Snap directly to the winning number to ensure correctness.
+            // This handles cases where the component loads directly into an 'ended' state,
+            // or to ensure it's perfectly snapped after animation.
             const targetCycle = 45; // Use same cycle as spin to prevent visual jumps on re-render
             const winnerIdx = ROULETTE_ORDER.indexOf(winningNumber);
             if (winnerIdx === -1) return;
@@ -153,10 +160,6 @@ export const RouletteSpinner: React.FC<RouletteSpinnerProps> = ({ gameState, win
             setTranslateX(getTranslateForIndex(restingIndex));
         }
         
-        // During the 'spinning' state, the reel remains visually on the previous winner.
-        // The animation is triggered by the transition *from* 'spinning' *to* 'ended'.
-        // This ensures we animate to the correct, known winning number.
-
     }, [gameState, winningNumber, previousWinningNumber, reel, viewportWidth, getTranslateForIndex, prevGameState]);
     
     return (

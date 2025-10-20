@@ -1,80 +1,71 @@
-
 import React from 'react';
-import { RouletteGameState } from '../../types';
-import { Switch } from '../profile/shared/Switch';
 
 interface RouletteControlsProps {
-    betAmount: number;
-    setBetAmount: (amount: number) => void;
-    balance: number;
-    gameState: RouletteGameState | null;
+    selectedChip: number;
+    setSelectedChip: (amount: number) => void;
+    onUndo: () => void;
+    onClear: () => void;
+    myBetsCount: number;
+    disabled: boolean;
 }
 
-const ControlButton: React.FC<{
-    onClick: () => void;
-    disabled: boolean;
-    children: React.ReactNode;
-    className?: string;
-}> = ({ onClick, disabled, children, className = '' }) => (
-    <button
-        onClick={onClick}
-        disabled={disabled}
-        className={`h-11 px-3 bg-[#212832] text-text-muted text-xs font-bold rounded-md hover:bg-white/10 disabled:opacity-50 disabled:cursor-not-allowed transition ${className}`}
-    >
-        {children}
-    </button>
-);
+const CHIP_VALUES = [1, 5, 10, 25, 100, 500];
 
-export const RouletteControls: React.FC<RouletteControlsProps> = ({ betAmount, setBetAmount, balance, gameState }) => {
-
-    const handleBetChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const val = parseFloat(e.target.value);
-        if (val < 0) return;
-        setBetAmount(isNaN(val) ? 0 : val);
-    };
-
-    const handleModifier = (action: 'clear' | '1/2' | 'x2' | 'max') => {
-        switch(action) {
-            case 'clear': setBetAmount(0.01); break;
-            case '1/2': setBetAmount(Math.max(0.01, parseFloat((betAmount / 2).toFixed(2)))); break;
-            case 'x2': setBetAmount(parseFloat((betAmount * 2).toFixed(2))); break;
-            case 'max': setBetAmount(balance); break;
-        }
-    };
-
-    const isBettingDisabled = gameState !== 'betting';
+const Chip: React.FC<{ value: number; isSelected: boolean; onClick: () => void }> = ({ value, isSelected, onClick }) => {
+    let colorClasses = 'bg-red-600 border-red-800 text-white';
+    if (value >= 5) colorClasses = 'bg-blue-600 border-blue-800 text-white';
+    if (value >= 25) colorClasses = 'bg-green-600 border-green-800 text-white';
+    if (value >= 100) colorClasses = 'bg-black border-gray-600 text-white';
+    if (value >= 500) colorClasses = 'bg-purple-600 border-purple-800 text-white';
 
     return (
+        <button 
+            onClick={onClick}
+            className={`
+                relative w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center font-bold text-xs
+                transition-all duration-200 border-4 shadow-md
+                ${colorClasses}
+                ${isSelected ? 'scale-110 ring-4 ring-primary ring-offset-2 ring-offset-[#1A222D]' : 'hover:scale-105 hover:-translate-y-1'}
+            `}
+        >
+            <div className="w-full h-full rounded-full border-2 border-white/30 flex items-center justify-center backdrop-blur-sm">
+                ${value < 1000 ? value : `${value/1000}k`}
+            </div>
+        </button>
+    );
+};
+
+export const RouletteControls: React.FC<RouletteControlsProps> = ({ selectedChip, setSelectedChip, onUndo, onClear, myBetsCount, disabled }) => {
+    return (
         <div className="bg-[#1A222D] p-3 rounded-xl border border-outline">
-            <div className="flex flex-wrap items-center gap-3">
-                {/* Bet Amount Input */}
-                <div className="flex-grow flex-shrink-0 basis-full sm:basis-48">
-                    <label className="text-xs font-semibold text-text-muted mb-1 block">Your bet</label>
-                    <div className="relative">
-                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-lg font-bold text-accent-green">$</span>
-                        <input
-                            type="number"
-                            value={betAmount.toFixed(2)}
-                            onChange={handleBetChange}
-                            disabled={isBettingDisabled}
-                            className="w-full h-11 bg-[#0D1316] border border-outline rounded-lg py-2.5 pl-8 pr-16 text-white font-semibold text-base focus:ring-1 focus:ring-accent-green focus:outline-none disabled:opacity-60"
-                        />
-                         <div className="absolute inset-y-0 right-0 flex items-center pr-2">
-                            <button onClick={() => handleModifier('clear')} disabled={isBettingDisabled} className="px-2 text-xs font-bold rounded text-gray-400 hover:bg-white/10 hover:text-white transition-colors">Clear</button>
-                        </div>
-                    </div>
+            <div className="grid grid-cols-3 items-center gap-4">
+                <div className="flex items-center space-x-3 justify-start">
+                    <button 
+                        onClick={onUndo} 
+                        disabled={disabled || myBetsCount === 0}
+                        className="px-4 py-2 bg-[#212832] text-text-muted text-sm font-bold rounded-md hover:bg-white/10 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        Undo
+                    </button>
+                    <button 
+                        onClick={onClear} 
+                        disabled={disabled || myBetsCount === 0}
+                        className="px-4 py-2 bg-[#212832] text-text-muted text-sm font-bold rounded-md hover:bg-white/10 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        Clear
+                    </button>
                 </div>
 
-                {/* Modifier Buttons */}
-                <div className="flex-grow flex-shrink basis-auto flex items-end space-x-2">
-                     <ControlButton onClick={() => handleModifier('1/2')} disabled={isBettingDisabled}>1/2</ControlButton>
-                     <ControlButton onClick={() => handleModifier('x2')} disabled={isBettingDisabled}>x2</ControlButton>
-                     <ControlButton onClick={() => handleModifier('max')} disabled={isBettingDisabled} className="bg-green-600/50 text-white">Max</ControlButton>
+                <div className="flex items-center justify-center space-x-2 sm:space-x-3">
+                    {CHIP_VALUES.map(value => (
+                        <Chip key={value} value={value} isSelected={selectedChip === value} onClick={() => setSelectedChip(value)} />
+                    ))}
                 </div>
-                 <div className="flex items-center space-x-2 ml-auto">
-                    <label htmlFor="autobet" className="text-sm font-semibold text-text-muted">Auto Bet</label>
-                    <Switch />
-                 </div>
+                
+                <div className="flex items-center space-x-3 justify-end">
+                    <button disabled={disabled} className="px-4 py-2 bg-[#212832] text-text-muted text-sm font-bold rounded-md hover:bg-white/10 disabled:opacity-50">x2</button>
+                    <button disabled={disabled} className="px-4 py-2 bg-[#212832] text-text-muted text-sm font-bold rounded-md hover:bg-white/10 disabled:opacity-50">Rebet</button>
+                </div>
             </div>
         </div>
     );
