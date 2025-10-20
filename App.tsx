@@ -223,16 +223,12 @@ const App: React.FC = () => {
 
   return (
     <div className={`h-full font-sans text-text-main relative transition-colors duration-300 ${getGamePageSpecificClass()}`}>
-        <video
-            autoPlay
-            loop
-            muted
-            playsInline
+        <img
+            src="https://i.imgur.com/jIkaYLb.jpeg"
+            alt=""
+            aria-hidden="true"
             className={`absolute top-0 left-0 w-full h-full object-cover -z-10 transition-opacity duration-700 ${currentView === 'home' ? 'opacity-100' : 'opacity-0'}`}
-            title="background-video"
-        >
-            <source src="https://i.imgur.com/vEkEIzN.mp4" type="video/mp4" />
-        </video>
+        />
         <div className={`absolute inset-0 bg-black/60 -z-10 transition-opacity duration-700 ${currentView === 'home' ? 'opacity-100' : 'opacity-0'}`}></div>
 
       <AuthModal show={showAuthModal} onClose={() => setShowAuthModal(false)} view={authView} setView={setAuthView} />
