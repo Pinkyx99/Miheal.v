@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import { Profile } from '../types';
 import { Session } from '@supabase/supabase-js';
@@ -173,7 +172,8 @@ const KenoGamePage: React.FC<KenoGamePageProps> = ({ profile, session, onProfile
                 // Safely convert balance to a number to prevent type errors.
                 // FIX: `currentProfile.balance` can be of an `unknown` type from the API response.
                 // Casting to `any` and using the nullish coalescing operator ensures we handle `null`, `undefined`, and `unknown` types correctly.
-                const currentBalance = Number((currentProfile as any).balance ?? 0);
+                // Fix: Safely convert balance to a number before performing arithmetic operations to prevent a type error.
+                const currentBalance = Number((currentProfile as any)?.balance ?? 0);
                 const newBalance = currentBalance + payout;
                 const { error: payoutError } = await supabase.from('profiles').update({ balance: newBalance }).eq('id', session.user.id);
                 if (payoutError) throw payoutError;
