@@ -3,6 +3,15 @@ import { RouletteGameState } from '../../types';
 import { MutedSoundIcon, InfoCircleIcon, CheckCircleIcon } from '../icons';
 import { ROULETTE_ORDER, TILE_WIDTH, TILE_STEP, getNumberColorClass } from '../../lib/rouletteUtils';
 
+// Helper hook to get the previous value of a prop or state
+function usePrevious<T>(value: T): T | undefined {
+  const ref = useRef<T>();
+  useEffect(() => {
+    ref.current = value;
+  });
+  return ref.current;
+}
+
 interface RouletteSpinnerProps {
     gameState: RouletteGameState | null;
     winningNumber: number | null;
@@ -76,8 +85,8 @@ export const RouletteSpinner: React.FC<RouletteSpinnerProps> = ({ gameState, win
     
     const viewportRef = useRef<HTMLDivElement>(null);
     const snapTimerRef = useRef<number | null>(null);
-    const hasSpunForRound = useRef(false);
     const [viewportWidth, setViewportWidth] = useState(0);
+    const prevGameState = usePrevious(gameState);
 
     useEffect(() => {
         const handleResize = () => viewportRef.current && setViewportWidth(viewportRef.current.offsetWidth);
@@ -86,12 +95,6 @@ export const RouletteSpinner: React.FC<RouletteSpinnerProps> = ({ gameState, win
         return () => window.removeEventListener('resize', handleResize);
     }, []);
     
-    useEffect(() => {
-        if (gameState === 'betting') {
-            hasSpunForRound.current = false;
-        }
-    }, [gameState]);
-
     useEffect(() => {
         const REEL_CYCLES = 60;
         setReel(Array.from({ length: ROULETTE_ORDER.length * REEL_CYCLES }, (_, i) => ROULETTE_ORDER[i % ROULETTE_ORDER.length]));
@@ -108,37 +111,53 @@ export const RouletteSpinner: React.FC<RouletteSpinnerProps> = ({ gameState, win
         if (reel.length === 0 || viewportWidth === 0) return;
         if (snapTimerRef.current) clearTimeout(snapTimerRef.current);
 
-        if (gameState === 'spinning' && winningNumber !== null && !hasSpunForRound.current) {
-            hasSpunForRound.current = true;
-            
-            const targetCycle = 45; 
+        // This is the trigger: the game just finished its server-side spin.
+        const justFinishedSpinning = prevGameState === 'spinning' && gameState === 'ended';
+
+        if (justFinishedSpinning && winningNumber !== null) {
+            // We have the result. Animate the landing now.
+            const targetCycle = 45;
             const targetIndexInOrder = ROULETTE_ORDER.indexOf(winningNumber);
             if (targetIndexInOrder === -1) return;
 
             const targetIndex = (targetCycle * ROULETTE_ORDER.length) + targetIndexInOrder;
-            
             const finalTranslate = getTranslateForIndex(targetIndex);
-            
-            setIsAnimating(true);
+
+            setIsAnimating(true); // Enable CSS transition
             setTranslateX(finalTranslate);
 
+            // Clean up animation flag after the transition ends
             snapTimerRef.current = window.setTimeout(() => {
-                 setIsAnimating(false);
-            }, 5000);
+                setIsAnimating(false);
+            }, 5000); // 4500ms animation + 500ms buffer
 
-        } else if (!hasSpunForRound.current) {
-            const restingIndexNumber = (gameState === 'ended' && winningNumber !== null) ? winningNumber : previousWinningNumber;
-            const restingCycle = 5; 
-            const prevWinnerIdx = ROULETTE_ORDER.indexOf(restingIndexNumber);
+        } else if (gameState === 'betting') {
+            // In betting phase, rest on the previous winner without animation.
+            const restingCycle = 5;
+            const prevWinnerIdx = ROULETTE_ORDER.indexOf(previousWinningNumber);
             if (prevWinnerIdx === -1) return;
-
             const restingIndex = (restingCycle * ROULETTE_ORDER.length) + prevWinnerIdx;
+
+            setIsAnimating(false);
+            setTranslateX(getTranslateForIndex(restingIndex));
+
+        } else if (gameState === 'ended' && winningNumber !== null) {
+            // Handles cases where the component loads/re-renders directly into an 'ended' state.
+            // Snap directly to the winning number to ensure correctness.
+            const targetCycle = 45; // Use same cycle as spin to prevent visual jumps on re-render
+            const winnerIdx = ROULETTE_ORDER.indexOf(winningNumber);
+            if (winnerIdx === -1) return;
+            const restingIndex = (targetCycle * ROULETTE_ORDER.length) + winnerIdx;
             
             setIsAnimating(false);
             setTranslateX(getTranslateForIndex(restingIndex));
         }
+        
+        // During the 'spinning' state, the reel remains visually on the previous winner.
+        // The animation is triggered by the transition *from* 'spinning' *to* 'ended'.
+        // This ensures we animate to the correct, known winning number.
 
-    }, [gameState, winningNumber, previousWinningNumber, reel, viewportWidth, getTranslateForIndex]);
+    }, [gameState, winningNumber, previousWinningNumber, reel, viewportWidth, getTranslateForIndex, prevGameState]);
     
     return (
         <div className="bg-card pt-4 rounded-xl border border-outline relative overflow-hidden shadow-lg bg-gradient-to-b from-[#1A222D] to-[#12181F]">
