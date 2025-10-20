@@ -35,6 +35,53 @@ const App: React.FC = () => {
   const [viewingProfileId, setViewingProfileId] = useState<string | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isAdminPanelOpen, setIsAdminPanelOpen] = useState(false);
+  
+  const [activeVideoIndex, setActiveVideoIndex] = useState(0);
+  const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
+  const videos = ['https://i.imgur.com/vEkEIzN.mp4', 'https://i.imgur.com/hk3R808.mp4'];
+
+  const handleVideoEnded = useCallback(() => {
+    setActiveVideoIndex(prevIndex => (prevIndex + 1) % videos.length);
+  }, [videos.length]);
+
+  useEffect(() => {
+    // This effect handles the entire video lifecycle based on view and active index.
+    if (currentView !== 'home') {
+      // If we navigate away, pause all videos to prevent errors and background playback.
+      videoRefs.current.forEach(v => v?.pause());
+      return; // Exit early.
+    }
+
+    // If we are on the home page, manage video playback.
+    const activeVideo = videoRefs.current[activeVideoIndex];
+    if (activeVideo) {
+      activeVideo.currentTime = 0; // Always start from the beginning.
+      const playPromise = activeVideo.play();
+      if (playPromise !== undefined) {
+        playPromise.catch(e => {
+          // AbortError is expected if the user navigates away quickly.
+          if (e.name !== 'AbortError') {
+            console.error("Error playing video:", e);
+          }
+        });
+      }
+    }
+    
+    // Explicitly pause the other, non-active video.
+    const inactiveVideo = videoRefs.current[(activeVideoIndex + 1) % videos.length];
+    if (inactiveVideo) {
+      inactiveVideo.pause();
+    }
+    
+    // The cleanup function is crucial. It runs before the effect runs again
+    // (e.g., on view change), pausing the video and preventing interruption errors.
+    return () => {
+        if (activeVideo) {
+            activeVideo.pause();
+        }
+    }
+  }, [currentView, activeVideoIndex]);
+
 
   // Hide loading screen on initial app load
   useEffect(() => {
@@ -226,16 +273,19 @@ const App: React.FC = () => {
       {/* Background Layer */}
       {currentView === 'home' && (
         <div className="absolute inset-0 z-0 overflow-hidden">
-            <video
-              autoPlay
-              loop
-              muted
-              playsInline
-              className="absolute top-1/2 left-1/2 w-auto min-w-full min-h-full max-w-none -translate-x-1/2 -translate-y-1/2"
-              src="https://i.imgur.com/vEkEIzN.mp4"
-            >
-              <source src="https://i.imgur.com/vEkEIzN.mp4" type="video/mp4" />
-            </video>
+           {videos.map((url, index) => (
+              <video
+                  key={url}
+                  ref={el => videoRefs.current[index] = el}
+                  playsInline
+                  muted
+                  preload="auto"
+                  onEnded={index === activeVideoIndex ? handleVideoEnded : undefined}
+                  className={`absolute top-1/2 left-1/2 w-auto min-w-full min-h-full max-w-none -translate-x-1/2 -translate-y-1/2 transition-opacity duration-1000 ${activeVideoIndex === index ? 'opacity-100' : 'opacity-0'}`}
+              >
+                  <source src={url} type="video/mp4" />
+              </video>
+           ))}
             <div className="absolute inset-0 bg-black/60" />
         </div>
       )}
