@@ -217,47 +217,57 @@ const App: React.FC = () => {
         case 'dice': return 'bg-[#081018]';
         case 'mines': return 'bg-[#0b1016]';
         case 'blackjack': return 'bg-[#081018]';
-        default: return '';
+        default: return 'bg-transparent';
     }
   }
-  
-  const homeBgStyle = currentView === 'home' ? {
-      backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('https://i.imgur.com/jIkaYLb.jpeg')`,
-      backgroundSize: 'cover',
-      backgroundPosition: 'center',
-      backgroundRepeat: 'no-repeat',
-  } : {};
 
   return (
-    <div 
-        className={`h-full font-sans text-text-main relative transition-all duration-700 ${getGamePageSpecificClass()}`}
-        style={homeBgStyle}
-    >
-      <AuthModal show={showAuthModal} onClose={() => setShowAuthModal(false)} view={authView} setView={setAuthView} />
-      <WalletModal show={isWalletModalOpen} onClose={() => setIsWalletModalOpen(false)} />
-      <UserProfileModal userId={viewingProfileId} onClose={() => setViewingProfileId(null)} />
-      <AdminPage show={isAdminPanelOpen} onClose={() => setIsAdminPanelOpen(false)} profile={profile} />
-
-      {/* Sidebar and its backdrop */}
-      <div 
-          className={`fixed inset-0 bg-black/60 z-30 transition-opacity duration-300 ${isSidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
-          onClick={() => setIsSidebarOpen(false)}
-      />
-      <Sidebar isSidebarOpen={isSidebarOpen} onNavigate={(page) => { navigateTo(page as View); setIsSidebarOpen(false); }} currentView={currentView} />
-
-      <div className="flex flex-col h-full">
-          <Header session={session} profile={profile} onSignInClick={() => openAuthModal('signIn')} onSignUpClick={() => openAuthModal('signUp')} onWalletButtonClick={() => setIsWalletModalOpen(true)} onNavigate={(page) => navigateTo(page as View)} currentView={currentView} onChatToggle={() => setIsChatOpen(true)} onProfileUpdate={handleProfileUpdate} onOpenAdminPanel={() => setIsAdminPanelOpen(true)} onSidebarToggle={() => setIsSidebarOpen(true)} />
-          <main className={`flex-1 overflow-y-auto no-scrollbar p-6 lg:p-8 ${currentView === 'home' ? 'flex flex-col justify-center' : ''}`}>
-            {renderMainContent()}
-          </main>
-      </div>
+    <div className="h-full font-sans text-text-main relative">
+      {/* Background Layer */}
+      {currentView === 'home' && (
+        <div className="absolute inset-0 z-0 overflow-hidden">
+            <video
+              autoPlay
+              loop
+              muted
+              playsInline
+              className="absolute top-1/2 left-1/2 w-auto min-w-full min-h-full max-w-none -translate-x-1/2 -translate-y-1/2"
+              src="https://i.imgur.com/vEkEIzN.mp4"
+            >
+              <source src="https://i.imgur.com/vEkEIzN.mp4" type="video/mp4" />
+            </video>
+            <div className="absolute inset-0 bg-black/60" />
+        </div>
+      )}
       
-      {/* Chat Overlay for all screen sizes */}
-      <div className={`fixed inset-0 z-40 transform transition-transform duration-300 ease-in-out ${ isChatOpen ? 'translate-x-0' : 'translate-x-full'}`}>
-          <div className="absolute inset-0 bg-black/50" onClick={() => setIsChatOpen(false)}></div>
-          <div className="relative w-[320px] h-full float-right">
-            <ChatRail session={session} profile={profile} onClose={() => setIsChatOpen(false)} onViewProfile={setViewingProfileId} />
-          </div>
+      {/* Content & UI Layer */}
+      <div className={`relative z-10 h-full w-full transition-colors duration-700 ${getGamePageSpecificClass()}`}>
+        <AuthModal show={showAuthModal} onClose={() => setShowAuthModal(false)} view={authView} setView={setAuthView} />
+        <WalletModal show={isWalletModalOpen} onClose={() => setIsWalletModalOpen(false)} />
+        <UserProfileModal userId={viewingProfileId} onClose={() => setViewingProfileId(null)} />
+        <AdminPage show={isAdminPanelOpen} onClose={() => setIsAdminPanelOpen(false)} profile={profile} />
+
+        {/* Sidebar and its backdrop */}
+        <div 
+            className={`fixed inset-0 bg-black/60 z-30 transition-opacity duration-300 ${isSidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+            onClick={() => setIsSidebarOpen(false)}
+        />
+        <Sidebar isSidebarOpen={isSidebarOpen} onNavigate={(page) => { navigateTo(page as View); setIsSidebarOpen(false); }} currentView={currentView} />
+
+        <div className="flex flex-col h-full">
+            <Header session={session} profile={profile} onSignInClick={() => openAuthModal('signIn')} onSignUpClick={() => openAuthModal('signUp')} onWalletButtonClick={() => setIsWalletModalOpen(true)} onNavigate={(page) => navigateTo(page as View)} currentView={currentView} onChatToggle={() => setIsChatOpen(true)} onProfileUpdate={handleProfileUpdate} onOpenAdminPanel={() => setIsAdminPanelOpen(true)} onSidebarToggle={() => setIsSidebarOpen(true)} />
+            <main className={`flex-1 overflow-y-auto no-scrollbar p-6 lg:p-8 ${currentView === 'home' ? 'flex flex-col justify-center' : ''}`}>
+              {renderMainContent()}
+            </main>
+        </div>
+        
+        {/* Chat Overlay for all screen sizes */}
+        <div className={`fixed inset-0 z-40 transform transition-transform duration-300 ease-in-out ${ isChatOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+            <div className="absolute inset-0 bg-black/50" onClick={() => setIsChatOpen(false)}></div>
+            <div className="relative w-[320px] h-full float-right">
+              <ChatRail session={session} profile={profile} onClose={() => setIsChatOpen(false)} onViewProfile={setViewingProfileId} />
+            </div>
+        </div>
       </div>
     </div>
   );
