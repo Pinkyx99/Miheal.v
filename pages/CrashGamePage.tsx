@@ -1,5 +1,4 @@
 
-
 import React, { useState, useEffect, useCallback, useRef, createContext, useMemo } from 'react';
 import { PlayerBets } from '../components/crash/PlayerBets';
 import { BettingHistory } from '../components/crash/BettingHistory';
@@ -50,8 +49,8 @@ const CrashGamePage: React.FC<CrashGamePageProps> = ({ profile, session, onProfi
         allBets: [] as CrashBet[],
         myBets: [] as CrashBet[],
         history: [] as any[],
-        placeBet: async () => ({ success: false, message: 'Game is under maintenance.' }),
-        cashout: async () => ({ success: false, message: 'Game is under maintenance.' }),
+        placeBet: async (betAmountStr: string, autoCashoutStr: string) => ({ success: false, message: 'Game is under maintenance.' }),
+        cashout: async (betId: string, cashoutMultiplier: number) => ({ success: false, message: 'Game is under maintenance.' }),
     }), []);
 
     const [cashoutEvents, setCashoutEvents] = useState<CashoutEvent[]>([]);
@@ -127,8 +126,7 @@ const CrashGamePage: React.FC<CrashGamePageProps> = ({ profile, session, onProfi
             setError("You can place a maximum of 6 bets per round.");
             return;
         }
-        // Called mock placeBet function without arguments to match its definition.
-        const result = await placeBet();
+        const result = await placeBet(betAmountStr, autoCashoutStr);
         if (!result.success) {
             setError(result.message);
         }
@@ -137,13 +135,12 @@ const CrashGamePage: React.FC<CrashGamePageProps> = ({ profile, session, onProfi
     const handleCashout = useCallback(async (betId: string) => {
         setPendingCashoutIds(prev => new Set(prev).add(betId));
         setLoadingBetId(betId);
-        // Called mock cashout function without arguments to match its definition.
-        const result = await cashout();
+        const result = await cashout(betId, multiplier);
         if (!result.success) {
             setError(result.message);
         }
         setTimeout(() => setLoadingBetId(null), 200);
-    }, [cashout]);
+    }, [cashout, multiplier]);
 
     // Effect for auto-cashouts
     useEffect(() => {

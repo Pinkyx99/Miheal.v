@@ -64,7 +64,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ show, onClose, view, setVi
     const { error } = await supabase.auth.signInWithOAuth({
       provider,
       options: {
-        redirectTo: 'https://gamdom2.vercel.app',
+        redirectTo: window.location.origin,
         queryParams: {
           prompt: 'select_account',
         },
