@@ -146,7 +146,7 @@ export interface AdminUser {
     claimed_ranks: string[] | null;
 }
 
-// FIX: Add RollResult type for Dice game components
+// Add RollResult type for Dice game components
 export interface RollResult {
   id: string;
   value: number;
@@ -159,7 +159,7 @@ export interface RollResult {
   createdAt: string;
 }
 
-// FIX: Add MuteBanRecord type for BannedOverlay component
+// Add MuteBanRecord type for BannedOverlay component
 export interface MuteBanRecord {
   reason: string | null;
   expires_at: string | null;

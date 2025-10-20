@@ -33,7 +33,7 @@ const CrashGamePage: React.FC<CrashGamePageProps> = ({ profile, session, onProfi
     // } = useRealtimeCrash(session, onProfileUpdate);
     
     // [TEMPORARY] Mock data for maintenance screen
-    // FIX: Replaced mock data declarations with useMemo to prevent TypeScript from over-narrowing the type of `gameState`, which caused comparison errors.
+    // Replaced mock data declarations with useMemo to prevent TypeScript from over-narrowing the type of `gameState`, which caused comparison errors.
     const {
         gameState,
         multiplier,
@@ -127,7 +127,7 @@ const CrashGamePage: React.FC<CrashGamePageProps> = ({ profile, session, onProfi
             setError("You can place a maximum of 6 bets per round.");
             return;
         }
-        // FIX: Called mock placeBet function without arguments to match its definition.
+        // Called mock placeBet function without arguments to match its definition.
         const result = await placeBet();
         if (!result.success) {
             setError(result.message);
@@ -137,7 +137,7 @@ const CrashGamePage: React.FC<CrashGamePageProps> = ({ profile, session, onProfi
     const handleCashout = useCallback(async (betId: string) => {
         setPendingCashoutIds(prev => new Set(prev).add(betId));
         setLoadingBetId(betId);
-        // FIX: Called mock cashout function without arguments to match its definition.
+        // Called mock cashout function without arguments to match its definition.
         const result = await cashout();
         if (!result.success) {
             setError(result.message);

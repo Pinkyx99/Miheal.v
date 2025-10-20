@@ -6,7 +6,7 @@
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.44.2";
 
-// FIX: Declare Deno to fix TypeScript error 'Cannot find name 'Deno''.
+// Declare Deno to fix TypeScript error 'Cannot find name 'Deno''.
 declare const Deno: any;
 
 const corsHeaders = {

@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-// FIX: Import the centralized GameState type to ensure consistency.
+// Import the centralized GameState type to ensure consistency.
 import { Profile, CrashBet, GameState } from '../../types';
 import { Session } from '@supabase/supabase-js';
 import { Switch } from '../profile/shared/Switch';

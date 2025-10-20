@@ -134,7 +134,7 @@ export const ProfileSidebar: React.FC<ProfileSidebarProps> = ({ profile, onProfi
                             onClick={handleLogout}
                             className="w-full flex items-center space-x-3 p-2.5 rounded-md text-sm text-text-muted hover:bg-white/5 hover:text-white transition-colors"
                         >
-                            {/* FIX: Corrected JSX syntax to render the logout icon. */}
+                            {/* Corrected JSX syntax to render the logout icon. */}
                             <LogoutIcon className="w-5 h-5" />
                             <span>Log out</span>
                         </button>

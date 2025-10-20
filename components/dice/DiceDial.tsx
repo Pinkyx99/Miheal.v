@@ -1,5 +1,5 @@
 import React, { useRef, useCallback, useEffect, useState } from 'react';
-// FIX: Update import path for RollResult type
+// Update import path for RollResult type
 import { RollResult } from '../../types';
 
 interface DiceDisplayProps {
@@ -11,7 +11,7 @@ interface DiceDisplayProps {
     previousRollValue: number;
 }
 
-// FIX: Add lastRoll to props to fix compilation error.
+// Add lastRoll to props to fix compilation error.
 const Needle: React.FC<{ angle: number, isRolling: boolean, lastRoll: RollResult | null }> = ({ angle, isRolling, lastRoll }) => (
     <div 
         className="absolute bottom-0 left-1/2 w-1 h-1/2 origin-bottom transition-transform duration-300 ease-out"

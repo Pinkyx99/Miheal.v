@@ -4,9 +4,8 @@ import { Session } from '@supabase/supabase-js';
 import { KenoControls } from '../components/keno/KenoControls';
 import { KenoGrid } from '../components/keno/KenoGrid';
 import { KenoPayoutBar } from '../components/keno/KenoPayoutBar';
-import { KenoSoundIcon, KenoSpeedIcon, KenoHistoryIcon, KenoHelpIcon, KenoFairnessIcon, KenoInfoIcon } from '../components/keno/KenoIcons';
 import { supabase } from '../lib/supabaseClient';
-// FIX: Add missing icon imports
+// Add missing icon imports
 import { Logo, SoundIcon, LightningIcon, CalendarIcon, ClockIcon, CheckIcon, QuestionIcon } from '../components/icons';
 
 // --- Provably Fair Helper Functions ---
@@ -170,8 +169,8 @@ const KenoGamePage: React.FC<KenoGamePageProps> = ({ profile, session, onProfile
                 const { data: currentProfile, error: fetchError } = await supabase.from('profiles').select('balance').eq('id', session.user.id).single();
                 if (fetchError) throw fetchError;
                 if (!currentProfile) throw new Error("Could not find user profile to update balance.");
-                // FIX: Safely convert balance to a number to prevent type errors.
-                const currentBalance = parseFloat(String((currentProfile as any)?.balance ?? '0'));
+                // Safely convert balance to a number to prevent type errors.
+                const currentBalance = Number((currentProfile as any)?.balance ?? 0);
                 const newBalance = currentBalance + payout;
                 const { error: payoutError } = await supabase.from('profiles').update({ balance: newBalance }).eq('id', session.user.id);
                 if (payoutError) throw payoutError;
@@ -212,14 +211,7 @@ const KenoGamePage: React.FC<KenoGamePageProps> = ({ profile, session, onProfile
         <div className="flex-1 flex flex-col bg-cover bg-center bg-no-repeat" style={{ backgroundImage: "url('https://gamdom.com/_proxied/games/keno/background-large.08b7ce281cc14ac9c24a.webp')" }}>
             <div className="w-full max-w-[1200px] mx-auto px-4 py-4 flex justify-between items-center">
                 <Logo />
-                <div className="flex items-center space-x-1">
-                    <button className="p-2 text-gray-400 hover:text-white hover:bg-white/10 rounded-md transition-colors"><KenoSoundIcon /></button>
-                    <button className="p-2 text-gray-400 hover:text-white hover:bg-white/10 rounded-md transition-colors"><KenoSpeedIcon /></button>
-                    <button className="p-2 text-gray-400 hover:text-white hover:bg-white/10 rounded-md transition-colors"><KenoHistoryIcon /></button>
-                    <button className="p-2 text-gray-400 hover:text-white hover:bg-white/10 rounded-md transition-colors"><KenoHelpIcon /></button>
-                    <button className="p-2 text-gray-400 hover:text-white hover:bg-white/10 rounded-md transition-colors"><KenoFairnessIcon /></button>
-                    <button className="p-2 text-gray-400 hover:text-white hover:bg-white/10 rounded-md transition-colors"><KenoInfoIcon /></button>
-                </div>
+                <TopToolbar />
             </div>
 
             <div className="flex-1 w-full max-w-[1200px] mx-auto px-4 grid grid-cols-1 lg:grid-cols-[minmax(0,340px)_minmax(0,1fr)] gap-6 items-center pb-8">
@@ -229,7 +221,7 @@ const KenoGamePage: React.FC<KenoGamePageProps> = ({ profile, session, onProfile
                     riskLevel={riskLevel}
                     setRiskLevel={setRiskLevel}
                     gameState={gameState}
-                    // FIX: Pass the correct handler functions to the KenoControls component.
+                    // Pass the correct handler functions to the KenoControls component.
                     onPlay={handlePlay}
                     onClear={handleClear}
                     onRandom={handleRandom}

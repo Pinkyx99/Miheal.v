@@ -28,7 +28,7 @@ export const BlackjackControls: React.FC<BlackjackControlsProps> = ({
         if (modifier === '1/2') {
             setBetAmount(Math.max(0.01, parseFloat((betAmount / 2).toFixed(2))));
         } else if (modifier === 'x2') {
-            setBetAmount(parseFloat((betAmount * 2).toFixed(2))));
+            setBetAmount(parseFloat((betAmount * 2).toFixed(2)));
         } else if (modifier === 'max') {
             setBetAmount(balance);
         }

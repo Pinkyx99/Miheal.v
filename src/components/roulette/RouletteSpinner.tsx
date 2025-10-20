@@ -77,7 +77,7 @@ export const RouletteSpinner: React.FC<RouletteSpinnerProps> = ({ gameState, win
     const [isAnimating, setIsAnimating] = useState(false);
     
     const viewportRef = useRef<HTMLDivElement>(null);
-    // FIX: Initialize useRef with null and update type to handle timer IDs correctly, resolving a potential type error.
+    // Initialize useRef with null and update type to handle timer IDs correctly, resolving a potential type error.
     const snapTimerRef = useRef<number | null>(null);
     const [viewportWidth, setViewportWidth] = useState(0);
 

@@ -22,6 +22,7 @@ import AdminPage from './pages/AdminPage';
 import DiceGamePage from './pages/DiceGamePage';
 import MinesGamePage from './pages/MinesGamePage';
 import BlackjackGamePage from './pages/BlackjackGamePage';
+import { StatsFeed } from './components/StatsFeed';
 
 type View = 'home' | 'crash' | 'roulette' | 'roulette-info' | 'slots' | 'rewards' | 'dice' | 'mines' | 'blackjack' | ProfileLink['name'];
 
@@ -198,6 +199,7 @@ const App: React.FC = () => {
             <Hero session={session} onSignUpClick={() => openAuthModal('signUp')} onGoogleSignInClick={() => handleOAuthSignIn('google')} />
             <OriginalsRow onGameSelect={handleGameSelect} />
             <GameGrid />
+            <StatsFeed session={session} profile={profile} />
           </div>
         );
       case 'crash':
