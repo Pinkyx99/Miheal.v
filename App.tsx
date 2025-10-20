@@ -35,8 +35,6 @@ const App: React.FC = () => {
   const [viewingProfileId, setViewingProfileId] = useState<string | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isAdminPanelOpen, setIsAdminPanelOpen] = useState(false);
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const [isInitialRoutingDone, setIsInitialRoutingDone] = useState(false);
 
   // Hide loading screen on initial app load
   useEffect(() => {
@@ -48,33 +46,6 @@ const App: React.FC = () => {
         }, 500);
     }
   }, []);
-  
-  // Effect to handle video playback, preventing race conditions by letting React have full control.
-  useEffect(() => {
-    if (!isInitialRoutingDone) return; // Wait for initial routing to complete
-
-    const video = videoRef.current;
-    if (!video) return;
-    
-    const controlPlayback = async () => {
-        try {
-            if (currentView === 'home') {
-                if (video.paused) {
-                    await video.play();
-                }
-            } else {
-                if (!video.paused) {
-                    video.pause();
-                }
-            }
-        } catch (error) {
-             console.error("Video playback control failed:", (error as Error).message);
-        }
-    };
-    
-    controlPlayback();
-
-  }, [currentView, isInitialRoutingDone]);
 
   const navigateTo = useCallback((view: View) => {
     const path = view === 'home' ? '' : `/${view.toLowerCase().replace(/ /g, '-')}`;
@@ -104,7 +75,6 @@ const App: React.FC = () => {
     };
     
     handleRouting(); // Determine initial view from URL
-    setIsInitialRoutingDone(true); // Signal that initial routing is complete
 
     window.addEventListener('hashchange', handleRouting);
     return () => window.removeEventListener('hashchange', handleRouting);
@@ -254,14 +224,14 @@ const App: React.FC = () => {
   return (
     <div className={`h-full font-sans text-text-main relative transition-colors duration-300 ${getGamePageSpecificClass()}`}>
         <video
-            ref={videoRef}
             autoPlay
             loop
             muted
             playsInline
             className={`absolute top-0 left-0 w-full h-full object-cover -z-10 transition-opacity duration-700 ${currentView === 'home' ? 'opacity-100' : 'opacity-0'}`}
+            title="background-video"
         >
-            <source src="https://github.com/Pinkyx99/video/raw/main/Hailuo_Video_A%20glamorous%20red-themed%20casino%20_436723026077384712.mp4" type="video/mp4" />
+            <source src="https://i.imgur.com/vEkEIzN.mp4" type="video/mp4" />
         </video>
         <div className={`absolute inset-0 bg-black/60 -z-10 transition-opacity duration-700 ${currentView === 'home' ? 'opacity-100' : 'opacity-0'}`}></div>
 
