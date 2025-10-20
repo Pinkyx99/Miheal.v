@@ -220,17 +220,19 @@ const App: React.FC = () => {
         default: return '';
     }
   }
+  
+  const homeBgStyle = currentView === 'home' ? {
+      backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('https://i.imgur.com/jIkaYLb.jpeg')`,
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+      backgroundRepeat: 'no-repeat',
+  } : {};
 
   return (
-    <div className={`h-full font-sans text-text-main relative transition-colors duration-300 ${getGamePageSpecificClass()}`}>
-        <img
-            src="https://i.imgur.com/jIkaYLb.jpeg"
-            alt=""
-            aria-hidden="true"
-            className={`absolute top-0 left-0 w-full h-full object-cover -z-10 transition-opacity duration-700 ${currentView === 'home' ? 'opacity-100' : 'opacity-0'}`}
-        />
-        <div className={`absolute inset-0 bg-black/60 -z-10 transition-opacity duration-700 ${currentView === 'home' ? 'opacity-100' : 'opacity-0'}`}></div>
-
+    <div 
+        className={`h-full font-sans text-text-main relative transition-all duration-700 ${getGamePageSpecificClass()}`}
+        style={homeBgStyle}
+    >
       <AuthModal show={showAuthModal} onClose={() => setShowAuthModal(false)} view={authView} setView={setAuthView} />
       <WalletModal show={isWalletModalOpen} onClose={() => setIsWalletModalOpen(false)} />
       <UserProfileModal userId={viewingProfileId} onClose={() => setViewingProfileId(null)} />
