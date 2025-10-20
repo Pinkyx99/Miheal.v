@@ -25,6 +25,7 @@ export const DiceDisplay: React.FC<DiceDisplayProps> = ({ rollValue, isRollOver,
             if (numberDisplayRef.current) {
                 numberDisplayRef.current.textContent = (Math.random() * 100).toFixed(2);
             }
+            // FIX: Pass the animate callback to requestAnimationFrame.
             animationFrameRef.current = requestAnimationFrame(animate);
         };
 

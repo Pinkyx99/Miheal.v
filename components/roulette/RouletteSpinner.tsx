@@ -1,4 +1,5 @@
 
+
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { RouletteGameState } from '../../types';
 import { MutedSoundIcon, InfoCircleIcon, CheckCircleIcon } from '../icons';
@@ -87,6 +88,7 @@ export const RouletteSpinner: React.FC<RouletteSpinnerProps> = ({ gameState, win
     const viewportRef = useRef<HTMLDivElement>(null);
     const snapTimerRef = useRef<number | null>(null);
     const [viewportWidth, setViewportWidth] = useState(0);
+    // FIX: Pass gameState to the usePrevious hook as it expects one argument.
     const prevGameState = usePrevious(gameState);
 
     useEffect(() => {

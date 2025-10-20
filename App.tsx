@@ -276,7 +276,8 @@ const App: React.FC = () => {
            {videos.map((url, index) => (
               <video
                   key={url}
-                  ref={el => videoRefs.current[index] = el}
+                  // FIX: The ref callback should not return a value. Encapsulating the assignment in braces fixes this.
+                  ref={el => { videoRefs.current[index] = el; }}
                   playsInline
                   muted
                   preload="auto"
