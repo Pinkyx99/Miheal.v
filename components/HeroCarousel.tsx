@@ -8,13 +8,13 @@ interface HeroProps {
 
 export const Hero: React.FC<HeroProps> = ({ session, onSignUpClick, onGoogleSignInClick }) => {
     return (
-        <div className="relative rounded-2xl p-6 lg:p-8 flex flex-col justify-end items-start text-left min-h-[400px] bg-cover" style={{backgroundImage: 'url(https://i.imgur.com/VZPuEhD.png)', backgroundPosition: 'center 20%'}}>
+        <div className="relative rounded-2xl p-6 lg:p-8 flex flex-col justify-end items-start text-left min-h-[450px] bg-cover" style={{backgroundImage: 'url(https://i.imgur.com/VZPuEhD.png)', backgroundPosition: 'center 20%'}}>
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent rounded-2xl"></div>
             
             <div className="relative z-10">
                 {/* Bottom-left section: Game Info & CTA */}
                 <div>
-                    <h1 className="text-4xl lg:text-5xl font-black text-white" style={{textShadow: '0 4px 15px rgba(0,0,0,0.5)'}}>
+                    <h1 className="text-5xl lg:text-6xl font-black text-white" style={{textShadow: '0 4px 15px rgba(0,0,0,0.5)'}}>
                         Gates of Olympus
                     </h1>
                     <div className="mt-6 flex flex-wrap items-center justify-start gap-4">

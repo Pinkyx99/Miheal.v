@@ -41,11 +41,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, setIsSidebarOpe
     <aside 
       onMouseEnter={() => setIsSidebarOpen(true)}
       onMouseLeave={() => setIsSidebarOpen(false)}
-      className={`bg-sidebar h-screen flex flex-col p-4 flex-shrink-0 transition-all duration-300 ease-in-out ${isSidebarOpen ? 'w-64' : 'w-20'}`}>
+      className={`bg-sidebar h-screen flex flex-col p-4 flex-shrink-0 transition-all duration-300 ease-in-out ${isSidebarOpen ? 'w-64' : 'w-24'}`}>
       <div className="px-2 mb-6 h-12 flex items-center">
         <button onClick={() => onNavigate('home')} className="w-full">
-            <Logo className={`text-white transition-all duration-300 h-8 ${isSidebarOpen ? 'opacity-100' : 'opacity-0 h-0 invisible'}`} />
-            <img src="https://i.imgur.com/6U31UIH.png" alt="Mihael.bet Logo Icon" className={`h-8 mx-auto transition-all duration-300 ${!isSidebarOpen ? 'opacity-100' : 'opacity-0 h-0 invisible'}`} />
+            <Logo className={`text-white transition-all duration-300 h-10 ${isSidebarOpen ? 'opacity-100' : 'opacity-0 h-0 invisible'}`} />
+            <img src="https://i.imgur.com/6U31UIH.png" alt="Mihael.bet Logo Icon" className={`h-10 mx-auto transition-all duration-300 ${!isSidebarOpen ? 'opacity-100' : 'opacity-0 h-0 invisible'}`} />
         </button>
       </div>
       

@@ -41,17 +41,17 @@ export const Header: React.FC<HeaderProps> = ({ session, profile, onSignInClick,
   return (
     <header className="flex-shrink-0 relative z-30">
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
-        <div className="relative flex items-center justify-between h-16">
+        <div className="relative flex items-center justify-between h-20">
           {/* Left Side: Search */}
           <div className="flex items-center space-x-2">
             <div className="relative w-full max-w-sm hidden sm:block">
-                <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
+                <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
                     <SearchIcon className="w-5 h-5 text-text-muted" />
                 </div>
                 <input
                     type="search"
                     placeholder="Search games"
-                    className="w-full bg-sidebar/80 border border-border-color rounded-full py-2 pl-11 pr-4 text-sm placeholder-text-muted focus:ring-2 focus:ring-primary focus:outline-none transition"
+                    className="w-full bg-sidebar/80 border border-border-color rounded-lg py-2.5 pl-10 pr-4 text-sm placeholder-text-muted focus:ring-2 focus:ring-primary focus:outline-none transition"
                 />
             </div>
           </div>
@@ -98,13 +98,13 @@ export const Header: React.FC<HeaderProps> = ({ session, profile, onSignInClick,
               <div className="flex items-center space-x-2">
                 <button
                   onClick={onSignInClick}
-                  className="btn-interactive px-5 py-2 rounded-lg text-white font-semibold text-sm transition bg-card hover:bg-card/70 border border-border-color"
+                  className="btn-interactive px-6 py-2.5 rounded-lg text-white font-semibold text-sm transition bg-card hover:bg-card/70 border border-border-color"
                 >
                   Log in
                 </button>
                 <button
                   onClick={onSignUpClick}
-                  className="btn-interactive bg-primary hover:bg-primary-light text-background font-semibold px-5 py-2 rounded-lg text-sm transition"
+                  className="btn-interactive bg-primary hover:bg-primary-light text-white font-semibold px-6 py-2.5 rounded-lg text-sm transition"
                 >
                   Sign up
                 </button>

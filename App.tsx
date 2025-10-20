@@ -232,7 +232,7 @@ const App: React.FC = () => {
           <Sidebar isSidebarOpen={isSidebarOpen} setIsSidebarOpen={setIsSidebarOpen} onNavigate={(page) => navigateTo(page as View)} currentView={currentView} />
           <div className="flex-1 min-w-0 flex flex-col">
               <Header session={session} profile={profile} onSignInClick={() => openAuthModal('signIn')} onSignUpClick={() => openAuthModal('signUp')} onWalletButtonClick={() => setIsWalletModalOpen(true)} onNavigate={(page) => navigateTo(page as View)} currentView={currentView} onChatToggle={() => setIsChatOpen(true)} onProfileUpdate={handleProfileUpdate} onOpenAdminPanel={() => setIsAdminPanelOpen(true)} />
-              <main className="flex-1 overflow-y-auto no-scrollbar p-4 md:p-6">
+              <main className="flex-1 overflow-y-auto no-scrollbar p-6 lg:p-8">
                 {renderMainContent()}
               </main>
           </div>
