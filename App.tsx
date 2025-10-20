@@ -7,7 +7,6 @@ import { Session, Provider } from '@supabase/supabase-js';
 import { Profile, ProfileLink } from './types';
 import { WalletModal } from './components/WalletModal';
 import { OriginalsRow } from './components/OriginalsRow';
-import { GameGrid } from './components/GameGrid';
 import ProfilePage from './pages/ProfilePage';
 import CrashGamePage from './pages/CrashGamePage';
 import RouletteGamePage from './pages/RouletteGamePage';
@@ -36,6 +35,8 @@ const App: React.FC = () => {
   const [viewingProfileId, setViewingProfileId] = useState<string | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isAdminPanelOpen, setIsAdminPanelOpen] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [isInitialRoutingDone, setIsInitialRoutingDone] = useState(false);
 
   // Hide loading screen on initial app load
   useEffect(() => {
@@ -47,6 +48,33 @@ const App: React.FC = () => {
         }, 500);
     }
   }, []);
+  
+  // Effect to handle video playback, preventing race conditions by letting React have full control.
+  useEffect(() => {
+    if (!isInitialRoutingDone) return; // Wait for initial routing to complete
+
+    const video = videoRef.current;
+    if (!video) return;
+    
+    const controlPlayback = async () => {
+        try {
+            if (currentView === 'home') {
+                if (video.paused) {
+                    await video.play();
+                }
+            } else {
+                if (!video.paused) {
+                    video.pause();
+                }
+            }
+        } catch (error) {
+             console.error("Video playback control failed:", (error as Error).message);
+        }
+    };
+    
+    controlPlayback();
+
+  }, [currentView, isInitialRoutingDone]);
 
   const navigateTo = useCallback((view: View) => {
     const path = view === 'home' ? '' : `/${view.toLowerCase().replace(/ /g, '-')}`;
@@ -74,7 +102,10 @@ const App: React.FC = () => {
       }
       setCurrentView(view);
     };
-    handleRouting();
+    
+    handleRouting(); // Determine initial view from URL
+    setIsInitialRoutingDone(true); // Signal that initial routing is complete
+
     window.addEventListener('hashchange', handleRouting);
     return () => window.removeEventListener('hashchange', handleRouting);
   }, []);
@@ -176,29 +207,14 @@ const App: React.FC = () => {
     }
   };
   
-  const getAppBgClass = () => {
-    switch(currentView) {
-        case 'crash': return 'bg-[#0F1923]';
-        case 'roulette': return 'bg-[#0D1316]';
-        case 'roulette-info': return 'bg-[#0D1316]';
-        case 'slots': return 'bg-background';
-        case 'rewards': return 'bg-background';
-        case 'dice': return 'bg-[#081018]';
-        case 'mines': return 'bg-[#0b1016]';
-        case 'blackjack': return 'bg-[#081018]';
-        default: return 'bg-background';
-    }
-  }
-
   const renderMainContent = () => {
     switch (currentView) {
       case 'home':
         return (
-          <div className="space-y-8">
-            <Hero session={session} onSignUpClick={() => openAuthModal('signUp')} onGoogleSignInClick={() => handleOAuthSignIn('google')} />
+          <>
+            <Hero />
             <OriginalsRow onGameSelect={handleGameSelect} />
-            <GameGrid />
-          </div>
+          </>
         );
       case 'crash':
         return <CrashGamePage profile={profile} session={session} onProfileUpdate={handleProfileUpdate} />;
@@ -221,33 +237,58 @@ const App: React.FC = () => {
     }
   };
 
+  const getGamePageSpecificClass = () => {
+     switch(currentView) {
+        case 'crash': return 'bg-[#0F1923]';
+        case 'roulette': return 'bg-[#0D1316]';
+        case 'roulette-info': return 'bg-[#0D1316]';
+        case 'slots': return 'bg-background';
+        case 'rewards': return 'bg-background';
+        case 'dice': return 'bg-[#081018]';
+        case 'mines': return 'bg-[#0b1016]';
+        case 'blackjack': return 'bg-[#081018]';
+        default: return '';
+    }
+  }
+
   return (
-    <div className={`h-full font-sans text-text-main transition-colors duration-300 ${getAppBgClass()}`}>
+    <div className={`h-full font-sans text-text-main relative transition-colors duration-300 ${getGamePageSpecificClass()}`}>
+        <video
+            ref={videoRef}
+            autoPlay
+            loop
+            muted
+            playsInline
+            className={`absolute top-0 left-0 w-full h-full object-cover -z-10 transition-opacity duration-700 ${currentView === 'home' ? 'opacity-100' : 'opacity-0'}`}
+        >
+            <source src="https://github.com/Pinkyx99/video/raw/main/Hailuo_Video_A%20glamorous%20red-themed%20casino%20_436723026077384712.mp4" type="video/mp4" />
+        </video>
+        <div className={`absolute inset-0 bg-black/60 -z-10 transition-opacity duration-700 ${currentView === 'home' ? 'opacity-100' : 'opacity-0'}`}></div>
+
       <AuthModal show={showAuthModal} onClose={() => setShowAuthModal(false)} view={authView} setView={setAuthView} />
       <WalletModal show={isWalletModalOpen} onClose={() => setIsWalletModalOpen(false)} />
       <UserProfileModal userId={viewingProfileId} onClose={() => setViewingProfileId(null)} />
       <AdminPage show={isAdminPanelOpen} onClose={() => setIsAdminPanelOpen(false)} profile={profile} />
 
-      <div className="flex h-full">
-          <Sidebar isSidebarOpen={isSidebarOpen} setIsSidebarOpen={setIsSidebarOpen} onNavigate={(page) => navigateTo(page as View)} currentView={currentView} />
-          <div className="flex-1 min-w-0 flex flex-col">
-              <Header session={session} profile={profile} onSignInClick={() => openAuthModal('signIn')} onSignUpClick={() => openAuthModal('signUp')} onWalletButtonClick={() => setIsWalletModalOpen(true)} onNavigate={(page) => navigateTo(page as View)} currentView={currentView} onChatToggle={() => setIsChatOpen(true)} onProfileUpdate={handleProfileUpdate} onOpenAdminPanel={() => setIsAdminPanelOpen(true)} />
-              <main className="flex-1 overflow-y-auto no-scrollbar p-6 lg:p-8">
-                {renderMainContent()}
-              </main>
-          </div>
-          
-          <div className="hidden xl:block w-[320px] flex-shrink-0">
-            <div className="sticky top-0 h-full">
-                <ChatRail session={session} profile={profile} onViewProfile={setViewingProfileId} />
-            </div>
-          </div>
+      {/* Sidebar and its backdrop */}
+      <div 
+          className={`fixed inset-0 bg-black/60 z-30 transition-opacity duration-300 ${isSidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+          onClick={() => setIsSidebarOpen(false)}
+      />
+      <Sidebar isSidebarOpen={isSidebarOpen} onNavigate={(page) => { navigateTo(page as View); setIsSidebarOpen(false); }} currentView={currentView} />
 
-          <div className={`fixed inset-0 z-40 transform transition-transform duration-300 ease-in-out xl:hidden ${ isChatOpen ? 'translate-x-0' : 'translate-x-full'}`}>
-              <div className="absolute inset-0 bg-black/50" onClick={() => setIsChatOpen(false)}></div>
-              <div className="relative w-[320px] h-full float-right">
-                <ChatRail session={session} profile={profile} onClose={() => setIsChatOpen(false)} onViewProfile={setViewingProfileId} />
-              </div>
+      <div className="flex flex-col h-full">
+          <Header session={session} profile={profile} onSignInClick={() => openAuthModal('signIn')} onSignUpClick={() => openAuthModal('signUp')} onWalletButtonClick={() => setIsWalletModalOpen(true)} onNavigate={(page) => navigateTo(page as View)} currentView={currentView} onChatToggle={() => setIsChatOpen(true)} onProfileUpdate={handleProfileUpdate} onOpenAdminPanel={() => setIsAdminPanelOpen(true)} onSidebarToggle={() => setIsSidebarOpen(true)} />
+          <main className={`flex-1 overflow-y-auto no-scrollbar p-6 lg:p-8 ${currentView === 'home' ? 'flex flex-col justify-center' : ''}`}>
+            {renderMainContent()}
+          </main>
+      </div>
+      
+      {/* Chat Overlay for all screen sizes */}
+      <div className={`fixed inset-0 z-40 transform transition-transform duration-300 ease-in-out ${ isChatOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+          <div className="absolute inset-0 bg-black/50" onClick={() => setIsChatOpen(false)}></div>
+          <div className="relative w-[320px] h-full float-right">
+            <ChatRail session={session} profile={profile} onClose={() => setIsChatOpen(false)} onViewProfile={setViewingProfileId} />
           </div>
       </div>
     </div>

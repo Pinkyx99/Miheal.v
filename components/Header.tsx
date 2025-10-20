@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { SearchIcon, Logo, ChatBubbleIcon, BellIcon, Bars3Icon } from './icons';
+import { Logo, ChatBubbleIcon, BellIcon, Bars3Icon } from './icons';
 import { Session } from '@supabase/supabase-js';
 import { Profile, ProfileLink } from '../types';
 import { supabase } from '../lib/supabaseClient';
@@ -16,11 +16,12 @@ interface HeaderProps {
     onNavigate: (page: ProfileLink['name'] | 'home') => void;
     currentView: string;
     onChatToggle: () => void;
+    onSidebarToggle: () => void;
     onProfileUpdate: () => void;
     onOpenAdminPanel: () => void;
 }
 
-export const Header: React.FC<HeaderProps> = ({ session, profile, onSignInClick, onSignUpClick, onWalletButtonClick, onNavigate, currentView, onChatToggle, onProfileUpdate, onOpenAdminPanel }) => {
+export const Header: React.FC<HeaderProps> = ({ session, profile, onSignInClick, onSignUpClick, onWalletButtonClick, onNavigate, currentView, onChatToggle, onSidebarToggle, onProfileUpdate, onOpenAdminPanel }) => {
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const notificationsRef = useRef<HTMLDivElement>(null);
 
@@ -39,21 +40,17 @@ export const Header: React.FC<HeaderProps> = ({ session, profile, onSignInClick,
   const hasUnclaimedBonus = profile && !profile.has_claimed_welcome_bonus;
 
   return (
-    <header className="flex-shrink-0 relative z-30">
+    <header className="flex-shrink-0 relative z-30 bg-black/30 backdrop-blur-sm">
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
         <div className="relative flex items-center justify-between h-20">
-          {/* Left Side: Search */}
-          <div className="flex items-center space-x-2">
-            <div className="relative w-full max-w-sm hidden sm:block">
-                <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                    <SearchIcon className="w-5 h-5 text-text-muted" />
-                </div>
-                <input
-                    type="search"
-                    placeholder="Search games"
-                    className="w-full bg-sidebar/80 border border-border-color rounded-lg py-2.5 pl-10 pr-4 text-sm placeholder-text-muted focus:ring-2 focus:ring-primary focus:outline-none transition"
-                />
-            </div>
+          {/* Left Side: Menu and Logo */}
+          <div className="flex items-center space-x-4">
+              <button onClick={onSidebarToggle} className="p-2 rounded-md text-text-muted hover:text-white hover:bg-white/10 transition-colors">
+                  <Bars3Icon className="w-6 h-6" />
+              </button>
+              <div onClick={() => onNavigate('home')} className="cursor-pointer">
+                  <Logo className="h-8" />
+              </div>
           </div>
 
           {/* Center: Wallet on Desktop */}
@@ -111,7 +108,7 @@ export const Header: React.FC<HeaderProps> = ({ session, profile, onSignInClick,
               </div>
             )}
             
-            <button onClick={onChatToggle} className="xl:hidden p-2 rounded-md text-text-muted hover:text-white hover:bg-white/10 transition-colors">
+            <button onClick={onChatToggle} className="p-2 rounded-md text-text-muted hover:text-white hover:bg-white/10 transition-colors">
                 <ChatBubbleIcon className="w-6 h-6" />
             </button>
           </div>

@@ -7,32 +7,34 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="components/ProfileCard.css">
     <script>
       tailwind.config = {
         theme: {
           extend: {
             colors: {
-              'background': '#0a192f',
-              'sidebar': '#112240',
-              'card': '#172a45',
-              'primary': '#64ffda',
-              'primary-light': '#79ffee',
-              'text-main': '#ccd6f6',
-              'text-muted': '#8892b0',
-              'border-color': 'rgba(100, 255, 218, 0.1)',
-              'accent-green': '#64ffda',
-              'secondary-green': '#00d1b2',
+              'background': '#0a0a0a',
+              'sidebar': '#111111',
+              'card': '#1f2937',
+              'primary': '#dc2626', // red-600
+              'primary-light': '#ef4444', // red-500
+              'text-main': '#f9fafb', // gray-50
+              'text-muted': '#d1d5db', // gray-300
+              'border-color': 'rgba(255, 255, 255, 0.1)',
+              'accent-green': '#dc2626', // Replaced green with red
+              'secondary-green': '#b91c1c', // Replaced green with darker red
+              'accent-red': '#EF4444', // red-500
+              'accent-red-dark': '#B91C1C', // red-700
             },
             fontFamily: {
               'sans': ['Inter', 'sans-serif'],
             },
             boxShadow: {
-              'glow-primary': '0 0 20px rgba(100, 255, 218, 0.3)',
+              'glow-primary': '0 0 20px rgba(220, 38, 38, 0.4)',
             },
             borderColor: {
-              'outline': 'rgba(100, 255, 218, 0.1)',
+              'outline': 'rgba(255, 255, 255, 0.1)',
             },
             animation: {
               'spin-slow': 'spin 3s linear infinite',
@@ -52,7 +54,8 @@
         scrollbar-width: none; /* Firefox */
       }
       body {
-          color: #ccd6f6; /* text-main */
+          color: #f9fafb; /* text-main */
+          overflow: hidden; /* To contain the app within viewport */
       }
 
       @keyframes pulse-glow {
@@ -72,14 +75,14 @@
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        background: #172a45; /* card bg */
-        border: 1px solid rgba(100, 255, 218, 0.1); /* border-color */
+        background: #1f2937; /* card bg */
+        border: 1px solid rgba(255, 255, 255, 0.1); /* border-color */
         transition: transform 0.3s ease-out, box-shadow 0.3s ease-out;
       }
 
       .card:hover {
         transform: translateY(-5px) scale(1.03);
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3), 0 0 20px rgba(100, 255, 218, 0.2);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3), 0 0 20px rgba(220, 38, 38, 0.2);
       }
 
       .bg {
@@ -89,7 +92,7 @@
         width: 190px;
         height: 240px;
         z-index: 2;
-        background: #112240; /* sidebar bg */
+        background: #111111; /* sidebar bg */
         border-radius: 10px;
         overflow: hidden;
       }
@@ -102,7 +105,7 @@
         width: 150px;
         height: 150px;
         border-radius: 50%;
-        background-color: #64ffda; /* primary */
+        background-color: #dc2626; /* primary */
         opacity: 1;
         filter: blur(12px);
         animation: blob-bounce 5s infinite ease;
@@ -136,7 +139,7 @@
         overflow: hidden;
         border-radius: 35px;
         align-items: center;
-        border: solid rgba(100, 255, 218, 0.1) 2px;
+        border: solid rgba(255, 255, 255, 0.1) 2px;
         outline: none;
         cursor: pointer;
       }
@@ -149,6 +152,7 @@
       .g-button .g-text {
         z-index: 10;
         font-size: 14px;
+        color: #f9fafb;
       }
 
       .g-button:hover .g-text {
@@ -157,7 +161,7 @@
 
       @keyframes g-text {
         from {
-          color: #ccd6f6;
+          color: #f9fafb;
         }
 
         to {
@@ -344,32 +348,20 @@
       }
       /* END: Animated Google Button */
 
-      /* START: 16:9 Aspect Ratio Container */
-      html, body {
+      /* START: Fullscreen Layout */
+      html, body, #root {
         height: 100%;
+        width: 100%;
         margin: 0;
         padding: 0;
-        background-color: #000; /* Black background for pillar/letterboxing */
-        overflow: hidden; /* Prevent scrollbars from appearing on body */
-      }
-
-      body {
-        display: flex;
-        align-items: center;
-        justify-content: center;
+        background-color: #000;
       }
 
       #root {
-        width: 100vw;
-        height: calc(100vw * 9 / 16);
-        max-width: 100%;
-        max-height: 100vh;
-        aspect-ratio: 16 / 9;
         position: relative;
-        background-color: #0a192f; /* Original background color */
-        overflow: hidden; /* Ensures content inside root doesn't spill out */
+        overflow: hidden;
       }
-      /* END: 16:9 Aspect Ratio Container */
+      /* END: Fullscreen Layout */
 
     </style>
   <script type="importmap">
@@ -385,7 +377,7 @@
 </script>
 </head>
   <body class="">
-    <div id="loading-screen" style="position: fixed; inset: 0; background-color: #0a192f; z-index: 9999; display: flex; align-items: center; justify-content: center; transition: opacity 0.5s ease-out;">
+    <div id="loading-screen" style="position: fixed; inset: 0; background-color: #0a0a0a; z-index: 9999; display: flex; align-items: center; justify-content: center; transition: opacity 0.5s ease-out;">
       <img src="https://i.imgur.com/6U31UIH.png" alt="Mihael.bet Logo" style="height: 6rem; animation: spin 1.5s linear infinite;" />
     </div>
     <div id="root"></div>

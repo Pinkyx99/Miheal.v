@@ -110,13 +110,13 @@ export const ROYALTY_RANKS: RoyaltyRank[] = [
     { name: 'Sapphire 3', tier: 'Sapphire', status: 'locked', image: 'https://i.imgur.com/fWFoKr9.png', levelRequirement: 100, rewardAmount: 1500 },
 ];
 
-export const ORIGINAL_GAMES: ({ name: string; image: string; rtp: number; blobColor: string; comingSoon?: boolean })[] = [
-  { name: 'Crash', image: 'https://i.imgur.com/D4qpkPt.png', rtp: 99, blobColor: '#ef4444' },
-  { name: 'Roulette', image: 'https://i.imgur.com/0rDInCq.png', rtp: 97.3, blobColor: '#8b5cf6' },
-  { name: 'Dice', image: 'https://i.imgur.com/P6P4NCa.png', rtp: 99, blobColor: '#3b82f6' },
-  { name: 'Mines', image: 'https://i.imgur.com/GzQSFH0.png', rtp: 99, blobColor: '#ec4899' },
-  { name: 'Blackjack', image: 'https://i.imgur.com/6DvB8rO.png', rtp: 99.5, blobColor: '#10b981' },
-  { name: 'Slots', image: 'https://i.imgur.com/UQVF1x6.png', rtp: 96, blobColor: '#f59e0b', comingSoon: true },
+export const ORIGINAL_GAMES: ({ name: string; image: string; comingSoon?: boolean })[] = [
+  { name: 'Crash', image: 'https://i.imgur.com/iZFQ5nj.png' },
+  { name: 'Mines', image: 'https://i.imgur.com/bAGHzKR.png' },
+  { name: 'Roulette', image: 'https://i.imgur.com/jYzEiPf.png' },
+  { name: 'Dice', image: 'https://i.imgur.com/Rs2DWQ1.png' },
+  { name: 'Blackjack', image: 'https://i.imgur.com/kf0eNe0.png' },
+  { name: 'Coinflip', image: 'https://i.imgur.com/QTcXVGb.png'},
 ];
 
 export const GAMES: Game[] = [

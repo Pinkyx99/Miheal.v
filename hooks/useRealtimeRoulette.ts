@@ -122,9 +122,9 @@ export const useRealtimeRoulette = (session: Session | null, onProfileUpdate: ()
         if (!round || round.status !== 'betting') return setError('Betting is currently closed.');
 
         const { data: rpcData, error: rpcError } = await supabase.rpc('place_roulette_bet', {
-            round_id_in: round.id,
-            bet_amount_in: betAmount,
-            bet_type_in: betType
+            round_id: round.id,
+            bet_amount: betAmount,
+            bet_type: betType
         });
         
         onProfileUpdate();
@@ -136,14 +136,14 @@ export const useRealtimeRoulette = (session: Session | null, onProfileUpdate: ()
 
     const undoLastBet = useCallback(async () => {
         if (!session?.user || !round || round.status !== 'betting') return;
-        const { error: rpcError } = await supabase.rpc('undo_last_roulette_bet', { round_id_in: round.id });
+        const { error: rpcError } = await supabase.rpc('undo_last_roulette_bet', { round_id: round.id });
         onProfileUpdate();
         if (rpcError) setError(rpcError.message);
     }, [session, round, onProfileUpdate]);
 
     const clearBets = useCallback(async () => {
         if (!session?.user || !round || round.status !== 'betting') return;
-        const { error: rpcError } = await supabase.rpc('clear_roulette_bets', { round_id_in: round.id });
+        const { error: rpcError } = await supabase.rpc('clear_roulette_bets', { round_id: round.id });
         onProfileUpdate();
         if (rpcError) setError(rpcError.message);
     }, [session, round, onProfileUpdate]);
