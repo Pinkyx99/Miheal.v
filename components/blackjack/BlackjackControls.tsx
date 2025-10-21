@@ -1,119 +1,104 @@
+
 import React from 'react';
-import { UsdIcon } from '../icons';
 
 type GameState = 'betting' | 'dealing' | 'player_turn' | 'dealer_turn' | 'finished';
 
 interface BlackjackControlsProps {
     gameState: GameState;
-    betAmount: number;
-    setBetAmount: (amount: number) => void;
     onBet: () => void;
     onHit: () => void;
     onStand: () => void;
     onDouble: () => void;
+    onNewRound: () => void;
+    onRebet: () => void;
+    canRebet: boolean;
     canDouble: boolean;
+    betAmount: string;
+    onBetAmountChange: (value: string) => void;
     balance: number;
 }
 
-export const BlackjackControls: React.FC<BlackjackControlsProps> = ({
-    gameState, betAmount, setBetAmount, onBet, onHit, onStand, onDouble, canDouble, balance
-}) => {
-    
-    const handleBetChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const val = parseFloat(e.target.value);
-        if (val >= 0) setBetAmount(val);
+const ActionButton: React.FC<{
+    label: string | React.ReactNode;
+    onClick: () => void;
+    disabled?: boolean;
+    variant?: 'primary' | 'secondary';
+    className?: string;
+}> = ({ label, onClick, disabled = false, variant = 'secondary', className = '' }) => {
+    const baseClasses = `px-8 py-3 rounded-full font-bold text-base uppercase tracking-wider transition-all duration-200 border-2 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:scale-100 disabled:shadow-none`;
+    const variantClasses = {
+        primary: 'bg-red-600 border-red-400 text-white hover:bg-red-500 hover:shadow-red-500/30',
+        secondary: 'bg-gray-800/80 border-gray-600 text-gray-300 hover:bg-gray-700 hover:border-gray-500',
     };
 
-    const handleBetModifier = (modifier: '1/2' | 'x2' | 'max') => {
-        if (modifier === '1/2') {
-            setBetAmount(Math.max(0.01, parseFloat((betAmount / 2).toFixed(2))));
-        } else if (modifier === 'x2') {
-            setBetAmount(parseFloat((betAmount * 2).toFixed(2)));
-        } else if (modifier === 'max') {
-            setBetAmount(balance);
-        }
-    };
+    return (
+        <button
+            onClick={onClick}
+            disabled={disabled}
+            className={`${baseClasses} ${variantClasses[variant]} ${className}`}
+        >
+            {label}
+        </button>
+    );
+};
+
+export const BlackjackControls: React.FC<BlackjackControlsProps> = ({
+    gameState, onBet, onHit, onStand, onDouble, onNewRound, onRebet, canRebet, canDouble, betAmount, onBetAmountChange, balance
+}) => {
     
     const isBetting = gameState === 'betting';
     const isPlayerTurn = gameState === 'player_turn';
-    
+    const isFinished = gameState === 'finished';
+
     return (
-        <div className="bg-[#1f1f1f]/90 backdrop-blur-md text-white rounded-lg p-4 flex flex-col space-y-4 border border-white/10">
-            {/* Tabs */}
-            <div className="flex bg-[#2c2c2c] rounded-md p-1">
-                <button className="flex-1 py-2 text-sm font-semibold rounded bg-[#3a3a3a]">Standard</button>
-                <button className="flex-1 py-2 text-sm font-semibold rounded text-gray-400">Side bet</button>
-            </div>
-
-            {/* Bet Amount */}
-            <div>
-                <div className="flex justify-between items-center mb-1.5">
-                    <label className="text-sm font-semibold text-gray-300">Bet Amount</label>
-                    <span className="text-xs text-gray-400">{betAmount.toFixed(2)} USD</span>
-                </div>
-                <div className="relative flex items-center bg-[#2c2c2c] rounded-md border border-gray-600 p-2">
-                    <UsdIcon className="w-5 h-5" />
-                    <input 
-                        type="number" 
-                        step="0.01"
-                        value={betAmount.toFixed(2)}
-                        onChange={handleBetChange} 
-                        disabled={!isBetting}
-                        className="flex-1 w-full bg-transparent text-white font-semibold px-2 text-sm focus:outline-none disabled:opacity-50"
-                    />
-                    <div className="flex space-x-1">
-                        <button onClick={() => handleBetModifier('1/2')} disabled={!isBetting} className="px-3 py-1 text-xs font-bold text-gray-300 rounded bg-gray-700/50 hover:bg-white/10 disabled:opacity-50">½</button>
-                        <button onClick={() => handleBetModifier('x2')} disabled={!isBetting} className="px-3 py-1 text-xs font-bold text-gray-300 rounded bg-gray-700/50 hover:bg-white/10 disabled:opacity-50">2x</button>
-                        <button onClick={() => handleBetModifier('max')} disabled={!isBetting} className="px-3 py-1 text-xs font-bold text-gray-300 rounded bg-gray-700/50 hover:bg-white/10 disabled:opacity-50">Max</button>
+        <div className="h-20 flex justify-center items-center gap-4">
+            {isBetting && (
+                <div className="flex items-center gap-2">
+                    <div className="relative">
+                        <input
+                            type="number"
+                            step="0.01"
+                            value={betAmount}
+                            onChange={(e) => onBetAmountChange(e.target.value)}
+                            className="bg-black/50 backdrop-blur-sm w-56 h-14 rounded-full text-lg font-bold text-white border-2 border-gray-600 text-center focus:border-primary focus:ring-0 outline-none transition pr-24"
+                        />
+                        <div className="absolute inset-y-0 right-3 flex items-center gap-1">
+                            <button
+                                onClick={() => onBetAmountChange((parseFloat(betAmount || '0') / 2).toFixed(2))}
+                                className="px-2 py-0.5 bg-gray-700/50 hover:bg-gray-600/50 text-xs rounded text-white font-semibold"
+                            >1/2</button>
+                            <button
+                                onClick={() => onBetAmountChange((parseFloat(betAmount || '0') * 2).toFixed(2))}
+                                className="px-2 py-0.5 bg-gray-700/50 hover:bg-gray-600/50 text-xs rounded text-white font-semibold"
+                            >x2</button>
+                             <button
+                                onClick={() => onBetAmountChange(balance.toFixed(2))}
+                                className="px-2 py-0.5 bg-gray-700/50 hover:bg-gray-600/50 text-xs rounded text-white font-semibold"
+                            >Max</button>
+                        </div>
                     </div>
+                    <ActionButton
+                        label="Bet"
+                        onClick={onBet}
+                        disabled={parseFloat(betAmount) <= 0}
+                        variant="primary"
+                        className="h-14"
+                    />
                 </div>
-            </div>
-
-            {/* Action Buttons */}
-            <div className="flex-1 flex flex-col justify-end space-y-2">
-                <div className="grid grid-cols-2 gap-2">
-                     <button
-                        onClick={onHit}
-                        disabled={!isPlayerTurn}
-                        className="bg-[#2c2c2c] px-4 py-3 rounded-lg text-white hover:bg-gray-600 transition-colors disabled:bg-gray-800 disabled:text-gray-500 disabled:cursor-not-allowed flex items-center justify-between"
-                    >
-                        <span className="font-semibold">Hit</span>
-                        <img src="https://shuffle.com/hit.svg" alt="Hit icon" className="h-5 w-5" onContextMenu={(e) => e.preventDefault()} />
-                    </button>
-                     <button
-                        onClick={onStand}
-                        disabled={!isPlayerTurn}
-                        className="bg-[#2c2c2c] px-4 py-3 rounded-lg text-white hover:bg-gray-600 transition-colors disabled:bg-gray-800 disabled:text-gray-500 disabled:cursor-not-allowed flex items-center justify-between"
-                    >
-                        <span className="font-semibold">Stand</span>
-                        <img src="https://shuffle.com/stand.svg" alt="Stand icon" className="h-5 w-5" onContextMenu={(e) => e.preventDefault()} />
-                    </button>
-                    <button
-                        onClick={() => {}} // No split logic yet
-                        disabled={true}
-                        className="bg-[#2c2c2c] px-4 py-3 rounded-lg text-white hover:bg-gray-600 transition-colors disabled:bg-gray-800 disabled:text-gray-500 disabled:cursor-not-allowed flex items-center justify-between"
-                    >
-                        <span className="font-semibold">Split</span>
-                        <img src="https://shuffle.com/split.svg" alt="Split icon" className="h-5 w-5" onContextMenu={(e) => e.preventDefault()} />
-                    </button>
-                    <button
-                        onClick={onDouble}
-                        disabled={!isPlayerTurn || !canDouble}
-                        className="bg-[#2c2c2c] px-4 py-3 rounded-lg text-white hover:bg-gray-600 transition-colors disabled:bg-gray-800 disabled:text-gray-500 disabled:cursor-not-allowed flex items-center justify-between"
-                    >
-                        <span className="font-semibold">Double</span>
-                        <img src="https://shuffle.com/double.svg" alt="Double icon" className="h-5 w-5" onContextMenu={(e) => e.preventDefault()} />
-                    </button>
+            )}
+            {isPlayerTurn && (
+                <>
+                    <ActionButton label="Hit" onClick={onHit} />
+                    <ActionButton label="Stand" onClick={onStand} />
+                    <ActionButton label="Double" onClick={onDouble} disabled={!canDouble} />
+                </>
+            )}
+            {isFinished && (
+                 <div className="flex items-center gap-4">
+                    <ActionButton label="New Bet" onClick={onNewRound} />
+                    <ActionButton label="Rebet" onClick={onRebet} variant="primary" disabled={!canRebet} />
                 </div>
-                
-                <button 
-                    onClick={onBet} 
-                    disabled={!isBetting || betAmount <= 0 || betAmount > balance}
-                    className="w-full py-4 mt-2 text-center rounded-lg text-lg font-bold bg-purple-600 text-white transition-all duration-200 hover:bg-purple-500 disabled:bg-gray-700 disabled:cursor-not-allowed shadow-[0_4px_15px_rgba(147,51,234,0.3)] hover:shadow-[0_4px_20px_rgba(147,51,234,0.4)] disabled:shadow-none"
-                >
-                    Bet
-                </button>
-            </div>
+            )}
         </div>
     );
 };

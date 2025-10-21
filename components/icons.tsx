@@ -1,10 +1,21 @@
 
+
 import React from 'react';
 
 // Updated Logo to use the new image
 export const Logo: React.FC<{ className?: string }> = ({ className = "h-12" }) => (
     <img src="https://i.imgur.com/6U31UIH.png" alt="Mihael.bet Logo" className={className} />
 );
+
+// New abstract symbol for branding elements
+export const MihaelBetSymbolIcon: React.FC<{ className?: string }> = (props) => (
+    <svg {...props} viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M50 0 L100 50 L50 100 L0 50 Z" fill="currentColor" fillOpacity="0.2"/>
+        <path d="M50 15 L85 50 L50 85 L15 50 Z" stroke="currentColor" strokeWidth="5"/>
+        <path d="M50 25 L75 50 L50 75 L25 50 Z" fill="currentColor"/>
+    </svg>
+);
+
 
 // New Icons for Sidebar
 export const HomeIcon: React.FC<{ className?: string }> = (props) => (

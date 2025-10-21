@@ -1,5 +1,6 @@
 import React from 'react';
 import { Card } from '../../pages/BlackjackGamePage';
+import { MihaelBetSymbolIcon } from '../icons';
 
 interface SuitIconsProps {
     suit: 'Hearts' | 'Diamonds' | 'Clubs' | 'Spades';
@@ -21,7 +22,7 @@ interface BlackjackCardProps {
     card: Card | null;
     isFaceDown: boolean;
     style?: React.CSSProperties;
-    highlight: 'win' | 'lose' | 'push' | null;
+    highlight?: 'win' | 'lose' | 'push' | null;
 }
 
 export const BlackjackCard: React.FC<BlackjackCardProps> = ({ card, isFaceDown, style, highlight }) => {
@@ -55,8 +56,10 @@ export const BlackjackCard: React.FC<BlackjackCardProps> = ({ card, isFaceDown, 
                     )}
                 </div>
                 {/* Face Down */}
-                <div className="card-face card-back bg-[#f8f8f8] flex items-center justify-center">
-                    <span className="text-gray-400 text-8xl font-bold select-none">?</span>
+                <div className="card-face card-back bg-red-900 flex items-center justify-center p-2 relative overflow-hidden" style={{ background: 'radial-gradient(circle, #991b1b, #7f1d1d)'}}>
+                    <div className="w-full h-full border-2 border-yellow-400/20 rounded-md flex items-center justify-center bg-black/10 backdrop-blur-sm">
+                         <MihaelBetSymbolIcon className="w-16 h-16 text-yellow-400/50 opacity-50" />
+                    </div>
                 </div>
             </div>
             <style>{`
@@ -79,8 +82,7 @@ export const BlackjackCard: React.FC<BlackjackCardProps> = ({ card, isFaceDown, 
                     -webkit-backface-visibility: hidden;
                     backface-visibility: hidden;
                     border-radius: 0.5rem;
-                    border: 1px solid rgba(255, 255, 255, 0.2);
-                    transition: border-color 0.3s, box-shadow 0.3s;
+                    border: 1px solid rgba(0, 0, 0, 0.2);
                 }
                 .card-front {
                     background-color: #f8f8f8;
@@ -89,15 +91,15 @@ export const BlackjackCard: React.FC<BlackjackCardProps> = ({ card, isFaceDown, 
                 .card-back {
                     transform: rotateY(180deg);
                 }
-                .highlight-win .card-face {
+                .highlight-win .card-front {
                     border: 2px solid #22c55e;
                     box-shadow: 0 0 15px rgba(34, 197, 94, 0.7);
                 }
-                .highlight-lose .card-face {
+                .highlight-lose .card-front {
                     border: 2px solid #ef4444;
                     box-shadow: 0 0 15px rgba(239, 68, 68, 0.7);
                 }
-                .highlight-push .card-face {
+                .highlight-push .card-front {
                     border: 2px solid #f97316;
                     box-shadow: 0 0 15px rgba(249, 115, 22, 0.7);
                 }

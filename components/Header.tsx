@@ -47,7 +47,7 @@ export const Header: React.FC<HeaderProps> = ({ session, profile, onSignInClick,
       </button>
       
       {/* Center: The Pill Bar */}
-      <div className="flex-grow max-w-4xl mx-auto h-16 rounded-full bg-gradient-to-r from-red-900/30 via-red-700/20 to-red-900/30 backdrop-blur-lg border border-white/10 shadow-lg shadow-black/30">
+      <div className="flex-grow max-w-4xl mx-auto h-16 rounded-full bg-gradient-to-r from-black/20 via-red-900/10 to-black/20 backdrop-blur-xl border border-white/5 shadow-lg shadow-black/30">
         <div className="flex items-center justify-between h-full px-6">
           {/* Left side of pill */}
           <div onClick={() => onNavigate('home')} className="flex items-center space-x-3 cursor-pointer group">

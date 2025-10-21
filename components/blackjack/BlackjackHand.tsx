@@ -1,62 +1,62 @@
 import React from 'react';
-import { Card } from '../../pages/BlackjackGamePage';
+import { Card, getCardValue } from '../../pages/BlackjackGamePage';
 import { BlackjackCard } from './BlackjackCard';
 
 interface BlackjackHandProps {
     hand: Card[];
-    scoreDisplay: string;
+    score: number;
     isDealer: boolean;
-    isTurn: boolean;
+    isTurn?: boolean;
     hideHoleCard?: boolean;
-    result?: 'win' | 'lose' | 'push' | null;
-    dealerUpCardScore?: string;
+    result?: 'win' | 'lose' | 'push' | 'blackjack' | 'bust' | null;
 }
 
-export const BlackjackHand: React.FC<BlackjackHandProps> = ({ hand, scoreDisplay, isDealer, isTurn, hideHoleCard, result, dealerUpCardScore }) => {
+export const BlackjackHand: React.FC<BlackjackHandProps> = ({ hand, score, isDealer, isTurn, hideHoleCard, result }) => {
+    const dealerVisibleScore = hideHoleCard && hand.length > 0 ? getCardValue(hand[0]) : score;
+    const scoreLabel = isDealer ? `Dealer Total: ${dealerVisibleScore}` : `Player Total: ${score}`;
+    
+    // Determine highlight based on result
+    let highlight: 'win' | 'lose' | 'push' | null = null;
+    if (result) {
+        if (result === 'win' || result === 'blackjack') highlight = 'win';
+        else if (result === 'lose' || result === 'bust') highlight = 'lose';
+        else if (result === 'push') highlight = 'push';
+    }
+
     return (
         <div className="relative flex flex-col items-center w-full min-h-[220px]">
-            <div className={`flex justify-center transition-transform duration-300 ${isTurn ? 'scale-105' : ''}`}>
+            <div className="flex justify-center h-48 items-center">
                 {hand.map((card, index) => (
                     <div
                         key={index}
                         className="absolute"
                         style={{
-                            // Fan cards out
-                            transform: `translateX(${(index - (hand.length - 1) / 2) * 65}px)`,
-                            transition: 'transform 0.3s ease-out'
+                            // Final resting position
+                            transform: `translateX(${(index - (hand.length - 1) / 2) * 40}px) rotateZ(${(index - (hand.length - 1) / 2) * 3}deg)`,
+                            // Animation applied
+                            animation: `deal-in 0.5s cubic-bezier(0.25, 1, 0.5, 1) ${index * 0.15}s both`
                         }}
                     >
-                        <div
-                            className="transition-transform duration-500 ease-out"
-                            style={{
-                                animation: `deal-in 0.3s ease-out ${index * 0.2}s backwards`
-                            }}
-                        >
-                            <BlackjackCard
-                                card={card}
-                                isFaceDown={isDealer && index === 1 && !!hideHoleCard}
-                                highlight={!isDealer ? (result ?? null) : null}
-                            />
-                        </div>
+                        <BlackjackCard
+                            card={card}
+                            isFaceDown={isDealer && index === 1 && !!hideHoleCard}
+                            highlight={!isDealer ? highlight : null}
+                        />
                     </div>
                 ))}
             </div>
 
             {(hand.length > 0) && (
-                <div className={`absolute ${isDealer ? 'top-[200px]' : 'bottom-[200px]'} bg-[#1a1a1a]/80 text-white text-sm font-bold px-3 py-1 rounded-full border-2 border-gray-600 shadow-lg`}>
-                   {isDealer && !!hideHoleCard ? dealerUpCardScore : scoreDisplay}
+                <div className={`mt-4 bg-black/50 backdrop-blur-sm text-white text-lg font-bold px-4 py-2 rounded-full border-2 border-gray-600 shadow-lg`}>
+                   {scoreLabel}
                 </div>
             )}
             
             <style>{`
                 @keyframes deal-in {
                     from {
+                        transform: translate(0px, -250px) rotate(0deg) scale(0.8);
                         opacity: 0;
-                        transform: translateY(${isDealer ? '-50px' : '50px'}) scale(0.9);
-                    }
-                    to {
-                        opacity: 1;
-                        transform: translateY(0) scale(1);
                     }
                 }
             `}</style>

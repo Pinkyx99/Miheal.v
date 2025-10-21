@@ -11,7 +11,7 @@ const OriginalGameCard: React.FC<{
     onClick={onClick}
     className="flex flex-col items-center gap-3 cursor-pointer group"
   >
-    <div className="relative w-44 h-32 bg-white/5 backdrop-blur-lg border border-white/10 rounded-xl flex items-center justify-center transition-all duration-300 transform-gpu group-hover:-translate-y-1 group-hover:border-primary/50 group-hover:shadow-lg group-hover:shadow-primary/20 overflow-hidden">
+    <div className="relative w-44 h-32 bg-black/20 backdrop-blur-xl border border-white/5 rounded-xl flex items-center justify-center transition-all duration-300 transform-gpu group-hover:-translate-y-1 group-hover:border-primary/50 group-hover:shadow-lg group-hover:shadow-primary/20 overflow-hidden">
         {/* Shine effect */}
         <div className="absolute top-0 left-[-100%] w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent transition-all duration-700 ease-in-out group-hover:left-[100%]"></div>
       

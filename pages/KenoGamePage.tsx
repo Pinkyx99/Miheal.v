@@ -183,9 +183,8 @@ const KenoGamePage: React.FC<KenoGamePageProps> = ({ profile, session, onProfile
             if (payout > 0) {
                  const { data: currentProfile, error: fetchError } = await supabase.from('profiles').select('balance').eq('id', session.user.id).single();
                  if (fetchError || !currentProfile) return;
-                 // FIX: Safely calculate the new balance by handling potential null/undefined values and ensuring the result is a number.
-                 const currentBalance = Number((currentProfile as any)?.balance ?? 0);
-                 const newBalance = currentBalance + payout;
+                 // FIX: Safely calculate the new balance by explicitly casting the balance from the database to a number, preventing a potential TypeScript type error.
+                 const newBalance = Number((currentProfile as any).balance || 0) + payout;
                  await supabase.from('profiles').update({ balance: newBalance }).eq('id', session.user.id);
             }
 
