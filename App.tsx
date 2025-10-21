@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, Suspense, lazy } from 'react';
 import { Header } from './components/Header';
 import { Hero } from './components/HeroCarousel';
 import { AuthModal } from './components/AuthModal';
@@ -7,22 +7,29 @@ import { Session, Provider } from '@supabase/supabase-js';
 import { Profile, ProfileLink } from './types';
 import { WalletModal } from './components/WalletModal';
 import { OriginalsRow } from './components/OriginalsRow';
-import ProfilePage from './pages/ProfilePage';
-import CrashGamePage from './pages/CrashGamePage';
-import RouletteGamePage from './pages/RouletteGamePage';
 import { ChatRail } from './components/ChatRail';
 import { UserProfileModal } from './components/UserProfileModal';
 import { Sidebar } from './components/Sidebar';
 import { PROFILE_LINKS } from './constants';
-import RouletteInfoPage from './pages/RouletteInfoPage';
-import SlotsPage from './pages/SlotsPage';
-import RewardsPage from './pages/RewardsPage';
-import AdminPage from './pages/AdminPage';
-import DiceGamePage from './pages/DiceGamePage';
-import MinesGamePage from './pages/MinesGamePage';
-import BlackjackGamePage from './pages/BlackjackGamePage';
+
+const ProfilePage = lazy(() => import('./pages/ProfilePage'));
+const CrashGamePage = lazy(() => import('./pages/CrashGamePage'));
+const RouletteGamePage = lazy(() => import('./pages/RouletteGamePage'));
+const RouletteInfoPage = lazy(() => import('./pages/RouletteInfoPage'));
+const SlotsPage = lazy(() => import('./pages/SlotsPage'));
+const RewardsPage = lazy(() => import('./pages/RewardsPage'));
+const AdminPage = lazy(() => import('./pages/AdminPage'));
+const DiceGamePage = lazy(() => import('./pages/DiceGamePage'));
+const MinesGamePage = lazy(() => import('./pages/MinesGamePage'));
+const BlackjackGamePage = lazy(() => import('./pages/BlackjackGamePage'));
 
 type View = 'home' | 'crash' | 'roulette' | 'roulette-info' | 'slots' | 'rewards' | 'dice' | 'mines' | 'blackjack' | ProfileLink['name'];
+
+const LoadingFallback: React.FC = () => (
+    <div className="flex-1 flex items-center justify-center h-full">
+        <img src="https://i.imgur.com/6U31UIH.png" alt="Mihael.bet Logo" className="h-16 animate-spin" />
+    </div>
+);
 
 const App: React.FC = () => {
   const [session, setSession] = useState<Session | null>(null);
@@ -38,7 +45,7 @@ const App: React.FC = () => {
   
   const [activeVideoIndex, setActiveVideoIndex] = useState(0);
   const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
-  const videos = ['https://i.imgur.com/vEkEIzN.mp4', 'https://i.imgur.com/hk3R808.mp4'];
+  const videos = ['https://i.imgur.com/vEkEIzN.mp4', 'https://i.imgur.com/hk3R808.mp4', 'https://i.imgur.com/CjNXN7F.mp4'];
 
   const handleVideoEnded = useCallback(() => {
     setActiveVideoIndex(prevIndex => (prevIndex + 1) % videos.length);
@@ -53,29 +60,29 @@ const App: React.FC = () => {
     }
 
     // If we are on the home page, manage video playback.
-    const activeVideo = videoRefs.current[activeVideoIndex];
-    if (activeVideo) {
-      activeVideo.currentTime = 0; // Always start from the beginning.
-      const playPromise = activeVideo.play();
-      if (playPromise !== undefined) {
-        playPromise.catch(e => {
-          // AbortError is expected if the user navigates away quickly.
-          if (e.name !== 'AbortError') {
-            console.error("Error playing video:", e);
-          }
-        });
-      }
-    }
-    
-    // Explicitly pause the other, non-active video.
-    const inactiveVideo = videoRefs.current[(activeVideoIndex + 1) % videos.length];
-    if (inactiveVideo) {
-      inactiveVideo.pause();
-    }
+    videoRefs.current.forEach((video, index) => {
+        if (!video) return;
+
+        if (index === activeVideoIndex) {
+            video.currentTime = 0; // Always start from the beginning.
+            const playPromise = video.play();
+            if (playPromise !== undefined) {
+                playPromise.catch(e => {
+                    // AbortError is expected if the user navigates away quickly.
+                    if (e.name !== 'AbortError') {
+                        console.error("Error playing video:", e);
+                    }
+                });
+            }
+        } else {
+            video.pause();
+        }
+    });
     
     // The cleanup function is crucial. It runs before the effect runs again
     // (e.g., on view change), pausing the video and preventing interruption errors.
     return () => {
+        const activeVideo = videoRefs.current[activeVideoIndex];
         if (activeVideo) {
             activeVideo.pause();
         }
@@ -296,7 +303,9 @@ const App: React.FC = () => {
         <AuthModal show={showAuthModal} onClose={() => setShowAuthModal(false)} view={authView} setView={setAuthView} />
         <WalletModal show={isWalletModalOpen} onClose={() => setIsWalletModalOpen(false)} />
         <UserProfileModal userId={viewingProfileId} onClose={() => setViewingProfileId(null)} />
-        <AdminPage show={isAdminPanelOpen} onClose={() => setIsAdminPanelOpen(false)} profile={profile} />
+        <Suspense fallback={null}>
+            <AdminPage show={isAdminPanelOpen} onClose={() => setIsAdminPanelOpen(false)} profile={profile} />
+        </Suspense>
 
         {/* Sidebar and its backdrop */}
         <div 
@@ -307,8 +316,10 @@ const App: React.FC = () => {
 
         <div className="flex flex-col h-full">
             <Header session={session} profile={profile} onSignInClick={() => openAuthModal('signIn')} onSignUpClick={() => openAuthModal('signUp')} onWalletButtonClick={() => setIsWalletModalOpen(true)} onNavigate={(page) => navigateTo(page as View)} currentView={currentView} onChatToggle={() => setIsChatOpen(true)} onProfileUpdate={handleProfileUpdate} onOpenAdminPanel={() => setIsAdminPanelOpen(true)} onSidebarToggle={() => setIsSidebarOpen(true)} />
-            <main className={`flex-1 overflow-y-auto no-scrollbar p-6 lg:p-8 ${currentView === 'home' ? 'flex flex-col justify-center' : ''}`}>
-              {renderMainContent()}
+            <main className={`flex-1 overflow-y-auto no-scrollbar p-6 lg:p-8 flex flex-col ${currentView === 'home' ? 'justify-center' : ''}`}>
+              <Suspense fallback={<LoadingFallback />}>
+                {renderMainContent()}
+              </Suspense>
             </main>
         </div>
         

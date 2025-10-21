@@ -21,7 +21,7 @@ interface HeaderProps {
     onOpenAdminPanel: () => void;
 }
 
-export const Header: React.FC<HeaderProps> = ({ session, profile, onSignInClick, onSignUpClick, onWalletButtonClick, onNavigate, currentView, onChatToggle, onSidebarToggle, onProfileUpdate, onOpenAdminPanel }) => {
+export const Header: React.FC<HeaderProps> = ({ session, profile, onSignInClick, onSignUpClick, onWalletButtonClick, onNavigate, onChatToggle, onSidebarToggle, onProfileUpdate, onOpenAdminPanel }) => {
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const notificationsRef = useRef<HTMLDivElement>(null);
 
@@ -40,40 +40,32 @@ export const Header: React.FC<HeaderProps> = ({ session, profile, onSignInClick,
   const hasUnclaimedBonus = profile && !profile.has_claimed_welcome_bonus;
 
   return (
-    <header className="flex-shrink-0 relative z-30 bg-black/30 backdrop-blur-sm">
-      <div className="max-w-7xl mx-auto px-6 lg:px-8">
-        <div className="relative flex items-center justify-between h-20">
-          {/* Left Side: Menu and Logo */}
-          <div className="flex items-center space-x-4">
-              <button onClick={onSidebarToggle} className="p-2 rounded-md text-text-muted hover:text-white hover:bg-white/10 transition-colors">
-                  <Bars3Icon className="w-6 h-6" />
-              </button>
-              <div onClick={() => onNavigate('home')} className="cursor-pointer">
-                  <Logo className="h-8" />
-              </div>
+    <header className="flex-shrink-0 relative z-30 flex items-center justify-between h-20 px-6">
+      {/* Left Side: Menu Toggle */}
+      <button onClick={onSidebarToggle} className="p-2 rounded-md text-text-muted hover:text-white hover:bg-white/10 transition-colors">
+          <Bars3Icon className="w-6 h-6" />
+      </button>
+      
+      {/* Center: The Pill Bar */}
+      <div className="flex-grow max-w-4xl mx-auto h-16 rounded-full bg-gradient-to-r from-red-900/30 via-red-700/20 to-red-900/30 backdrop-blur-lg border border-white/10 shadow-lg shadow-black/30">
+        <div className="flex items-center justify-between h-full px-6">
+          {/* Left side of pill */}
+          <div onClick={() => onNavigate('home')} className="flex items-center space-x-3 cursor-pointer group">
+              <Logo className="h-8 group-hover:animate-spin-slow" />
+              <span className="font-bold text-lg text-white hidden sm:block">Mihael.bet</span>
           </div>
 
-          {/* Center: Wallet on Desktop */}
-          <div className="hidden lg:block absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
-            {session && profile && (
-              <Wallet onWalletButtonClick={onWalletButtonClick} balance={profile.balance} />
-            )}
-          </div>
-
-          {/* Right Side: Auth/Profile & Mobile Chat Toggle */}
+          {/* Right side of pill */}
           <div className="flex items-center space-x-2">
             {session && profile ? (
               <>
-                {/* Wallet for Mobile/Tablet */}
-                <div className="lg:hidden">
-                    <Wallet onWalletButtonClick={onWalletButtonClick} balance={profile.balance} />
-                </div>
+                <Wallet onWalletButtonClick={onWalletButtonClick} balance={profile.balance} />
 
                 <div ref={notificationsRef} className="relative">
                     <button onClick={() => setIsNotificationsOpen(!isNotificationsOpen)} className="p-2 rounded-full hover:bg-white/10 transition-colors text-text-muted hover:text-white relative">
                         <BellIcon className="w-6 h-6" />
                         {hasUnclaimedBonus && (
-                            <span className="absolute top-1 right-1.5 w-2 h-2 bg-red-500 rounded-full border border-background"></span>
+                            <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border border-background"></span>
                         )}
                     </button>
                     <NotificationsDropdown 
@@ -95,25 +87,26 @@ export const Header: React.FC<HeaderProps> = ({ session, profile, onSignInClick,
               <div className="flex items-center space-x-2">
                 <button
                   onClick={onSignInClick}
-                  className="btn-interactive px-6 py-2.5 rounded-lg text-white font-semibold text-sm transition bg-card hover:bg-card/70 border border-border-color"
+                  className="px-5 py-2 rounded-full text-white font-semibold text-sm transition bg-white/5 hover:bg-white/10"
                 >
                   Log in
                 </button>
                 <button
                   onClick={onSignUpClick}
-                  className="btn-interactive bg-primary hover:bg-primary-light text-white font-semibold px-6 py-2.5 rounded-lg text-sm transition"
+                  className="bg-primary hover:bg-primary-light text-white font-semibold px-5 py-2 rounded-full text-sm transition"
                 >
                   Sign up
                 </button>
               </div>
             )}
-            
-            <button onClick={onChatToggle} className="p-2 rounded-md text-text-muted hover:text-white hover:bg-white/10 transition-colors">
-                <ChatBubbleIcon className="w-6 h-6" />
-            </button>
           </div>
         </div>
       </div>
+      
+      {/* Right Side: Chat Toggle */}
+      <button onClick={onChatToggle} className="p-2 rounded-md text-text-muted hover:text-white hover:bg-white/10 transition-colors">
+          <ChatBubbleIcon className="w-6 h-6" />
+      </button>
     </header>
   );
 };
