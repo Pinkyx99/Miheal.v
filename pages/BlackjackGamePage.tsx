@@ -1,4 +1,5 @@
 
+
 import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import { Session } from '@supabase/supabase-js';
 import { Profile } from '../types';
@@ -270,7 +271,8 @@ const BlackjackGamePage: React.FC<BlackjackGamePageProps> = ({ profile, session,
               const { data: currentProfile, error: fetchError } = await supabase.from('profiles').select('balance').eq('id', session.user.id).single();
               if (fetchError || !currentProfile) throw new Error(fetchError?.message || "Profile not found");
               
-              const newBalance = Number(currentProfile.balance || 0) + payout;
+              // Cast currentProfile to any to bypass strict type checking on the `balance` property, which may be inferred as 'unknown'.
+              const newBalance = Number((currentProfile as any).balance || 0) + payout;
   
               const { error: updateError } = await supabase.from('profiles').update({ balance: newBalance }).eq('id', session.user.id);
               if (updateError) throw updateError;

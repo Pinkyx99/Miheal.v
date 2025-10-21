@@ -4,6 +4,18 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Mihael.bet</title>
+    <script>
+      // On page load or when changing themes, best to add inline in `head` to avoid FOUC
+      (function() {
+        const theme = localStorage.getItem('theme');
+        if (theme === 'light') {
+          document.documentElement.classList.add('light');
+        } else {
+          // Default to dark
+          document.documentElement.classList.remove('light');
+        }
+      })();
+    </script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -14,14 +26,14 @@
         theme: {
           extend: {
             colors: {
-              'background': '#0a0a0a',
-              'sidebar': '#111111',
-              'card': '#1f2937',
+              'background': 'rgb(var(--color-background))',
+              'sidebar': 'rgb(var(--color-sidebar))',
+              'card': 'rgb(var(--color-card))',
+              'text-main': 'rgb(var(--color-text-main))',
+              'text-muted': 'rgb(var(--color-text-muted))',
+              'border-color': 'rgba(var(--color-border-color-rgb), 0.1)',
               'primary': '#dc2626', // red-600
               'primary-light': '#ef4444', // red-500
-              'text-main': '#f9fafb', // gray-50
-              'text-muted': '#d1d5db', // gray-300
-              'border-color': 'rgba(255, 255, 255, 0.1)',
               'accent-green': '#dc2626', // Replaced green with red
               'secondary-green': '#b91c1c', // Replaced green with darker red
               'accent-red': '#EF4444', // red-500
@@ -34,7 +46,7 @@
               'glow-primary': '0 0 20px rgba(220, 38, 38, 0.4)',
             },
             borderColor: {
-              'outline': 'rgba(255, 255, 255, 0.1)',
+              'outline': 'rgba(var(--color-border-color-rgb), 0.1)',
             },
             animation: {
               'spin-slow': 'spin 3s linear infinite',
@@ -45,6 +57,30 @@
       }
     </script>
     <style>
+      :root {
+        /* DARK MODE is default */
+        --color-background: 10 10 10;
+        --color-sidebar: 17 17 17;
+        --color-card: 31 41 55;
+        --color-text-main: 249 250 251;
+        --color-text-muted: 209 213 219;
+        --color-border-color-rgb: 255, 255, 255;
+      }
+
+      html.light {
+        /* LIGHT MODE overrides */
+        --color-background: 249 250 251;
+        --color-sidebar: 255 255 255;
+        --color-card: 255 255 255;
+        --color-text-main: 17 24 39;
+        --color-text-muted: 107 114 128;
+        --color-border-color-rgb: 0, 0, 0;
+      }
+
+      html.light .bg-card, html.light .bg-sidebar, html.light .border, html.light .border-outline {
+        border-color: rgba(var(--color-border-color-rgb), 0.1);
+      }
+      
       /* For custom scrollbar in webkit browsers */
       .no-scrollbar::-webkit-scrollbar {
         display: none;
@@ -54,7 +90,7 @@
         scrollbar-width: none; /* Firefox */
       }
       body {
-          color: #f9fafb; /* text-main */
+          color: rgb(var(--color-text-main)); /* text-main */
           overflow: hidden; /* To contain the app within viewport */
       }
 
@@ -75,8 +111,8 @@
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        background: #1f2937; /* card bg */
-        border: 1px solid rgba(255, 255, 255, 0.1); /* border-color */
+        background: rgb(var(--color-card));
+        border: 1px solid rgba(var(--color-border-color-rgb), 0.1);
         transition: transform 0.3s ease-out, box-shadow 0.3s ease-out;
       }
 
@@ -92,7 +128,7 @@
         width: 190px;
         height: 240px;
         z-index: 2;
-        background: #111111; /* sidebar bg */
+        background: rgb(var(--color-sidebar));
         border-radius: 10px;
         overflow: hidden;
       }
@@ -139,7 +175,7 @@
         overflow: hidden;
         border-radius: 35px;
         align-items: center;
-        border: solid rgba(255, 255, 255, 0.1) 2px;
+        border: solid rgba(var(--color-border-color-rgb), 0.1) 2px;
         outline: none;
         cursor: pointer;
       }
@@ -152,7 +188,7 @@
       .g-button .g-text {
         z-index: 10;
         font-size: 14px;
-        color: #f9fafb;
+        color: rgb(var(--color-text-main));
       }
 
       .g-button:hover .g-text {
@@ -161,7 +197,7 @@
 
       @keyframes g-text {
         from {
-          color: #f9fafb;
+          color: rgb(var(--color-text-main));
         }
 
         to {
@@ -354,7 +390,7 @@
         width: 100%;
         margin: 0;
         padding: 0;
-        background-color: #000;
+        background-color: rgb(var(--color-background));
       }
 
       #root {
@@ -363,6 +399,25 @@
       }
       /* END: Fullscreen Layout */
 
+      .form-input {
+        background-color: rgb(var(--color-background));
+        border: 1px solid rgba(var(--color-border-color-rgb), 0.1);
+        border-radius: 0.5rem; /* rounded-lg */
+        padding: 0.75rem 1rem; /* py-3 px-4 */
+        margin-top: 0.25rem; /* mt-1 */
+        font-size: 0.875rem; /* text-sm */
+        color: rgb(var(--color-text-main));
+        width: 100%;
+        transition: border-color 0.2s, box-shadow 0.2s;
+      }
+      .form-input::placeholder {
+        color: rgb(var(--color-text-muted));
+      }
+      .form-input:focus {
+        outline: none;
+        border-color: #dc2626; /* primary */
+        box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.3);
+      }
     </style>
   <script type="importmap">
 {

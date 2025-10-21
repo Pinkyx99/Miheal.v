@@ -22,7 +22,7 @@ export interface Profile {
 }
 
 export interface ProfileLink {
-    name: 'Profile' | 'Statistics' | 'Notifications' | 'Settings' | 'Affiliates' | 'Privacy' | 'Log out';
+    name: 'Profile' | 'Statistics' | 'Notifications' | 'Settings' | 'Affiliates' | 'Privacy' | 'Log out' | 'Transactions';
     icon: React.FC<{ className?: string }>;
 }
 

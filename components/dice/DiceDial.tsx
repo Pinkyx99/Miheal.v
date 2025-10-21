@@ -2,7 +2,7 @@ import React, { useRef, useCallback, useEffect, useState } from 'react';
 // Update import path for RollResult type
 import { RollResult } from '../../types';
 
-interface DiceDisplayProps {
+interface DiceDialProps {
     rollValue: number;
     isRollOver: boolean;
     gameState: 'idle' | 'rolling' | 'finished';
@@ -17,12 +17,12 @@ const Needle: React.FC<{ angle: number, isRolling: boolean, lastRoll: RollResult
         className="absolute bottom-0 left-1/2 w-1 h-1/2 origin-bottom transition-transform duration-300 ease-out"
         style={{ transform: `translateX(-50%) rotate(${angle}deg)` }}
     >
-        <div className={`w-full h-full rounded-t-full ${isRolling ? 'bg-white' : (lastRoll?.win ? 'bg-accent-green' : 'bg-red-500')}`}></div>
+        <div className={`w-full h-full rounded-t-full ${isRolling ? 'bg-white' : (lastRoll?.win ? 'bg-green-500' : 'bg-red-500')}`}></div>
     </div>
 );
 
 
-export const DiceDisplay: React.FC<DiceDisplayProps> = ({ rollValue, isRollOver, gameState, lastRoll, onRollValueChange, previousRollValue }) => {
+export const DiceDial: React.FC<DiceDialProps> = ({ rollValue, isRollOver, gameState, lastRoll, onRollValueChange, previousRollValue }) => {
     const dialRef = useRef<HTMLDivElement>(null);
     const numberDisplayRef = useRef<HTMLDivElement>(null);
     const animationFrameRef = useRef<number>();
@@ -103,7 +103,7 @@ export const DiceDisplay: React.FC<DiceDisplayProps> = ({ rollValue, isRollOver,
     const winPercentage = isRollOver ? 100 - rollValue : rollValue;
 
     const conicGradient = isRollOver
-        ? `conic-gradient(from -90deg at 50% 100%, #16a34a 0%, #16a34a ${winPercentage}%, #ef4444 ${winPercentage}%, #ef4444 100%)`
+        ? `conic-gradient(from -90deg at 50% 100%, #16a34a 0%, #16a34a ${100 - winPercentage}%, #ef4444 ${100 - winPercentage}%, #ef4444 100%)`
         : `conic-gradient(from -90deg at 50% 100%, #16a34a 0%, #16a34a ${winPercentage}%, #ef4444 ${winPercentage}%, #ef4444 100%)`;
 
 
@@ -150,7 +150,7 @@ export const DiceDisplay: React.FC<DiceDisplayProps> = ({ rollValue, isRollOver,
             {/* Central Display */}
             <div className="absolute bottom-1/2 translate-y-[40%] text-center pointer-events-none">
                 <div className="flex items-center justify-center transition-opacity" style={{ opacity: gameState === 'idle' ? 1 : 0}}>
-                     <span className={`font-bold text-lg ${isRollOver ? 'text-accent-green' : 'text-red-500'}`}>{isRollOver ? 'Over' : 'Under'}</span>
+                     <span className={`font-bold text-lg ${isRollOver ? 'text-green-500' : 'text-red-500'}`}>{isRollOver ? 'Over' : 'Under'}</span>
                      <span className="font-bold text-4xl text-white mx-2">{rollValue.toFixed(2)}</span>
                 </div>
                 
@@ -160,8 +160,8 @@ export const DiceDisplay: React.FC<DiceDisplayProps> = ({ rollValue, isRollOver,
                 </div>
 
                 {/* Final Result */}
-                 <div className={`absolute inset-0 font-mono font-bold text-6xl tabular-nums transition-all duration-300 transform ${gameState === 'finished' && lastRoll ? 'scale-100 opacity-100' : 'scale-75 opacity-0'} ${lastRoll?.win ? 'text-accent-green' : 'text-red-500'}`}
-                     style={{ textShadow: lastRoll?.win ? '0 0 20px rgba(100, 255, 218, 0.4)' : '0 0 20px rgba(239, 68, 68, 0.4)' }}>
+                 <div className={`absolute inset-0 font-mono font-bold text-6xl tabular-nums transition-all duration-300 transform ${gameState === 'finished' && lastRoll ? 'scale-100 opacity-100' : 'scale-75 opacity-0'} ${lastRoll?.win ? 'text-green-500' : 'text-red-500'}`}
+                     style={{ textShadow: lastRoll?.win ? '0 0 20px rgba(34, 197, 94, 0.4)' : '0 0 20px rgba(239, 68, 68, 0.4)' }}>
                     {lastRoll?.value.toFixed(2)}
                 </div>
             </div>
@@ -183,7 +183,7 @@ export const DiceDisplay: React.FC<DiceDisplayProps> = ({ rollValue, isRollOver,
                      transition: transform 0.2s ease-out;
                 }
                 .needle-body { background-color: white; }
-                .needle-body.win { background-color: #64ffda; }
+                .needle-body.win { background-color: #22c55e; }
                 .needle-body.loss { background-color: #ef4444; }
             `}</style>
         </div>

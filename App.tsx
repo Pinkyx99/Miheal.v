@@ -39,13 +39,56 @@ const App: React.FC = () => {
   const [authView, setAuthView] = useState<'signIn' | 'signUp'>('signIn');
   const [currentView, setCurrentView] = useState<View>('home');
   const [isChatOpen, setIsChatOpen] = useState(false);
+  const [isChatPinned, setIsChatPinned] = useState(false);
   const [viewingProfileId, setViewingProfileId] = useState<string | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isAdminPanelOpen, setIsAdminPanelOpen] = useState(false);
+  const [theme, setTheme] = useState<'light' | 'dark'>('dark');
   
   const [activeVideoIndex, setActiveVideoIndex] = useState(0);
   const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
   const videos = ['https://i.imgur.com/vEkEIzN.mp4', 'https://i.imgur.com/hk3R808.mp4', 'https://i.imgur.com/CjNXN7F.mp4'];
+
+  useEffect(() => {
+      try {
+          const savedState = localStorage.getItem('chatPinned');
+          if (savedState !== null) {
+              setIsChatPinned(JSON.parse(savedState));
+          }
+      } catch (e) {
+          console.error("Could not load pinned chat state from localStorage", e);
+      }
+  }, []);
+
+  useEffect(() => {
+    const savedTheme = localStorage.getItem('theme') as 'light' | 'dark' | null;
+    // The inline script in index.html already sets the class, this just syncs React state
+    setTheme(savedTheme || 'dark');
+  }, []);
+
+  const toggleTheme = useCallback(() => {
+    setTheme(prevTheme => {
+      const newTheme = prevTheme === 'light' ? 'dark' : 'light';
+      localStorage.setItem('theme', newTheme);
+      if (newTheme === 'light') {
+        document.documentElement.classList.add('light');
+      } else {
+        document.documentElement.classList.remove('light');
+      }
+      return newTheme;
+    });
+  }, []);
+  
+  const handlePinToggle = () => {
+      const newPinnedState = !isChatPinned;
+      setIsChatPinned(newPinnedState);
+      setIsChatOpen(false); // Close overlay when pinning/unpinning
+      try {
+          localStorage.setItem('chatPinned', JSON.stringify(newPinnedState));
+      } catch (e) {
+          console.error("Could not save pinned chat state to localStorage", e);
+      }
+  };
 
   const handleVideoEnded = useCallback(() => {
     setActiveVideoIndex(prevIndex => (prevIndex + 1) % videos.length);
@@ -314,22 +357,49 @@ const App: React.FC = () => {
         />
         <Sidebar isSidebarOpen={isSidebarOpen} onNavigate={(page) => { navigateTo(page as View); setIsSidebarOpen(false); }} currentView={currentView} />
 
-        <div className="flex flex-col h-full">
-            <Header session={session} profile={profile} onSignInClick={() => openAuthModal('signIn')} onSignUpClick={() => openAuthModal('signUp')} onWalletButtonClick={() => setIsWalletModalOpen(true)} onNavigate={(page) => navigateTo(page as View)} currentView={currentView} onChatToggle={() => setIsChatOpen(true)} onProfileUpdate={handleProfileUpdate} onOpenAdminPanel={() => setIsAdminPanelOpen(true)} onSidebarToggle={() => setIsSidebarOpen(true)} />
-            <main className={`flex-1 overflow-y-auto no-scrollbar p-6 lg:p-8 flex flex-col ${currentView === 'home' ? 'justify-center' : ''}`}>
-              <Suspense fallback={<LoadingFallback />}>
-                {renderMainContent()}
-              </Suspense>
-            </main>
-        </div>
-        
-        {/* Chat Overlay for all screen sizes */}
-        <div className={`fixed inset-0 z-40 transform transition-transform duration-300 ease-in-out ${ isChatOpen ? 'translate-x-0' : 'translate-x-full'}`}>
-            <div className="absolute inset-0 bg-black/50" onClick={() => setIsChatOpen(false)}></div>
-            <div className="relative w-[320px] h-full float-right">
-              <ChatRail session={session} profile={profile} onClose={() => setIsChatOpen(false)} onViewProfile={setViewingProfileId} />
+        <div className={`h-full transition-all duration-300 ${isChatPinned ? 'pr-[320px]' : 'pr-0'}`}>
+            <div className="flex flex-col h-full">
+                <Header 
+                    session={session} 
+                    profile={profile} 
+                    onSignInClick={() => openAuthModal('signIn')} 
+                    onSignUpClick={() => openAuthModal('signUp')} 
+                    onWalletButtonClick={() => setIsWalletModalOpen(true)} 
+                    onNavigate={(page) => navigateTo(page as View)} 
+                    currentView={currentView} 
+                    onChatToggle={() => { if (!isChatPinned) setIsChatOpen(true); }}
+                    onProfileUpdate={handleProfileUpdate} 
+                    onOpenAdminPanel={() => setIsAdminPanelOpen(true)} 
+                    onSidebarToggle={() => setIsSidebarOpen(true)}
+                    isChatPinned={isChatPinned}
+                    theme={theme}
+                    onToggleTheme={toggleTheme}
+                />
+                <main className={`flex-1 overflow-y-auto no-scrollbar p-6 lg:p-8 flex flex-col ${currentView === 'home' ? 'justify-center' : ''}`}>
+                  <Suspense fallback={<LoadingFallback />}>
+                    {renderMainContent()}
+                  </Suspense>
+                </main>
             </div>
         </div>
+        
+        {/* Chat Rail Container (Single Instance) */}
+        <div className={`fixed top-0 right-0 h-full z-40 w-[320px] transform transition-transform duration-300 ease-in-out ${ isChatOpen || isChatPinned ? 'translate-x-0' : 'translate-x-full'}`}>
+            <ChatRail
+                session={session}
+                profile={profile}
+                onClose={() => setIsChatOpen(false)}
+                onViewProfile={setViewingProfileId}
+                isPinned={isChatPinned}
+                onPinToggle={handlePinToggle}
+            />
+        </div>
+
+        {/* Overlay for unpinned chat */}
+        <div
+            className={`fixed inset-0 bg-black/50 z-30 transition-opacity duration-300 ${isChatOpen && !isChatPinned ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+            onClick={() => setIsChatOpen(false)}
+        />
       </div>
     </div>
   );

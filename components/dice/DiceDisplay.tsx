@@ -84,8 +84,8 @@ export const DiceDisplay: React.FC<DiceDisplayProps> = ({ rollValue, isRollOver,
         <div className="flex-1 flex flex-col items-center justify-center p-8 relative overflow-hidden">
             <style>{`
                 @keyframes win-glow {
-                    0%, 100% { box-shadow: 0 0 4px #64ffda; }
-                    50% { box-shadow: 0 0 16px #64ffda, 0 0 24px #64ffda; }
+                    0%, 100% { box-shadow: 0 0 4px #22c55e; }
+                    50% { box-shadow: 0 0 16px #22c55e, 0 0 24px #22c55e; }
                 }
                 .animate-win-glow {
                     animation: win-glow 1.5s ease-in-out;
@@ -95,14 +95,14 @@ export const DiceDisplay: React.FC<DiceDisplayProps> = ({ rollValue, isRollOver,
             {/* Central Number Display */}
             <div className="relative h-24 flex items-center justify-center">
                  <div className={`transition-opacity duration-300 ${gameState === 'idle' ? 'opacity-100' : 'opacity-0'}`}>
-                    <span className={`font-bold text-xl ${isRollOver ? 'text-accent-green' : 'text-red-500'}`}>{isRollOver ? 'Over' : 'Under'}</span>
+                    <span className={`font-bold text-xl ${isRollOver ? 'text-green-500' : 'text-red-500'}`}>{isRollOver ? 'Over' : 'Under'}</span>
                     <span className="font-bold text-5xl text-white mx-2">{rollValue.toFixed(2)}</span>
                 </div>
                 <div ref={numberDisplayRef} className={`absolute inset-0 flex items-center justify-center font-mono font-bold text-6xl tabular-nums transition-all duration-300 ${gameState === 'rolling' ? 'opacity-100 scale-100' : 'opacity-0 scale-75'}`}>
                     0.00
                 </div>
                 {lastRoll && (
-                    <div className={`absolute inset-0 flex items-center justify-center font-mono font-bold text-6xl tabular-nums transition-all duration-300 ${gameState === 'finished' ? 'opacity-100 scale-110' : 'opacity-0 scale-75'} ${lastRoll.win ? 'text-accent-green' : 'text-red-500'}`}>
+                    <div className={`absolute inset-0 flex items-center justify-center font-mono font-bold text-6xl tabular-nums transition-all duration-300 ${gameState === 'finished' ? 'opacity-100 scale-110' : 'opacity-0 scale-75'} ${lastRoll.win ? 'text-green-500' : 'text-red-500'}`}>
                         {lastRoll.value.toFixed(2)}
                     </div>
                 )}
@@ -122,8 +122,8 @@ export const DiceDisplay: React.FC<DiceDisplayProps> = ({ rollValue, isRollOver,
                     <div className="absolute top-1/2 -translate-y-1/2 w-full h-2 bg-background rounded-full" />
                     
                     {/* Win/Loss Regions */}
-                    <div className={`absolute top-1/2 -translate-y-1/2 h-2 rounded-full ${isRollOver ? 'bg-red-500' : 'bg-accent-green'} ${!isRollOver ? winRegionGlowClass : ''}`} style={{ width: `calc(${rollValuePercent * 100}% - 4px)`, left: '2px' }} />
-                    <div className={`absolute top-1/2 -translate-y-1/2 h-2 rounded-full ${isRollOver ? 'bg-accent-green' : 'bg-red-500'} ${isRollOver ? winRegionGlowClass : ''}`} style={{ width: `calc(${(1 - rollValuePercent) * 100}% - 4px)`, right: '2px' }} />
+                    <div className={`absolute top-1/2 -translate-y-1/2 h-2 rounded-full ${isRollOver ? 'bg-red-500' : 'bg-green-500'} ${!isRollOver ? winRegionGlowClass : ''}`} style={{ width: `calc(${rollValuePercent * 100}% - 4px)`, left: '2px' }} />
+                    <div className={`absolute top-1/2 -translate-y-1/2 h-2 rounded-full ${isRollOver ? 'bg-green-500' : 'bg-red-500'} ${isRollOver ? winRegionGlowClass : ''}`} style={{ width: `calc(${(1 - rollValuePercent) * 100}% - 4px)`, right: '2px' }} />
                     
                     {/* Draggable Thumb */}
                     <div className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-6 h-6 rounded-full bg-white border-4 border-card shadow-lg" style={{ left: `${rollValuePercent * 100}%` }} />
@@ -138,7 +138,7 @@ export const DiceDisplay: React.FC<DiceDisplayProps> = ({ rollValue, isRollOver,
                             transition: 'left 1s ease-out, opacity 0.3s ease-in-out',
                         }}
                     >
-                        <svg className={`w-5 h-5 drop-shadow-lg ${lastRoll?.win ? 'text-accent-green' : 'text-red-500'}`} viewBox="0 0 24 14" fill="currentColor"><path d="M12 14L0 0h24L12 14z" /></svg>
+                        <svg className={`w-5 h-5 drop-shadow-lg ${lastRoll?.win ? 'text-green-500' : 'text-red-500'}`} viewBox="0 0 24 14" fill="currentColor"><path d="M12 14L0 0h24L12 14z" /></svg>
                     </div>
                 </div>
 

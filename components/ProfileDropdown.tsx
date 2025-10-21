@@ -2,13 +2,15 @@ import React from 'react';
 import { PROFILE_LINKS } from '../constants';
 import { Profile, ProfileLink } from '../types';
 import { calculateLevelInfo } from '../lib/leveling';
-import { ShieldExclamationIcon } from './icons';
+import { ShieldExclamationIcon, SunIcon, MoonIcon } from './icons';
 
 interface ProfileDropdownProps {
     profile: Profile | null;
     onNavigate: (page: ProfileLink['name']) => void;
     onLogout: () => void;
     onOpenAdminPanel: () => void;
+    theme: 'light' | 'dark';
+    onToggleTheme: () => void;
 }
 
 // Check for admin/owner role based on the profile data from the database
@@ -16,7 +18,7 @@ const isAdmin = (profile: Profile | null) => {
     return !!profile?.is_admin;
 }
 
-export const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ profile, onNavigate, onLogout, onOpenAdminPanel }) => {
+export const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ profile, onNavigate, onLogout, onOpenAdminPanel, theme, onToggleTheme }) => {
     const levelInfo = profile ? calculateLevelInfo(profile.wagered || 0) : { level: 0, progress: 0 };
     const showAdminButton = isAdmin(profile);
 
@@ -58,6 +60,16 @@ export const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ profile, onNav
                              </button>
                          );
                     })}
+                    <hr className="border-t border-border-color my-1" />
+                    <button
+                        onClick={onToggleTheme}
+                        className="w-full flex items-center space-x-3 p-2 rounded-md text-sm text-text-muted hover:bg-white/5 hover:text-white transition-colors"
+                    >
+                        {theme === 'light' 
+                            ? <MoonIcon className="w-5 h-5" /> 
+                            : <SunIcon className="w-5 h-5" />}
+                        <span>Switch to {theme === 'light' ? 'Dark' : 'Light'} Mode</span>
+                    </button>
                      {showAdminButton && (
                          <>
                             <hr className="border-t border-border-color my-1" />

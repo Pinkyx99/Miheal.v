@@ -237,6 +237,24 @@ export const StarIcon: React.FC<{ className?: string, filled?: boolean }> = ({ c
     </svg>
 );
 
+export const PinIcon: React.FC<{ className?: string; filled?: boolean }> = ({ className, filled }) => (
+    <svg {...{className}} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill={filled ? "currentColor" : "none"} stroke="currentColor" strokeWidth={1.5}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M14.25 2.25v10.5l-3.75 3.75-3.75-3.75V2.25m7.5 0H5.25" />
+    </svg>
+);
+
+export const SunIcon: React.FC<{ className?: string }> = (props) => (
+    <svg {...props} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M12 12a5 5 0 110-10 5 5 0 010 10z" />
+    </svg>
+);
+
+export const MoonIcon: React.FC<{ className?: string }> = (props) => (
+    <svg {...props} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25c0 5.385 4.365 9.75 9.75 9.75 2.572 0 4.92-.99 6.697-2.648z" />
+    </svg>
+);
+
 
 // --- START OF MINES GAME ICONS ---
 export const SoundIcon: React.FC<{ className?: string }> = (props) => (<svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>);

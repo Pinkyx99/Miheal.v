@@ -3,7 +3,7 @@ import { supabase } from '../lib/supabaseClient';
 import { Session } from '@supabase/supabase-js';
 import { ChatMessage, Profile } from '../types';
 import { ChatUserContextMenu } from './ChatUserContextMenu';
-import { FaceSmileIcon, PlayCircleIcon, SearchIcon, StarIcon } from './icons';
+import { FaceSmileIcon, PlayCircleIcon, SearchIcon, StarIcon, PinIcon } from './icons';
 import { calculateLevelInfo, getRankForLevel } from '../lib/leveling';
 
 interface ChatRailProps {
@@ -11,6 +11,8 @@ interface ChatRailProps {
   profile: Profile | null;
   onClose?: () => void;
   onViewProfile: (userId: string) => void;
+  isPinned?: boolean;
+  onPinToggle?: () => void;
 }
 
 const EMOJI_CATEGORIES: Record<string, string[]> = {
@@ -361,7 +363,7 @@ const Message: React.FC<{ msg: ChatMessage, onUserClick: (event: React.MouseEven
     );
 });
 
-export const ChatRail: React.FC<ChatRailProps> = ({ session, profile, onClose, onViewProfile }) => {
+export const ChatRail: React.FC<ChatRailProps> = ({ session, profile, onClose, onViewProfile, isPinned, onPinToggle }) => {
     const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [newMessage, setNewMessage] = useState('');
     const [loading, setLoading] = useState(false);
@@ -478,14 +480,21 @@ export const ChatRail: React.FC<ChatRailProps> = ({ session, profile, onClose, o
         <div className="bg-sidebar h-full flex flex-col border-l border-border-color">
             {contextMenu && <ChatUserContextMenu user={contextMenu.user} position={contextMenu.position} onClose={() => setContextMenu(null)} onProfile={onViewProfile} onIgnore={handleIgnore} />}
             <header className="flex-shrink-0 flex items-center justify-between p-4 border-b border-border-color">
-                <div>
+                 <div className="flex items-center space-x-2">
+                    {onPinToggle && (
+                        <button onClick={onPinToggle} className={`p-1 rounded-md ${isPinned ? 'text-primary' : 'text-text-muted'} hover:bg-white/10`} aria-label={isPinned ? 'Unpin chat' : 'Pin chat'}>
+                            <PinIcon className="w-5 h-5" filled={isPinned} />
+                        </button>
+                    )}
                     <h2 className="font-bold text-white">Chat</h2>
+                 </div>
+                <div className="flex items-center space-x-2">
                     <div className="flex items-center space-x-1.5 text-xs text-text-muted">
                         <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-                        <span>2,345 Online</span>
+                        <span>2,345</span>
                     </div>
+                    {onClose && !isPinned && <button onClick={onClose} className="p-2 text-text-muted hover:text-white" aria-label="Close chat"><svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>}
                 </div>
-                {onClose && <button onClick={onClose} className="p-2 text-text-muted hover:text-white xl:hidden" aria-label="Close chat"><svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>}
             </header>
             
             <div className="flex-1 min-h-0 overflow-y-auto no-scrollbar p-2">

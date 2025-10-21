@@ -9,7 +9,7 @@ const HistoryRow: React.FC<{ result: RollResult }> = ({ result }) => {
             <div className="text-text-muted">{result.isRollOver ? '>' : '<'} {result.rollValue.toFixed(2)}</div>
             <div className="text-text-muted">{result.multiplier.toFixed(2)}x</div>
             <div className="text-text-muted text-right">${result.betAmount.toFixed(2)}</div>
-            <div className={`font-semibold text-right ${result.win ? 'text-accent-green' : 'text-red-500'}`}>
+            <div className={`font-semibold text-right ${result.win ? 'text-green-500' : 'text-red-500'}`}>
                 {result.win ? `+$${(result.payout - result.betAmount).toFixed(2)}` : `-$${result.betAmount.toFixed(2)}`}
             </div>
         </div>

@@ -1,6 +1,4 @@
 
-
-
 import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import { Profile, RollResult } from '../types';
 import { Session } from '@supabase/supabase-js';
@@ -132,7 +130,8 @@ const DiceGamePage: React.FC<{
                 if (!currentProfile) throw new Error("Could not find user profile to update balance.");
 
                 // FIX: Safely calculate the new balance by explicitly converting the balance from the database to a number.
-                const newBalance = Number(currentProfile.balance || 0) + payout;
+                // Cast currentProfile to any to bypass strict type checking on the `balance` property, which may be inferred as 'unknown'.
+                const newBalance = Number((currentProfile as any).balance || 0) + payout;
                 const { error: payoutError } = await supabase
                     .from('profiles')
                     .update({ balance: newBalance })

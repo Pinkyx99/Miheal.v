@@ -19,9 +19,12 @@ interface HeaderProps {
     onSidebarToggle: () => void;
     onProfileUpdate: () => void;
     onOpenAdminPanel: () => void;
+    isChatPinned: boolean;
+    theme: 'light' | 'dark';
+    onToggleTheme: () => void;
 }
 
-export const Header: React.FC<HeaderProps> = ({ session, profile, onSignInClick, onSignUpClick, onWalletButtonClick, onNavigate, onChatToggle, onSidebarToggle, onProfileUpdate, onOpenAdminPanel }) => {
+export const Header: React.FC<HeaderProps> = ({ session, profile, onSignInClick, onSignUpClick, onWalletButtonClick, onNavigate, onChatToggle, onSidebarToggle, onProfileUpdate, onOpenAdminPanel, isChatPinned, theme, onToggleTheme }) => {
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const notificationsRef = useRef<HTMLDivElement>(null);
 
@@ -81,6 +84,8 @@ export const Header: React.FC<HeaderProps> = ({ session, profile, onSignInClick,
                     onNavigate={onNavigate} 
                     onLogout={async () => { await supabase.auth.signOut(); }} 
                     onOpenAdminPanel={onOpenAdminPanel}
+                    theme={theme}
+                    onToggleTheme={onToggleTheme}
                 />
               </>
             ) : (
@@ -104,7 +109,11 @@ export const Header: React.FC<HeaderProps> = ({ session, profile, onSignInClick,
       </div>
       
       {/* Right Side: Chat Toggle */}
-      <button onClick={onChatToggle} className="p-2 rounded-md text-text-muted hover:text-white hover:bg-white/10 transition-colors">
+      <button 
+        onClick={onChatToggle} 
+        disabled={isChatPinned}
+        className="p-2 rounded-md text-text-muted hover:text-white hover:bg-white/10 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+      >
           <ChatBubbleIcon className="w-6 h-6" />
       </button>
     </header>

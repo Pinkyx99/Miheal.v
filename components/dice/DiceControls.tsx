@@ -95,7 +95,7 @@ export const DiceControls: React.FC<DiceControlsProps> = (props) => {
                 </div>
                 
                 <InputField label="Profit on Win">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-lg font-bold text-accent-green">$</span>
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-lg font-bold text-green-500">$</span>
                     <input readOnly value={profitOnWin.toFixed(2)} className="w-full bg-transparent pl-8 pr-3 text-white font-semibold" />
                 </InputField>
                 

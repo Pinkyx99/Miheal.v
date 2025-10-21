@@ -63,6 +63,7 @@ export const PAYMENT_CATEGORIES = [
 export const PROFILE_LINKS: ProfileLink[] = [
     { name: 'Profile', icon: UserCircleIcon },
     { name: 'Statistics', icon: ChartBarIcon },
+    { name: 'Transactions', icon: ArrowsRightLeftIcon },
     { name: 'Notifications', icon: BellIcon },
     { name: 'Settings', icon: CogIcon },
     { name: 'Affiliates', icon: UsersIcon },
