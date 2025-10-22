@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import { Profile } from '../types';
 import { Session } from '@supabase/supabase-js';
@@ -183,8 +182,7 @@ const KenoGamePage: React.FC<KenoGamePageProps> = ({ profile, session, onProfile
             if (payout > 0) {
                  const { data: currentProfile, error: fetchError } = await supabase.from('profiles').select('balance').eq('id', session.user.id).single();
                  if (fetchError || !currentProfile) return;
-                 // FIX: Argument of type 'unknown' is not assignable to parameter of type 'number'.
-                 // Safely convert balance to a number before calculation.
+                 // FIX: Safely calculate the new balance by explicitly converting the balance from the database to a number.
                  const newBalance = Number((currentProfile as any).balance ?? 0) + payout;
                  await supabase.from('profiles').update({ balance: newBalance }).eq('id', session.user.id);
             }

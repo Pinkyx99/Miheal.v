@@ -1,6 +1,6 @@
 import React from 'react';
 import { SidebarNavItem, ProfileLink, RoyaltyRank, Game } from './types';
-import { HomeIcon, UserCircleIcon, ChartBarIcon, ArrowsRightLeftIcon, BellIcon, CogIcon, UsersIcon, ShieldCheckIcon, ArrowRightOnRectangleIcon, DiceIcon, CrashIcon, RouletteIcon, PlinkoIcon, MinesIcon, SlotMachineIcon, TrophyIcon, ShieldExclamationIcon, Squares2X2Icon, CurrencyDollarIcon, ClipboardDocumentListIcon, BlackjackIcon } from './components/icons';
+import { HomeIcon, UserCircleIcon, ChartBarIcon, ArrowsRightLeftIcon, BellIcon, CogIcon, UsersIcon, ShieldCheckIcon, ArrowRightOnRectangleIcon, DiceIcon, CrashIcon, RouletteIcon, MinesIcon, SlotMachineIcon, TrophyIcon, ShieldExclamationIcon, Squares2X2Icon, CurrencyDollarIcon, ClipboardDocumentListIcon, BlackjackIcon } from './components/icons';
 import { UsdIcon, GoogleIcon } from './components/icons';
 
 

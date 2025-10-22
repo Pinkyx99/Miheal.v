@@ -11,6 +11,8 @@ import { ChatRail } from './components/ChatRail';
 import { UserProfileModal } from './components/UserProfileModal';
 import { Sidebar } from './components/Sidebar';
 import { PROFILE_LINKS } from './constants';
+import { PromotionalModal } from './components/PromotionalModal';
+import { PromotionalToast } from './components/PromotionalToast';
 
 const ProfilePage = lazy(() => import('./pages/ProfilePage'));
 const CrashGamePage = lazy(() => import('./pages/CrashGamePage'));
@@ -44,6 +46,12 @@ const App: React.FC = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isAdminPanelOpen, setIsAdminPanelOpen] = useState(false);
   const [theme, setTheme] = useState<'light' | 'dark'>('dark');
+  const [showPromotionModal, setShowPromotionModal] = useState(false);
+  const [showPromotionToast, setShowPromotionToast] = useState(false);
+  const [isBellAnimating, setIsBellAnimating] = useState(false);
+
+  const promoModalIntervalRef = useRef<number | null>(null);
+  const promoToastIntervalRef = useRef<number | null>(null);
   
   const [activeVideoIndex, setActiveVideoIndex] = useState(0);
   const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
@@ -176,6 +184,51 @@ const App: React.FC = () => {
     window.addEventListener('hashchange', handleRouting);
     return () => window.removeEventListener('hashchange', handleRouting);
   }, []);
+  
+  // Promotional content trigger
+  useEffect(() => {
+    const gameViews = ['crash', 'roulette', 'dice', 'mines', 'blackjack', 'slots'];
+    const isGamePage = gameViews.includes(currentView);
+
+    // Always clear previous intervals when view changes
+    if (promoModalIntervalRef.current) clearInterval(promoModalIntervalRef.current);
+    if (promoToastIntervalRef.current) clearInterval(promoToastIntervalRef.current);
+    promoModalIntervalRef.current = null;
+    promoToastIntervalRef.current = null;
+
+    if (isGamePage) {
+        // Modal pops up every 90 seconds
+        promoModalIntervalRef.current = window.setInterval(() => {
+            setShowPromotionModal(true);
+        }, 90000);
+
+        // Toast pops up every 1 minute
+        promoToastIntervalRef.current = window.setInterval(() => {
+            setShowPromotionToast(true);
+            setIsBellAnimating(true);
+            setTimeout(() => setIsBellAnimating(false), 1000); // Animation duration
+        }, 60000);
+    } else {
+        // If not on a game page, ensure popups are hidden
+        setShowPromotionModal(false);
+        setShowPromotionToast(false);
+    }
+
+    // Cleanup on unmount
+    return () => {
+        if (promoModalIntervalRef.current) clearInterval(promoModalIntervalRef.current);
+        if (promoToastIntervalRef.current) clearInterval(promoToastIntervalRef.current);
+    };
+  }, [currentView]);
+
+  const handlePromoConfirm = () => {
+    window.open('https://gamdom.win/landing?aff=majkl', '_blank', 'noopener,noreferrer');
+    setShowPromotionModal(false);
+  };
+
+  const handlePromoClose = () => {
+      setShowPromotionModal(false);
+  };
 
   const getProfile = useCallback(async () => {
     const { data: { session }, error: sessionError } = await supabase.auth.getSession();
@@ -343,6 +396,15 @@ const App: React.FC = () => {
       
       {/* Content & UI Layer */}
       <div className={`relative z-10 h-full w-full transition-colors duration-700 ${getGamePageSpecificClass()}`}>
+        <PromotionalModal
+            show={showPromotionModal}
+            onClose={handlePromoClose}
+            onConfirm={handlePromoConfirm}
+        />
+        <PromotionalToast
+            show={showPromotionToast}
+            onClose={() => setShowPromotionToast(false)}
+        />
         <AuthModal show={showAuthModal} onClose={() => setShowAuthModal(false)} view={authView} setView={setAuthView} />
         <WalletModal show={isWalletModalOpen} onClose={() => setIsWalletModalOpen(false)} />
         <UserProfileModal userId={viewingProfileId} onClose={() => setViewingProfileId(null)} />
@@ -374,6 +436,7 @@ const App: React.FC = () => {
                     isChatPinned={isChatPinned}
                     theme={theme}
                     onToggleTheme={toggleTheme}
+                    isBellAnimating={isBellAnimating}
                 />
                 <main className={`flex-1 overflow-y-auto no-scrollbar p-6 lg:p-8 flex flex-col ${currentView === 'home' ? 'justify-center' : ''}`}>
                   <Suspense fallback={<LoadingFallback />}>
