@@ -22,9 +22,10 @@ interface HeaderProps {
     isChatPinned: boolean;
     theme: 'light' | 'dark';
     onToggleTheme: () => void;
+    isBellAnimating: boolean;
 }
 
-export const Header: React.FC<HeaderProps> = ({ session, profile, onSignInClick, onSignUpClick, onWalletButtonClick, onNavigate, onChatToggle, onSidebarToggle, onProfileUpdate, onOpenAdminPanel, isChatPinned, theme, onToggleTheme }) => {
+export const Header: React.FC<HeaderProps> = ({ session, profile, onSignInClick, onSignUpClick, onWalletButtonClick, onNavigate, onChatToggle, onSidebarToggle, onProfileUpdate, onOpenAdminPanel, isChatPinned, theme, onToggleTheme, isBellAnimating }) => {
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const notificationsRef = useRef<HTMLDivElement>(null);
 
@@ -65,7 +66,7 @@ export const Header: React.FC<HeaderProps> = ({ session, profile, onSignInClick,
                 <Wallet onWalletButtonClick={onWalletButtonClick} balance={profile.balance} />
 
                 <div ref={notificationsRef} className="relative">
-                    <button onClick={() => setIsNotificationsOpen(!isNotificationsOpen)} className="p-2 rounded-full hover:bg-white/10 transition-colors text-text-muted hover:text-white relative">
+                    <button onClick={() => setIsNotificationsOpen(!isNotificationsOpen)} className={`p-2 rounded-full hover:bg-white/10 transition-colors text-text-muted hover:text-white relative ${isBellAnimating ? 'animate-bell-shake' : ''}`}>
                         <BellIcon className="w-6 h-6" />
                         {hasUnclaimedBonus && (
                             <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border border-background"></span>

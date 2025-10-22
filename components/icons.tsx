@@ -122,13 +122,16 @@ export const CrashIcon: React.FC<{ className?: string }> = (props) => (
 export const RouletteIcon: React.FC<{ className?: string }> = (props) => (
     <svg {...props} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 21a9 9 0 100-18 9 9 0 000 18z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 3v2m0 14v2m9-9h-2M5 12H3m14.66-4.66l-1.42 1.42M6.76 17.24l-1.42 1.42m12.72 0l-1.42-1.42M6.76 6.76L5.34 5.34"></path><circle cx="12" cy="12" r="3"></circle></svg>
 );
-export const PlinkoIcon: React.FC<{ className?: string }> = (props) => (
-    <svg {...props} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 21a9 9 0 100-18 9 9 0 000 18zM12 8v4m0 4h.01"></path></svg>
-);
 export const MinesIcon: React.FC<{ className?: string }> = (props) => (
     <svg {...props} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
       <path d="M11.25,2C6.16,2,2,6.16,2,11.25S6.16,20.5,11.25,20.5,20.5,16.34,20.5,11.25,16.34,2,11.25,2Zm3.1,12.1a1,1,0,0,1-1.4,0L11,12.15,9.05,14.1a1,1,0,0,1-1.4-1.4L9.6,10.75,7.65,8.8a1,1,0,0,1,1.4-1.4L11,9.35,1.95-1.95a1,1,0,0,1,1.4,1.4L12.4,10.75Z"/>
       <path d="M12,2A10,10,0,1,0,22,12,10,10,0,0,0,12,2Zm5.66,13.06a1,1,0,0,1-1.41,0L14.83,13.6a3,3,0,0,0-4.24,0L9.17,15.06a1,1,0,0,1-1.41-1.41l1.42-1.42a3,3,0,0,0,0-4.24L7.76,6.57a1,1,0,0,1,1.41-1.41l1.42,1.42a3,3,0,0,0,4.24,0l1.42-1.42a1,1,0,0,1,1.41,1.41L16.24,8a3,3,0,0,0,0,4.24Z"/>
+    </svg>
+);
+// FIX: Add missing PlinkoIcon component
+export const PlinkoIcon: React.FC<{ className?: string }> = (props) => (
+    <svg {...props} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12 2L1 21h22L12 2zM12 6a1 1 0 110-2 1 1 0 010 2zm-3 4a1 1 0 110-2 1 1 0 010 2zm6 0a1 1 0 110-2 1 1 0 010 2zm-6 4a1 1 0 110-2 1 1 0 010 2zm6 0a1 1 0 110-2 1 1 0 010 2zm-9 4a1 1 0 110-2 1 1 0 010 2zm6 0a1 1 0 110-2 1 1 0 010 2zm6 0a1 1 0 110-2 1 1 0 010 2z"/>
     </svg>
 );
 export const BlackjackIcon: React.FC<{ className?: string }> = (props) => (
