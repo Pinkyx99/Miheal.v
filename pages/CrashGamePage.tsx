@@ -9,30 +9,17 @@ import { Profile, CrashBet, CashoutEvent, GameState } from '../types';
 import { Session } from '@supabase/supabase-js';
 import { ProvablyFairModal } from '../components/crash/ProvablyFairModal';
 import { useRealtimeCrash } from '../hooks/useRealtimeCrash';
-import { CrashIcon } from '../components/icons';
 
 interface CrashGamePageProps {
     profile: Profile | null;
     session: Session | null;
     onProfileUpdate: () => void;
+    onGameRoundCompleted: () => void;
 }
 
 export const MultiplierContext = createContext(1.00);
 
-const CrashGamePage: React.FC<CrashGamePageProps> = ({ profile, session, onProfileUpdate }) => {
-    // const {
-    //     gameState,
-    //     multiplier,
-    //     countdown,
-    //     allBets,
-    //     myBets,
-    //     history,
-    //     placeBet,
-    //     cashout,
-    // } = useRealtimeCrash(session, onProfileUpdate);
-    
-    // [TEMPORARY] Mock data for maintenance screen
-    // Replaced mock data declarations with useMemo to prevent TypeScript from over-narrowing the type of `gameState`, which caused comparison errors.
+const CrashGamePage: React.FC<CrashGamePageProps> = ({ profile, session, onProfileUpdate, onGameRoundCompleted }) => {
     const {
         gameState,
         multiplier,
@@ -42,22 +29,14 @@ const CrashGamePage: React.FC<CrashGamePageProps> = ({ profile, session, onProfi
         history,
         placeBet,
         cashout,
-    } = useMemo(() => ({
-        gameState: 'connecting' as GameState,
-        multiplier: 1.00,
-        countdown: 0,
-        allBets: [] as CrashBet[],
-        myBets: [] as CrashBet[],
-        history: [] as any[],
-        placeBet: async (betAmountStr: string, autoCashoutStr: string) => ({ success: false, message: 'Game is under maintenance.' }),
-        cashout: async (betId: string, cashoutMultiplier: number) => ({ success: false, message: 'Game is under maintenance.' }),
-    }), []);
+    } = useRealtimeCrash(session, onProfileUpdate);
 
     const [cashoutEvents, setCashoutEvents] = useState<CashoutEvent[]>([]);
     const [isFairnessModalOpen, setIsFairnessModalOpen] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [loadingBetId, setLoadingBetId] = useState<string | null>(null);
     const [pendingCashoutIds, setPendingCashoutIds] = useState<Set<string>>(new Set());
+    const [isPlacingBet, setIsPlacingBet] = useState(false);
     const gameContainerRef = useRef<HTMLDivElement>(null);
     const prevAllBetsRef = useRef<CrashBet[]>([]);
 
@@ -126,11 +105,15 @@ const CrashGamePage: React.FC<CrashGamePageProps> = ({ profile, session, onProfi
             setError("You can place a maximum of 6 bets per round.");
             return;
         }
+        setIsPlacingBet(true);
         const result = await placeBet(betAmountStr, autoCashoutStr);
-        if (!result.success) {
+        if (result.success) {
+            onGameRoundCompleted();
+        } else {
             setError(result.message);
         }
-    }, [placeBet, myBets.length]);
+        setIsPlacingBet(false);
+    }, [placeBet, myBets.length, onGameRoundCompleted]);
 
     const handleCashout = useCallback(async (betId: string) => {
         setPendingCashoutIds(prev => new Set(prev).add(betId));
@@ -155,12 +138,38 @@ const CrashGamePage: React.FC<CrashGamePageProps> = ({ profile, session, onProfi
 
     return (
         <div className="flex flex-col flex-1">
-             {/* [TEMPORARY] Maintenance screen */}
-             <div className="flex flex-col items-center justify-center h-full text-center text-text-muted p-8">
-                <CrashIcon className="w-24 h-24 text-primary animate-pulse-glow" />
-                <h1 className="mt-8 text-4xl font-bold text-white">Repairing...</h1>
-                <p className="mt-2 max-w-md">The Crash game is currently undergoing maintenance to improve your experience. Please check back later.</p>
+            <div className="grid grid-cols-1 lg:grid-cols-[1fr,400px] gap-6 flex-1">
+                <div className="flex flex-col">
+                    <BettingHistory history={history} />
+                    <div className="flex-1 flex flex-col">
+                        <GameDisplay
+                            gameState={gameState}
+                            countdown={countdown}
+                            multiplier={multiplier}
+                            cashoutEvents={cashoutEvents}
+                        />
+                        <MultiplierContext.Provider value={multiplier}>
+                            <BettingControls
+                                profile={profile}
+                                session={session}
+                                userBets={myBets}
+                                onPlaceBet={handlePlaceBet}
+                                gameState={gameState}
+                                loading={isPlacingBet}
+                                error={error}
+                            />
+                            <MyBets
+                                bets={myBets}
+                                onCashout={handleCashout}
+                                loadingBetId={loadingBetId}
+                                gameState={gameState}
+                            />
+                        </MultiplierContext.Provider>
+                    </div>
+                </div>
+                <PlayerBets bets={allBets} onOpenFairnessModal={openFairnessModal} />
             </div>
+            <ProvablyFairModal show={isFairnessModalOpen} onClose={closeFairnessModal} />
         </div>
     );
 };

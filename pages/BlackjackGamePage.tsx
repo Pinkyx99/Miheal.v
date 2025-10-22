@@ -60,9 +60,10 @@ interface BlackjackGamePageProps {
   profile: Profile | null;
   session: Session | null;
   onProfileUpdate: () => void;
+  onGameRoundCompleted: () => void;
 }
 
-const BlackjackGamePage: React.FC<BlackjackGamePageProps> = ({ profile, session, onProfileUpdate }) => {
+const BlackjackGamePage: React.FC<BlackjackGamePageProps> = ({ profile, session, onProfileUpdate, onGameRoundCompleted }) => {
   const [gameState, setGameState] = useState<GameState>('betting');
   const [betAmount, setBetAmount] = useState('1.00');
   const [roundBetAmount, setRoundBetAmount] = useState(0);
@@ -111,6 +112,7 @@ const BlackjackGamePage: React.FC<BlackjackGamePageProps> = ({ profile, session,
     }
 
     try {
+        onGameRoundCompleted();
         setRoundBetAmount(currentBet);
         setLastBetAmount(currentBet);
         setGameResult(null);

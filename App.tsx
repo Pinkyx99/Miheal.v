@@ -12,7 +12,6 @@ import { UserProfileModal } from './components/UserProfileModal';
 import { Sidebar } from './components/Sidebar';
 import { PROFILE_LINKS } from './constants';
 import { PromotionalModal } from './components/PromotionalModal';
-import { PromotionalToast } from './components/PromotionalToast';
 
 const ProfilePage = lazy(() => import('./pages/ProfilePage'));
 const CrashGamePage = lazy(() => import('./pages/CrashGamePage'));
@@ -47,15 +46,28 @@ const App: React.FC = () => {
   const [isAdminPanelOpen, setIsAdminPanelOpen] = useState(false);
   const [theme, setTheme] = useState<'light' | 'dark'>('dark');
   const [showPromotionModal, setShowPromotionModal] = useState(false);
-  const [showPromotionToast, setShowPromotionToast] = useState(false);
-  const [isBellAnimating, setIsBellAnimating] = useState(false);
 
-  const promoModalIntervalRef = useRef<number | null>(null);
-  const promoToastIntervalRef = useRef<number | null>(null);
+  // State for round-based promotional modal
+  const [roundsSinceLastPromo, setRoundsSinceLastPromo] = useState(0);
+  const [promoTriggerCount, setPromoTriggerCount] = useState(() => Math.floor(Math.random() * 2) + 3); // 3 or 4
   
   const [activeVideoIndex, setActiveVideoIndex] = useState(0);
   const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
   const videos = ['https://i.imgur.com/vEkEIzN.mp4', 'https://i.imgur.com/hk3R808.mp4', 'https://i.imgur.com/CjNXN7F.mp4'];
+
+  const handleGameRoundCompleted = useCallback(() => {
+    setRoundsSinceLastPromo(prev => {
+        const newCount = prev + 1;
+        if (newCount >= promoTriggerCount) {
+            setShowPromotionModal(true);
+            // Reset for the next time
+            setPromoTriggerCount(Math.floor(Math.random() * 2) + 3);
+            return 0;
+        }
+        return newCount;
+    });
+  }, [promoTriggerCount]);
+
 
   useEffect(() => {
       try {
@@ -185,42 +197,6 @@ const App: React.FC = () => {
     return () => window.removeEventListener('hashchange', handleRouting);
   }, []);
   
-  // Promotional content trigger
-  useEffect(() => {
-    const gameViews = ['crash', 'roulette', 'dice', 'mines', 'blackjack', 'slots'];
-    const isGamePage = gameViews.includes(currentView);
-
-    // Always clear previous intervals when view changes
-    if (promoModalIntervalRef.current) clearInterval(promoModalIntervalRef.current);
-    if (promoToastIntervalRef.current) clearInterval(promoToastIntervalRef.current);
-    promoModalIntervalRef.current = null;
-    promoToastIntervalRef.current = null;
-
-    if (isGamePage) {
-        // Modal pops up every 90 seconds
-        promoModalIntervalRef.current = window.setInterval(() => {
-            setShowPromotionModal(true);
-        }, 90000);
-
-        // Toast pops up every 1 minute
-        promoToastIntervalRef.current = window.setInterval(() => {
-            setShowPromotionToast(true);
-            setIsBellAnimating(true);
-            setTimeout(() => setIsBellAnimating(false), 1000); // Animation duration
-        }, 60000);
-    } else {
-        // If not on a game page, ensure popups are hidden
-        setShowPromotionModal(false);
-        setShowPromotionToast(false);
-    }
-
-    // Cleanup on unmount
-    return () => {
-        if (promoModalIntervalRef.current) clearInterval(promoModalIntervalRef.current);
-        if (promoToastIntervalRef.current) clearInterval(promoToastIntervalRef.current);
-    };
-  }, [currentView]);
-
   const handlePromoConfirm = () => {
     window.open('https://gamdom.win/landing?aff=majkl', '_blank', 'noopener,noreferrer');
     setShowPromotionModal(false);
@@ -337,17 +313,17 @@ const App: React.FC = () => {
           </>
         );
       case 'crash':
-        return <CrashGamePage profile={profile} session={session} onProfileUpdate={handleProfileUpdate} />;
+        return <CrashGamePage profile={profile} session={session} onProfileUpdate={handleProfileUpdate} onGameRoundCompleted={handleGameRoundCompleted} />;
       case 'roulette':
-        return <RouletteGamePage profile={profile} session={session} onProfileUpdate={handleProfileUpdate} onNavigate={navigateTo} />;
+        return <RouletteGamePage profile={profile} session={session} onProfileUpdate={handleProfileUpdate} onNavigate={navigateTo} onGameRoundCompleted={handleGameRoundCompleted} />;
       case 'roulette-info':
         return <RouletteInfoPage onNavigate={navigateTo} />;
       case 'dice':
-        return <DiceGamePage profile={profile} session={session} onProfileUpdate={handleProfileUpdate} />;
+        return <DiceGamePage profile={profile} session={session} onProfileUpdate={handleProfileUpdate} onGameRoundCompleted={handleGameRoundCompleted} />;
       case 'mines':
-        return <MinesGamePage profile={profile} session={session} onProfileUpdate={handleProfileUpdate} />;
+        return <MinesGamePage profile={profile} session={session} onProfileUpdate={handleProfileUpdate} onGameRoundCompleted={handleGameRoundCompleted} />;
       case 'blackjack':
-        return <BlackjackGamePage profile={profile} session={session} onProfileUpdate={handleProfileUpdate} />;
+        return <BlackjackGamePage profile={profile} session={session} onProfileUpdate={handleProfileUpdate} onGameRoundCompleted={handleGameRoundCompleted} />;
       case 'slots':
         return <SlotsPage session={session} onSignInClick={() => openAuthModal('signIn')} />;
       case 'rewards':
@@ -401,10 +377,6 @@ const App: React.FC = () => {
             onClose={handlePromoClose}
             onConfirm={handlePromoConfirm}
         />
-        <PromotionalToast
-            show={showPromotionToast}
-            onClose={() => setShowPromotionToast(false)}
-        />
         <AuthModal show={showAuthModal} onClose={() => setShowAuthModal(false)} view={authView} setView={setAuthView} />
         <WalletModal show={isWalletModalOpen} onClose={() => setIsWalletModalOpen(false)} />
         <UserProfileModal userId={viewingProfileId} onClose={() => setViewingProfileId(null)} />
@@ -436,7 +408,6 @@ const App: React.FC = () => {
                     isChatPinned={isChatPinned}
                     theme={theme}
                     onToggleTheme={toggleTheme}
-                    isBellAnimating={isBellAnimating}
                 />
                 <main className={`flex-1 overflow-y-auto no-scrollbar p-6 lg:p-8 flex flex-col ${currentView === 'home' ? 'justify-center' : ''}`}>
                   <Suspense fallback={<LoadingFallback />}>

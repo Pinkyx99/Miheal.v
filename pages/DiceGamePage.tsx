@@ -23,11 +23,14 @@ const getAdjustedWinChance = (fairChance: number): number => {
     return fairChance * (1 - edge);
 };
 
-const DiceGamePage: React.FC<{
+interface DiceGamePageProps {
     profile: Profile | null;
     session: Session | null;
     onProfileUpdate: () => void;
-}> = ({ profile, session, onProfileUpdate }) => {
+    onGameRoundCompleted: () => void;
+}
+
+const DiceGamePage: React.FC<DiceGamePageProps> = ({ profile, session, onProfileUpdate, onGameRoundCompleted }) => {
     const [betAmount, setBetAmount] = useState(1.00);
     const [rollValue, setRollValue] = useState(50.5);
     const [isRollOver, setIsRollOver] = useState(true);
@@ -97,6 +100,7 @@ const DiceGamePage: React.FC<{
             return;
         }
         
+        onGameRoundCompleted();
         setError(null);
         setGameState('rolling');
         setLastRoll(null);
@@ -173,7 +177,7 @@ const DiceGamePage: React.FC<{
             setGameState('idle');
             onProfileUpdate();
         }
-    }, [gameState, isRollOver, betAmount, multiplier, session, profile, onProfileUpdate, winChance, rollValue]);
+    }, [gameState, isRollOver, betAmount, multiplier, session, profile, onProfileUpdate, winChance, rollValue, onGameRoundCompleted]);
 
 
     useEffect(() => {

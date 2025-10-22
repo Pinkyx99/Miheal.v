@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import { Profile } from '../types';
 import { Session } from '@supabase/supabase-js';
 import { MinesControls } from '../components/mines/MinesControls';
@@ -60,6 +60,7 @@ interface MinesGamePageProps {
     profile: Profile | null;
     session: Session | null;
     onProfileUpdate: () => void;
+    onGameRoundCompleted: () => void;
 }
 
 // --- Multiplier Calculation ---
@@ -84,7 +85,7 @@ const calculateMultiplier = (gemsRevealed: number, mines: number): number => {
 };
 
 
-const MinesGamePage: React.FC<MinesGamePageProps> = ({ profile, session, onProfileUpdate }) => {
+const MinesGamePage: React.FC<MinesGamePageProps> = ({ profile, session, onProfileUpdate, onGameRoundCompleted }) => {
     const [gameState, setGameState] = useState<'idle' | 'playing' | 'busted' | 'cashed_out'>('idle');
     const [betAmount, setBetAmount] = useState(0.01);
     const [numMines, setNumMines] = useState(1);
@@ -111,6 +112,7 @@ const MinesGamePage: React.FC<MinesGamePageProps> = ({ profile, session, onProfi
             return;
         }
         
+        onGameRoundCompleted();
         const { error: rpcError } = await supabase.rpc('place_mines_bet', { bet_amount_in: betAmount });
 
         if (rpcError) {
@@ -138,7 +140,7 @@ const MinesGamePage: React.FC<MinesGamePageProps> = ({ profile, session, onProfi
         
         setMineLocations(newMineLocations);
         setGameState('playing');
-    }, [numMines, gameState, resetGame, betAmount, profile, onProfileUpdate, session]);
+    }, [numMines, gameState, resetGame, betAmount, profile, onProfileUpdate, session, onGameRoundCompleted]);
     
     const showFinalGrid = useCallback((hitMineIndex?: number) => {
          const finalGrid = Array(25).fill('hidden').map((_, i) => {

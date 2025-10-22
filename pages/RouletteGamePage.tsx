@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import { Session } from '@supabase/supabase-js';
 import { Profile, RouletteBet, RouletteHistoryItem } from '../types';
 import { RouletteSpinner } from '../components/roulette/RouletteSpinner';
@@ -13,6 +13,7 @@ interface RouletteGamePageProps {
   profile: Profile | null;
   session: Session | null;
   onProfileUpdate: () => void;
+  onGameRoundCompleted: () => void;
 }
 
 const HistoryBar: React.FC<{ history: RouletteHistoryItem[] }> = ({ history }) => (
@@ -28,17 +29,29 @@ const HistoryBar: React.FC<{ history: RouletteHistoryItem[] }> = ({ history }) =
     </div>
 );
 
-const RouletteGamePage: React.FC<RouletteGamePageProps> = ({ onNavigate, profile, session, onProfileUpdate }) => {
+const RouletteGamePage: React.FC<RouletteGamePageProps> = ({ onNavigate, profile, session, onProfileUpdate, onGameRoundCompleted }) => {
     const { round, gameState, countdown, winningNumber, allBets, history, placeBet, undoLastBet, clearBets, error } = useRealtimeRoulette(session, onProfileUpdate);
     
     const [selectedChip, setSelectedChip] = useState(1.00);
     const balance = profile?.balance ?? 0;
     const [clientSeed, setClientSeed] = useState('your-random-client-seed');
+    const betPlacedThisRound = useRef(false);
+
+    useEffect(() => {
+        if (gameState === 'betting') {
+            betPlacedThisRound.current = false;
+        }
+    }, [gameState]);
+
 
     const handlePlaceBet = useCallback((betType: string) => {
         if (gameState !== 'betting') return;
         placeBet(selectedChip, betType);
-    }, [placeBet, selectedChip, gameState]);
+        if (!betPlacedThisRound.current) {
+            onGameRoundCompleted();
+            betPlacedThisRound.current = true;
+        }
+    }, [placeBet, selectedChip, gameState, onGameRoundCompleted]);
     
     const previousWinningNumber = history[0]?.winning_number ?? ROULETTE_ORDER[0];
 
