@@ -1,3 +1,5 @@
+
+
 import React, { useState, useEffect, useCallback, useRef, Suspense, lazy } from 'react';
 import { Header } from './components/Header';
 import { Hero } from './components/HeroCarousel';
@@ -14,7 +16,7 @@ import { PROFILE_LINKS } from './constants';
 import { PromotionalModal } from './components/PromotionalModal';
 
 const ProfilePage = lazy(() => import('./pages/ProfilePage'));
-const CrashGamePage = lazy(() => import('./pages/CrashGamePage'));
+const WIPPage = lazy(() => import('./pages/WIPPage'));
 const RouletteGamePage = lazy(() => import('./pages/RouletteGamePage'));
 const RouletteInfoPage = lazy(() => import('./pages/RouletteInfoPage'));
 const SlotsPage = lazy(() => import('./pages/SlotsPage'));
@@ -313,7 +315,7 @@ const App: React.FC = () => {
           </>
         );
       case 'crash':
-        return <CrashGamePage profile={profile} session={session} onProfileUpdate={handleProfileUpdate} onGameRoundCompleted={handleGameRoundCompleted} />;
+        return <WIPPage onNavigate={navigateTo} />;
       case 'roulette':
         return <RouletteGamePage profile={profile} session={session} onProfileUpdate={handleProfileUpdate} onNavigate={navigateTo} onGameRoundCompleted={handleGameRoundCompleted} />;
       case 'roulette-info':
