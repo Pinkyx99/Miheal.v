@@ -26,7 +26,6 @@ const AdminPage = lazy(() => import('./pages/AdminPage'));
 const DiceGamePage = lazy(() => import('./pages/DiceGamePage'));
 const MinesGamePage = lazy(() => import('./pages/MinesGamePage'));
 const BlackjackGamePage = lazy(() => import('./pages/BlackjackGamePage'));
-const CrashGamePage = lazy(() => import('./pages/CrashGamePage'));
 
 
 type View = 'home' | 'crash' | 'roulette' | 'roulette-info' | 'slots' | 'rewards' | 'dice' | 'mines' | 'blackjack' | ProfileLink['name'];
@@ -324,7 +323,7 @@ const App: React.FC = () => {
           </>
         );
       case 'crash':
-        return <CrashGamePage profile={profile} session={session} onProfileUpdate={handleProfileUpdate} onGameRoundCompleted={handleGameRoundCompleted} />;
+        return <WIPPage onNavigate={navigateTo} />;
       case 'roulette':
         return <RouletteGamePage profile={profile} session={session} onProfileUpdate={handleProfileUpdate} onNavigate={navigateTo} onGameRoundCompleted={handleGameRoundCompleted} />;
       case 'roulette-info':
