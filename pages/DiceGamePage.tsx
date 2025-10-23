@@ -1,10 +1,12 @@
 
+
 import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import { Profile, RollResult } from '../types';
 import { Session } from '@supabase/supabase-js';
 import { DiceControls } from '../components/dice/DiceControls';
 import { DiceDisplay } from '../components/dice/DiceDisplay';
 import { supabase } from '../lib/supabaseClient';
+import { soundManager, SOUNDS } from '../lib/sound';
 
 const HOUSE_EDGE = 0.01; // 1%
 
@@ -103,6 +105,7 @@ const DiceGamePage: React.FC<DiceGamePageProps> = ({ profile, session, onProfile
         onGameRoundCompleted();
         setError(null);
         setGameState('rolling');
+        soundManager.play(SOUNDS.DICE_ROLL, { volume: 0.7 });
         setLastRoll(null);
 
         try {

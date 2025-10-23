@@ -7,6 +7,8 @@ import { RouletteBettingTable } from '../components/roulette/RouletteBettingTabl
 import { getNumberColorClass, ROULETTE_ORDER } from '../lib/rouletteUtils';
 import { ProvablyFair } from '../components/roulette/ProvablyFair';
 import { useRealtimeRoulette } from '../hooks/useRealtimeRoulette';
+import { soundManager, SOUNDS } from '../lib/sound';
+import usePrevious from '../hooks/usePrevious';
 
 interface RouletteGamePageProps {
   onNavigate: (view: 'roulette-info') => void;
@@ -36,6 +38,16 @@ const RouletteGamePage: React.FC<RouletteGamePageProps> = ({ onNavigate, profile
     const balance = profile?.balance ?? 0;
     const [clientSeed, setClientSeed] = useState('your-random-client-seed');
     const betPlacedThisRound = useRef(false);
+    const prevGameState = usePrevious(gameState);
+
+    useEffect(() => {
+        if (prevGameState === 'betting' && gameState === 'spinning') {
+            soundManager.play(SOUNDS.ROULETTE_SPIN, { volume: 0.4 });
+        }
+        if (prevGameState === 'spinning' && gameState === 'ended') {
+            soundManager.play(SOUNDS.ROULETTE_LAND, { volume: 0.6 });
+        }
+    }, [gameState, prevGameState]);
 
     useEffect(() => {
         if (gameState === 'betting') {
@@ -46,6 +58,7 @@ const RouletteGamePage: React.FC<RouletteGamePageProps> = ({ onNavigate, profile
 
     const handlePlaceBet = useCallback((betType: string) => {
         if (gameState !== 'betting') return;
+        soundManager.play(SOUNDS.CHIP_PLACE);
         placeBet(selectedChip, betType);
         if (!betPlacedThisRound.current) {
             onGameRoundCompleted();

@@ -1,4 +1,5 @@
 
+
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import { Profile } from '../types';
 import { Session } from '@supabase/supabase-js';
@@ -13,6 +14,7 @@ import { Logo, SoundIcon, LightningIcon, CalendarIcon, ClockIcon, CheckIcon, Que
 async function sha256Hex(str: string): Promise<string> {
     const encoder = new TextEncoder();
     const data = encoder.encode(str);
+    // FIX: Corrected typo from SHA-26 to SHA-256
     const hashBuffer = await crypto.subtle.digest('SHA-256', data);
     const hashArray = Array.from(new Uint8Array(hashBuffer));
     return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
@@ -147,7 +149,7 @@ const KenoGamePage: React.FC<KenoGamePageProps> = ({ profile, session, onProfile
         setRevealedNumbers(new Set());
 
         // Simple balance deduction for demo; production would use a robust transaction system.
-        const { error: debitError } = await supabase.from('profiles').update({ balance: profile.balance - betAmount }).eq('id', session.user.id);
+        const { error: debitError } = await supabase.from('profiles').update({ balance: Number(profile.balance ?? 0) - betAmount }).eq('id', session.user.id);
         if (debitError) {
             setGameState('idle');
             return;
@@ -183,8 +185,9 @@ const KenoGamePage: React.FC<KenoGamePageProps> = ({ profile, session, onProfile
             if (payout > 0) {
                  const { data: currentProfile, error: fetchError } = await supabase.from('profiles').select('balance').eq('id', session.user.id).single();
                  if (fetchError || !currentProfile) return;
-                 // FIX: Safely calculate the new balance by explicitly converting the balance from the database to a number, and using || 0 for wider falsy value handling.
-                 const newBalance = (currentProfile.balance as number || 0) + payout;
+                // FIX: Safely calculate the new balance by explicitly converting the balance from the database to a number.
+                // The type of `balance` from Supabase can be inferred as `unknown`, so we cast to a more specific type.
+                 const newBalance = Number((currentProfile as { balance: number | null }).balance ?? 0) + payout;
                  await supabase.from('profiles').update({ balance: newBalance }).eq('id', session.user.id);
             }
 

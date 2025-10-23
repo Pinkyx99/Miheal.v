@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Logo, ChatBubbleIcon, BellIcon, Bars3Icon } from './icons';
+import { Logo, ChatBubbleIcon, BellIcon, Bars3Icon, SoundIcon, MutedSoundIcon } from './icons';
 import { Session } from '@supabase/supabase-js';
 import { Profile, ProfileLink } from '../types';
 import { supabase } from '../lib/supabaseClient';
@@ -22,9 +22,11 @@ interface HeaderProps {
     isChatPinned: boolean;
     theme: 'light' | 'dark';
     onToggleTheme: () => void;
+    isMuted: boolean;
+    onToggleMute: () => void;
 }
 
-export const Header: React.FC<HeaderProps> = ({ session, profile, onSignInClick, onSignUpClick, onWalletButtonClick, onNavigate, onChatToggle, onSidebarToggle, onProfileUpdate, onOpenAdminPanel, isChatPinned, theme, onToggleTheme }) => {
+export const Header: React.FC<HeaderProps> = ({ session, profile, onSignInClick, onSignUpClick, onWalletButtonClick, onNavigate, onChatToggle, onSidebarToggle, onProfileUpdate, onOpenAdminPanel, isChatPinned, theme, onToggleTheme, isMuted, onToggleMute }) => {
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const notificationsRef = useRef<HTMLDivElement>(null);
 
@@ -63,6 +65,10 @@ export const Header: React.FC<HeaderProps> = ({ session, profile, onSignInClick,
             {session && profile ? (
               <>
                 <Wallet onWalletButtonClick={onWalletButtonClick} balance={profile.balance} />
+                
+                <button onClick={onToggleMute} className="p-2 rounded-full hover:bg-white/10 transition-colors text-text-muted hover:text-white">
+                    {isMuted ? <MutedSoundIcon className="w-6 h-6" /> : <SoundIcon className="w-6 h-6" />}
+                </button>
 
                 <div ref={notificationsRef} className="relative">
                     <button onClick={() => setIsNotificationsOpen(!isNotificationsOpen)} className="p-2 rounded-full hover:bg-white/10 transition-colors text-text-muted hover:text-white relative">

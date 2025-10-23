@@ -8,6 +8,8 @@ import { BettingControls } from '../components/crash/BettingControls';
 import { PlayerBets } from '../components/crash/PlayerBets';
 import { MyBets } from '../components/crash/MyBets';
 import { ProvablyFairModal } from '../components/crash/ProvablyFairModal';
+import { soundManager, SOUNDS } from '../lib/sound';
+import usePrevious from '../hooks/usePrevious';
 
 // FIX: Create and export the context to solve the import error in MyBets.tsx
 export const MultiplierContext = createContext<number>(1.00);
@@ -29,6 +31,25 @@ const CrashGamePage: React.FC<CrashGamePageProps> = ({ profile, session, onProfi
     const [cashoutEvents, setCashoutEvents] = useState<CashoutEvent[]>([]);
     
     const betPlacedThisRound = React.useRef(false);
+    const prevGameState = usePrevious(gameState);
+
+    useEffect(() => {
+        if (prevGameState !== 'running' && gameState === 'running') {
+            soundManager.playLoop(SOUNDS.CRASH_TICK);
+        } else if (gameState !== 'running') {
+            soundManager.stopLoop(SOUNDS.CRASH_TICK);
+        }
+
+        if (prevGameState === 'running' && gameState === 'crashed') {
+            soundManager.play(SOUNDS.CRASH_EXPLODE, { volume: 0.4 });
+        }
+        
+        // Cleanup on unmount
+        return () => {
+            soundManager.stopAllLoops();
+        }
+    }, [gameState, prevGameState]);
+
 
     useEffect(() => {
         if (gameState === 'waiting') {
@@ -42,6 +63,7 @@ const CrashGamePage: React.FC<CrashGamePageProps> = ({ profile, session, onProfi
     const handlePlaceBet = useCallback(async (betAmount: string, autoCashout: string) => {
         setBetLoading(true);
         setError(null);
+        soundManager.play(SOUNDS.CHIP_PLACE);
         const result = await placeBet(betAmount, autoCashout);
         if (!result.success) {
             setError(result.message || 'Failed to place bet.');
@@ -53,7 +75,9 @@ const CrashGamePage: React.FC<CrashGamePageProps> = ({ profile, session, onProfi
         setCashoutLoadingId(betId);
         setError(null);
         const result = await cashout(betId, multiplier);
-        if (!result.success) {
+        if (result.success) {
+            soundManager.play(SOUNDS.CASHOUT);
+        } else {
             setError(result.message || 'Failed to cash out.');
         }
         // Loading state is managed by cashoutLoadingId, it will clear when game state changes or myBets updates

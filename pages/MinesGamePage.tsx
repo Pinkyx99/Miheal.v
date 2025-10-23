@@ -5,6 +5,7 @@ import { MinesControls } from '../components/mines/MinesControls';
 import { MinesGrid } from '../components/mines/MinesGrid';
 import { supabase } from '../lib/supabaseClient';
 import { Logo, SoundIcon, LightningIcon, CalendarIcon, ClockIcon, CheckIcon, QuestionIcon } from '../components/icons';
+import { soundManager, SOUNDS } from '../lib/sound';
 
 // --- Provably Fair Helper Functions ---
 async function sha256Hex(str: string): Promise<string> {
@@ -159,6 +160,7 @@ const MinesGamePage: React.FC<MinesGamePageProps> = ({ profile, session, onProfi
         const newGridState = [...gridState];
 
         if (mineLocations.has(index)) {
+            soundManager.play(SOUNDS.MINE_REVEAL, { volume: 0.5 });
             setGameState('busted');
             showFinalGrid(index);
             // Log loss for live feed
@@ -174,6 +176,7 @@ const MinesGamePage: React.FC<MinesGamePageProps> = ({ profile, session, onProfi
                 });
             }
         } else {
+            soundManager.play(SOUNDS.GEM_REVEAL, { volume: 0.3 });
             newRevealedTiles.add(index);
             setRevealedTiles(newRevealedTiles);
             newGridState[index] = 'gem';
@@ -190,6 +193,7 @@ const MinesGamePage: React.FC<MinesGamePageProps> = ({ profile, session, onProfi
     const handleCashout = useCallback(async () => {
         if (gameState !== 'playing' || revealedTiles.size === 0) return;
 
+        soundManager.play(SOUNDS.CASHOUT);
         const payoutAmount = betAmount + profit;
 
         // Log win for live feed

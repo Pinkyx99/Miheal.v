@@ -14,6 +14,7 @@ import { UserProfileModal } from './components/UserProfileModal';
 import { Sidebar } from './components/Sidebar';
 import { PROFILE_LINKS } from './constants';
 import { PromotionalModal } from './components/PromotionalModal';
+import { soundManager } from './lib/sound';
 
 const ProfilePage = lazy(() => import('./pages/ProfilePage'));
 const WIPPage = lazy(() => import('./pages/WIPPage'));
@@ -25,6 +26,8 @@ const AdminPage = lazy(() => import('./pages/AdminPage'));
 const DiceGamePage = lazy(() => import('./pages/DiceGamePage'));
 const MinesGamePage = lazy(() => import('./pages/MinesGamePage'));
 const BlackjackGamePage = lazy(() => import('./pages/BlackjackGamePage'));
+const CrashGamePage = lazy(() => import('./pages/CrashGamePage'));
+
 
 type View = 'home' | 'crash' | 'roulette' | 'roulette-info' | 'slots' | 'rewards' | 'dice' | 'mines' | 'blackjack' | ProfileLink['name'];
 
@@ -48,6 +51,7 @@ const App: React.FC = () => {
   const [isAdminPanelOpen, setIsAdminPanelOpen] = useState(false);
   const [theme, setTheme] = useState<'light' | 'dark'>('dark');
   const [showPromotionModal, setShowPromotionModal] = useState(false);
+  const [isMuted, setIsMuted] = useState(soundManager.getMuteState());
 
   // State for round-based promotional modal
   const [roundsSinceLastPromo, setRoundsSinceLastPromo] = useState(0);
@@ -101,6 +105,11 @@ const App: React.FC = () => {
     });
   }, []);
   
+  const toggleMute = useCallback(() => {
+    const newMuteState = soundManager.toggleMute();
+    setIsMuted(newMuteState);
+  }, []);
+
   const handlePinToggle = () => {
       const newPinnedState = !isChatPinned;
       setIsChatPinned(newPinnedState);
@@ -315,7 +324,7 @@ const App: React.FC = () => {
           </>
         );
       case 'crash':
-        return <WIPPage onNavigate={navigateTo} />;
+        return <CrashGamePage profile={profile} session={session} onProfileUpdate={handleProfileUpdate} onGameRoundCompleted={handleGameRoundCompleted} />;
       case 'roulette':
         return <RouletteGamePage profile={profile} session={session} onProfileUpdate={handleProfileUpdate} onNavigate={navigateTo} onGameRoundCompleted={handleGameRoundCompleted} />;
       case 'roulette-info':
@@ -410,6 +419,8 @@ const App: React.FC = () => {
                     isChatPinned={isChatPinned}
                     theme={theme}
                     onToggleTheme={toggleTheme}
+                    isMuted={isMuted}
+                    onToggleMute={toggleMute}
                 />
                 <main className={`flex-1 overflow-y-auto no-scrollbar p-6 lg:p-8 flex flex-col ${currentView === 'home' ? 'justify-center' : ''}`}>
                   <Suspense fallback={<LoadingFallback />}>

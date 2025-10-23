@@ -7,6 +7,8 @@ import { supabase } from '../lib/supabaseClient';
 import { BlackjackControls } from '../components/blackjack/BlackjackControls';
 import { BlackjackHand } from '../components/blackjack/BlackjackHand';
 import { ChipSelector } from '../components/blackjack/ChipSelector';
+import { soundManager, SOUNDS } from '../lib/sound';
+import usePrevious from '../hooks/usePrevious';
 
 type Suit = 'Hearts' | 'Diamonds' | 'Clubs' | 'Spades';
 type Rank = '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | '10' | 'J' | 'Q' | 'K' | 'A';
@@ -77,9 +79,36 @@ const BlackjackGamePage: React.FC<BlackjackGamePageProps> = ({ profile, session,
   const currentBet = useMemo(() => parseFloat(betAmount) || 0, [betAmount]);
   const playerScore = calculateHandValue(playerHand);
   const dealerScore = calculateHandValue(dealerHand);
+
+  const prevPlayerHandLength = usePrevious(playerHand.length);
+  const prevDealerHandLength = usePrevious(dealerHand.length);
+  const prevGameResult = usePrevious(gameResult);
+
+  useEffect(() => {
+      if (prevPlayerHandLength !== undefined && playerHand.length > prevPlayerHandLength) {
+          soundManager.play(SOUNDS.CARD_DEAL, { volume: 0.6, duration: 1000 });
+      }
+  }, [playerHand.length, prevPlayerHandLength]);
+
+  useEffect(() => {
+      if (prevDealerHandLength !== undefined && dealerHand.length > prevDealerHandLength) {
+          soundManager.play(SOUNDS.CARD_DEAL, { volume: 0.6, duration: 1000 });
+      }
+  }, [dealerHand.length, prevDealerHandLength]);
+
+  useEffect(() => {
+      if (gameResult && prevGameResult !== gameResult) {
+          if (gameResult === 'win' || gameResult === 'blackjack') {
+              soundManager.play(SOUNDS.BLACKJACK_WIN);
+          } else if (gameResult === 'lose' || gameResult === 'bust') {
+              soundManager.play(SOUNDS.MINE_REVEAL, { volume: 0.5 });
+          }
+      }
+  }, [gameResult, prevGameResult]);
   
   const handleAddChipAmount = (value: number) => {
     if (gameState !== 'betting') return;
+    soundManager.play(SOUNDS.CHIP_PLACE, { volume: 0.8 });
     setBetAmount(prev => (parseFloat(prev || '0') + value).toFixed(2));
   };
   
@@ -112,6 +141,7 @@ const BlackjackGamePage: React.FC<BlackjackGamePageProps> = ({ profile, session,
     }
 
     try {
+        soundManager.play(SOUNDS.CHIP_PLACE, { volume: 0.8 });
         onGameRoundCompleted();
         setRoundBetAmount(currentBet);
         setLastBetAmount(currentBet);
@@ -172,6 +202,7 @@ const BlackjackGamePage: React.FC<BlackjackGamePageProps> = ({ profile, session,
      if (gameState !== 'player_turn' || playerHand.length !== 2 || !session || !profile || currentBet > Number(profile.balance ?? 0)) return;
      
      try {
+        soundManager.play(SOUNDS.CHIP_PLACE, { volume: 0.8 });
         const { error } = await supabase.from('profiles').update({ balance: Number(profile.balance ?? 0) - currentBet }).eq('id', session.user.id);
         if (error) throw error;
         onProfileUpdate();
