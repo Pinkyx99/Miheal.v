@@ -138,7 +138,7 @@ const DiceGamePage: React.FC<DiceGamePageProps> = ({ profile, session, onProfile
 
                 // FIX: Safely calculate the new balance by explicitly converting the balance from the database to a number.
                 // Cast currentProfile to any to bypass strict type checking on the `balance` property, which may be inferred as 'unknown'.
-                const newBalance = Number((currentProfile as any).balance || 0) + payout;
+                const newBalance = Number((currentProfile as any)?.balance ?? 0) + payout;
                 const { error: payoutError } = await supabase
                     .from('profiles')
                     .update({ balance: newBalance })

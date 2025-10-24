@@ -20,7 +20,7 @@ const OriginalGameCard: React.FC<{
             <div className="absolute top-1 right-1 bg-yellow-500 text-black text-[10px] font-bold px-1.5 py-0.5 rounded-full z-10">SOON</div>
         )}
     </div>
-    <span className="text-white font-semibold text-sm">{name}</span>
+    <span className="text-white font-semibold text-sm" style={{textShadow: '0 1px 4px rgba(0,0,0,0.8)'}}>{name}</span>
   </div>
 );
 
@@ -29,7 +29,7 @@ export const OriginalsRow: React.FC<{ onGameSelect: (name: string) => void }> = 
     return (
         <div className="mt-12 max-w-7xl mx-auto w-full">
             <div className="mb-6">
-                <h2 className="text-2xl font-bold text-white uppercase tracking-wider">Mihael Originals</h2>
+                <h2 className="text-2xl font-bold text-white uppercase tracking-wider" style={{textShadow: '0 2px 8px rgba(0,0,0,0.7)'}}>Mihael Originals</h2>
             </div>
             <div className="flex justify-start items-center gap-4 lg:gap-6 flex-wrap">
                 {ORIGINAL_GAMES.map(game => (
