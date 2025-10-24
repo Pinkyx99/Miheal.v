@@ -1,5 +1,6 @@
 
 
+
 import React, { useState, useEffect, useCallback, useRef, Suspense, lazy } from 'react';
 import { Header } from './components/Header';
 import { Hero } from './components/HeroCarousel';
@@ -445,6 +446,26 @@ const App: React.FC = () => {
             className={`fixed inset-0 bg-black/50 z-30 transition-opacity duration-300 ${isChatOpen && !isChatPinned ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
             onClick={() => setIsChatOpen(false)}
         />
+        <footer className={`absolute bottom-2 text-xs text-text-muted/50 z-50 transition-all duration-300 ${isChatPinned ? 'right-[calc(320px+0.5rem)]' : 'right-2'}`}>
+          Made by{' '}
+          <a
+            href="https://www.instagram.com/site.builderhub/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-text-muted/80 transition-colors"
+          >
+            Ramill
+          </a>{' '}
+          &{' '}
+          <a
+            href="https://www.instagram.com/site.builderhub/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-text-muted/80 transition-colors"
+          >
+            Mixi
+          </a>
+        </footer>
       </div>
     </div>
   );
