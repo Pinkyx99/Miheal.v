@@ -79,7 +79,7 @@ const AdminPage: React.FC<AdminPageProps> = ({ profile, show, onClose }) => {
         };
     }, [isDragging, handlePointerMove, handlePointerUp]);
 
-    if (!show) {
+    if (!show || !profile?.is_admin) {
         return null;
     }
 

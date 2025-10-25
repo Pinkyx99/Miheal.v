@@ -140,6 +140,7 @@ export interface AdminUser {
     role: string | null;
     balance: number;
     status: UserStatus;
+    moderation_status: string;
     last_seen: string | null;
     wagered: number;
     games_played: number;

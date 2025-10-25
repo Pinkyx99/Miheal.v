@@ -1,6 +1,3 @@
-
-
-
 import React, { useState, useEffect, useCallback, useRef, Suspense, lazy } from 'react';
 import { Header } from './components/Header';
 import { Hero } from './components/HeroCarousel';
@@ -227,10 +224,10 @@ const App: React.FC = () => {
     const user = session.user;
 
     try {
-        // Fetch core profile data including admin status
+        // Fetch core profile data
         const { data: profileData, error: profileError } = await supabase
             .from('profiles')
-            .select('id, username, avatar_url, balance, wagered, games_played, has_claimed_welcome_bonus, claimed_ranks, is_admin')
+            .select('id, username, avatar_url, balance, wagered, games_played, has_claimed_welcome_bonus, claimed_ranks')
             .eq('id', user.id)
             .single();
 
@@ -240,6 +237,9 @@ const App: React.FC = () => {
         }
 
         if (profileData) {
+            // Hardcode admin check for the site owner
+            const isAdmin = profileData.username === 'Owner' && user.email === 'userr.98a@gmail.com';
+
             const fullProfile: Profile = {
                 id: profileData.id,
                 username: profileData.username,
@@ -250,7 +250,7 @@ const App: React.FC = () => {
                 has_claimed_welcome_bonus: profileData.has_claimed_welcome_bonus,
                 claimed_ranks: profileData.claimed_ranks,
                 email: user.email!, // Email is guaranteed to be on the user object
-                is_admin: profileData.is_admin ?? false, // Directly use the column
+                is_admin: isAdmin,
             };
             setProfile(fullProfile);
         } else {
@@ -260,11 +260,7 @@ const App: React.FC = () => {
     } catch (error: any) {
         console.error("Error getting profile:", error.message);
         // This is a critical failure, sign out to prevent being stuck in a broken state.
-        if (error.message.includes('column "is_admin" does not exist')) {
-            console.error("DATABASE SETUP ERROR: The 'is_admin' column is missing from the 'profiles' table. Please run the ALTER TABLE script provided in the documentation.");
-        } else {
-            supabase.auth.signOut();
-        }
+        supabase.auth.signOut();
     }
   }, []);
 

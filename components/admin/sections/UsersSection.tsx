@@ -5,6 +5,15 @@ import { supabase } from '../../../lib/supabaseClient';
 import { AdminUser, UserStatus } from '../../../types';
 import { UserManagementModal } from '../UserManagementModal';
 
+const getModerationStatusColor = (status: string | null) => {
+    switch (status?.toLowerCase()) {
+        case 'active': return 'bg-green-500/20 text-green-400';
+        case 'banned': return 'bg-red-500/20 text-red-400';
+        case 'muted': return 'bg-yellow-500/20 text-yellow-400';
+        default: return 'bg-gray-500/20 text-gray-400';
+    }
+};
+
 export const UsersSection: React.FC = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
@@ -23,12 +32,12 @@ export const UsersSection: React.FC = () => {
 
         if (rpcError) {
             console.error("Error fetching users via RPC:", rpcError);
-            setError("Failed to load user data. Ensure you have admin privileges and the 'get_all_users_for_admin' function exists.");
+            setError(`Failed to load user data: ${rpcError.message}. Ensure the database function is set up correctly.`);
             setUsers([]);
         } else if (data) {
             const mappedUsers: AdminUser[] = data.map((user: any) => {
                 const isOnline = user.last_seen && new Date(user.last_seen) > new Date(Date.now() - 5 * 60 * 1000);
-                const status: UserStatus = isOnline ? 'Online' : 'Offline';
+                const onlineStatus: UserStatus = isOnline ? 'Online' : 'Offline';
 
                 return {
                     id: user.id,
@@ -37,7 +46,8 @@ export const UsersSection: React.FC = () => {
                     avatar_url: user.avatar_url,
                     role: user.role || 'User',
                     balance: user.balance || 0,
-                    status: status,
+                    status: onlineStatus,
+                    moderation_status: user.status || 'active',
                     last_seen: user.last_seen,
                     wagered: user.wagered || 0,
                     games_played: user.games_played || 0,
@@ -62,12 +72,13 @@ export const UsersSection: React.FC = () => {
         );
     }, [searchTerm, users]);
 
+    // FIX: Define totalPages for pagination logic.
+    const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
+
     const paginatedUsers = useMemo(() => {
         const startIndex = (currentPage - 1) * itemsPerPage;
         return filteredUsers.slice(startIndex, startIndex + itemsPerPage);
     }, [filteredUsers, currentPage, itemsPerPage]);
-
-    const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
 
     const getStatusColor = (status: UserStatus) => {
         switch (status) {
@@ -140,8 +151,10 @@ export const UsersSection: React.FC = () => {
                                         <td className="px-6 py-4">${user.balance.toFixed(2)}</td>
                                         <td className="px-6 py-4">
                                             <div className="flex items-center">
-                                                <div className={`h-2.5 w-2.5 rounded-full mr-2 ${getStatusColor(user.status)}`}></div>
-                                                {user.status}
+                                                <div className={`h-2.5 w-2.5 rounded-full mr-2 ${getStatusColor(user.status)}`} title={user.status}></div>
+                                                <span className={`px-2 py-0.5 text-xs font-semibold rounded-full capitalize ${getModerationStatusColor(user.moderation_status)}`}>
+                                                    {user.moderation_status}
+                                                </span>
                                             </div>
                                         </td>
                                         <td className="px-6 py-4">{user.last_seen ? new Date(user.last_seen).toLocaleString() : 'Never'}</td>
