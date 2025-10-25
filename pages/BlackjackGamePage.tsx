@@ -1,5 +1,3 @@
-
-
 import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import { Session } from '@supabase/supabase-js';
 import { Profile } from '../types';
@@ -304,9 +302,9 @@ const BlackjackGamePage: React.FC<BlackjackGamePageProps> = ({ profile, session,
               const { data: currentProfile, error: fetchError } = await supabase.from('profiles').select('balance').eq('id', session.user.id).single();
               if (fetchError || !currentProfile) throw new Error(fetchError?.message || "Profile not found");
               
-              // FIX: Safely calculate new balance. The type of `balance` from Supabase can be `unknown`.
-              // Casting to 'any' and providing a fallback of 0 ensures a safe number conversion.
-              const newBalance = Number((currentProfile as any)?.balance ?? 0) + payout;
+              // FIX: Safely calculate the new balance by explicitly converting the balance from the database to a number, handling potential `unknown` or `NaN` values.
+              // FIX: Removed unnecessary `(as any)?` cast which was causing a type error. Direct access is safe after the null check.
+              const newBalance = (Number(currentProfile.balance) || 0) + payout;
   
               const { error: updateError } = await supabase.from('profiles').update({ balance: newBalance }).eq('id', session.user.id);
               if (updateError) throw updateError;

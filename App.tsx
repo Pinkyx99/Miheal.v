@@ -5,7 +5,7 @@ import { Hero } from './components/HeroCarousel';
 import { AuthModal } from './components/AuthModal';
 import { supabase } from './lib/supabaseClient';
 import { Session, Provider } from '@supabase/supabase-js';
-import { Profile, ProfileLink } from './types';
+import { Profile, ProfileLink, MuteBanRecord } from './types';
 import { WalletModal } from './components/WalletModal';
 import { OriginalsRow } from './components/OriginalsRow';
 import { ChatRail } from './components/ChatRail';
@@ -14,6 +14,7 @@ import { Sidebar } from './components/Sidebar';
 import { PROFILE_LINKS } from './constants';
 import { PromotionalModal } from './components/PromotionalModal';
 import { soundManager } from './lib/sound';
+import { BannedOverlay } from './components/BannedOverlay';
 
 const ProfilePage = lazy(() => import('./pages/ProfilePage'));
 const WIPPage = lazy(() => import('./pages/WIPPage'));
@@ -50,6 +51,7 @@ const App: React.FC = () => {
   const [theme, setTheme] = useState<'light' | 'dark'>('dark');
   const [showPromotionModal, setShowPromotionModal] = useState(false);
   const [isMuted, setIsMuted] = useState(soundManager.getMuteState());
+  const [banDetails, setBanDetails] = useState<MuteBanRecord | null>(null);
 
   // State for round-based promotional modal
   const [roundsSinceLastPromo, setRoundsSinceLastPromo] = useState(0);
@@ -218,27 +220,38 @@ const App: React.FC = () => {
   const getProfile = useCallback(async () => {
     const { data: { session }, error: sessionError } = await supabase.auth.getSession();
     if (sessionError || !session) {
-      // This case should be handled by onAuthStateChange, but as a safeguard:
       console.error("Attempted to get profile without a session.");
       return;
     }
     const user = session.user;
 
     try {
-        // Fetch core profile data, now including the 'role'
         const { data: profileData, error: profileError } = await supabase
             .from('profiles')
-            .select('id, username, avatar_url, balance, wagered, games_played, has_claimed_welcome_bonus, claimed_ranks, role')
+            .select('*, role, muted_until, banned_until')
             .eq('id', user.id)
             .single();
 
-        if (profileError) {
-            // If the profile doesn't exist, it's a critical issue.
-            throw profileError;
-        }
+        if (profileError) throw profileError;
 
         if (profileData) {
-            // An admin is either the hardcoded owner OR has the 'Admin' role in the database.
+            const now = new Date();
+            const bannedUntil = profileData.banned_until ? new Date(profileData.banned_until) : null;
+            if (bannedUntil && bannedUntil > now) {
+                const { data: banLog } = await supabase
+                    .from('moderation_actions')
+                    .select('reason, expires_at, moderator:moderator_id(username)')
+                    .eq('target_user_id', user.id)
+                    .eq('action_type', 'ban')
+                    .order('created_at', { ascending: false })
+                    .limit(1)
+                    .single();
+                setBanDetails(banLog as MuteBanRecord || { reason: 'No reason provided.', expires_at: profileData.banned_until, moderator: { username: 'System' } });
+                setProfile(null);
+                return;
+            }
+            setBanDetails(null);
+
             const isOwner = profileData.username === 'Owner' && user.email === 'userr.98a@gmail.com';
             const isAdminRole = profileData.role === 'Admin';
             const isAdmin = isOwner || isAdminRole;
@@ -252,17 +265,18 @@ const App: React.FC = () => {
                 games_played: profileData.games_played,
                 has_claimed_welcome_bonus: profileData.has_claimed_welcome_bonus,
                 claimed_ranks: profileData.claimed_ranks,
-                email: user.email!, // Email is guaranteed to be on the user object
+                email: user.email!,
                 is_admin: isAdmin,
+                role: profileData.role,
+                muted_until: profileData.muted_until,
+                banned_until: profileData.banned_until,
             };
             setProfile(fullProfile);
         } else {
-            // This case shouldn't be reached if profileError is handled, but as a safeguard.
             throw new Error("Profile data is null for authenticated user.");
         }
     } catch (error: any) {
         console.error("Error getting profile:", error.message);
-        // This is a critical failure, sign out to prevent being stuck in a broken state.
         supabase.auth.signOut();
     }
   }, []);
@@ -283,6 +297,7 @@ const App: React.FC = () => {
         getProfile();
       } else {
         setProfile(null);
+        setBanDetails(null);
         navigateTo('home');
       }
     });
@@ -355,6 +370,10 @@ const App: React.FC = () => {
         case 'blackjack': return 'bg-[#081018]';
         default: return 'bg-transparent';
     }
+  }
+
+  if (banDetails) {
+    return <BannedOverlay banDetails={banDetails} />;
   }
 
   return (

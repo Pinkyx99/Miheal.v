@@ -17,7 +17,7 @@ interface ChatRailProps {
 
 const EMOJI_CATEGORIES: Record<string, string[]> = {
   'Smileys': ['😀', '😃', '😄', '😁', '😆', '😅', '😂', '🤣', '😊', '😇', '🙂', '🙃', '😉', '😌', '😍', '🥰', '😘', '😗', '😙', '😚', '😋', '😛', '😝', '😜', '🤪', '🤨', '🧐', '🤓', '😎', '🤩', '🥳', '😏', '😒', '😞', '😔', '😟', '😕', '🙁', '☹️', '😣', '😖', '😫', '😩', '🥺', '😢', '😭', '😤', '😠', '😡', '🤬', '🤯', '😳', '🥵', '🥶', '😱', '😨', '😰', '😥', '😓', '🤗', '🤔', '🤭', '🤫', '🤥', '😶', '😐', '😑', '😬', '🙄', '😯', '😦', '😧', '😮', '😲', '🥱', '😴', '🤤', '😪', '😵', '🤐', '🥴', '🤢', '🤮', '🤧', '😷', '🤒', '🤕', '🤑', '🤠', '😈', '👿', '👹', '👺', '🤡', '💩', '👻', '💀', '☠️', '👽', '👾', '🤖', '🎃'],
-  'People': ['👋', '🤚', '🖐', '✋', '🖖', '👌', '🤌', '🤏', '✌️', '🤞', '🤟', '🤘', '🤙', '👈', '👉', '👆', '🖕', '👇', '☝️', '👍', '👎', '✊', '👊', '🤛', '🤜', '👏', '🙌', '👐', '🤲', '🤝', '🙏', '✍️', '💅', '🤳', '💪', '🦾', '🦵', '🦿', '🦶', '👂', '🦻', '👃', '🧠', '🫀', '🫁', '🦷', '🦴', '👀', '👁', '👅', '👄', '💋', '🩸'],
+  'People': ['👋', '🤚', '🖐', '✋', '🖖', '👌', '🤌', '🤏', '✌️', '🤞', '🤟', '🤘', '🤙', '👈', '👉', '👆', '🖕', '👇', '☝️', '👍', '👎', '✊', '👊', '🤛', '🤜', '👏', '🙌', '👐', '🤲', '🤝', '🙏', '✍️', '💅', '🤳', '💪', '🦾', '🦵', '🦿', '🦶', '👂', '🦻', '👃', '🧠', '𫀀', '𫁁', '🦷', '🦴', '👀', '👁', '👅', '👄', '💋', '🩸'],
   'Animals': ['🐶', '🐱', '🐭', '🐹', '🐰', '🦊', '🐻', '🐼', '🐻‍❄️', '🐨', '🐯', '🦁', '🐮', '🐷', '🐽', '🐸', '🐵', '🙈', '🙉', '🙊', '🐒', '🐔', '🐧', '🐦', '🐤', '🐣', '🐥', '🦆', '🦅', '🦉', '🦇', '🐺', '🐗', '🐴', '🦄', '🐝', '🐛'],
   'Food': ['🍏', '🍎', '🍐', '🍊', '🍋', '🍌', '🍉', '🍇', '🍓', '🍈', '🍒', '🍑', '🥭', '🍍', '🥥', '🥝', '🍅', '🍆', '🥑', '🥦', '🥬', '🥒', '🌶', '🌽', '🥕', '🧄', '🧅', '🥔', '🍠', '🥐', '🥯', '🍞', '🥖', '🥨', '🧀', '🥚', '🍳'],
   'Objects': ['❤️', '💔', '🔥', '✨', '⭐', '💫', '💯', '💰', '💎', '👑', '💣', '💥', '🎉', '🎁', '🚀', '🛸', '💻', '📱', '💡', '💀', '🔑', '🔒', '🎲', '🎯', '🎮', '🎰'],
@@ -373,16 +373,14 @@ export const ChatRail: React.FC<ChatRailProps> = ({ session, profile, onClose, o
     const [isPickerOpen, setIsPickerOpen] = useState(false);
     const chatFormRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLInputElement>(null);
-    const [sendMessageError, setSendMessageError] = useState<string | null>(null);
+    const [feedback, setFeedback] = useState<{ message: string, type: 'success' | 'error' } | null>(null);
 
     useEffect(() => {
-        if (sendMessageError) {
-            const timer = setTimeout(() => {
-                setSendMessageError(null);
-            }, 5000); // Clear error after 5 seconds
+        if (feedback) {
+            const timer = setTimeout(() => setFeedback(null), 8000); // Increased duration for help text
             return () => clearTimeout(timer);
         }
-    }, [sendMessageError]);
+    }, [feedback]);
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -423,15 +421,72 @@ export const ChatRail: React.FC<ChatRailProps> = ({ session, profile, onClose, o
 
     const handleSendMessage = async (e?: React.FormEvent, contentOverride?: string) => {
         if (e) e.preventDefault();
-        if (!session || loading) return;
-
         const messageContent = contentOverride || newMessage.trim();
-        if (messageContent === '') return;
+        if (!session || loading || messageContent === '') return;
+
+        // Client-side /help command for admins
+        if (profile?.is_admin && messageContent.toLowerCase() === '/help') {
+            const helpText = [
+                'Admin Commands:',
+                '• /mute <user> <duration> [reason]',
+                '• /unmute <user> [reason]',
+                '• /ban <user> <duration> [reason]',
+                '• /unban <user> [reason]',
+                'Durations: 5m, 1h, 7d, perm'
+            ].join('\n');
+            setFeedback({ message: helpText, type: 'success' });
+            setNewMessage('');
+            return;
+        }
+
+        // Admin Command Handling
+        if (profile?.is_admin && /^\/(mute|ban|unmute|unban) /.test(messageContent)) {
+            const parts = messageContent.split(' ');
+            const command = parts[0].substring(1);
+            const username = parts[1];
+            
+            let duration: string | null = null;
+            let reason: string | null = null;
+
+            if (command === 'mute' || command === 'ban') {
+                duration = parts[2];
+                reason = parts.slice(3).join(' ');
+                if (!username || !duration) {
+                     setFeedback({ message: `Usage: /${command} <username> <duration> [reason]`, type: 'error' });
+                     return;
+                }
+            } else { // unmute, unban
+                reason = parts.slice(2).join(' ');
+                if (!username) {
+                    setFeedback({ message: `Usage: /${command} <username> [reason]`, type: 'error' });
+                    return;
+                }
+            }
+            
+            setLoading(true);
+            const { data, error } = await supabase.rpc('moderate_user', {
+                target_username_in: username,
+                action_type_in: command,
+                duration_in: duration,
+                reason_in: reason
+            });
+            setLoading(false);
+
+            if (error) {
+                setFeedback({ message: error.message, type: 'error' });
+            } else if (data && !data.success) {
+                setFeedback({ message: data.message, type: 'error' });
+            } else {
+                setFeedback({ message: data.message || `${username} has been ${command}ed.`, type: 'success' });
+            }
+            setNewMessage('');
+            return;
+        }
 
         setLoading(true);
         if (!contentOverride) setNewMessage('');
         setIsPickerOpen(false);
-        setSendMessageError(null);
+        setFeedback(null);
 
         const { error } = await supabase.from('chat_messages').insert({ user_id: session.user.id, message: messageContent });
         
@@ -439,12 +494,10 @@ export const ChatRail: React.FC<ChatRailProps> = ({ session, profile, onClose, o
         if (error) {
             if (!contentOverride) setNewMessage(messageContent);
             console.error("Error sending message:", error);
-            if (error.code === '42P01') { // relation does not exist
-                setSendMessageError("Chat service is unavailable. Please contact support.");
-            } else if (error.message.includes('violates row-level security policy')) {
-                setSendMessageError("You are not permitted to send this message (you may be muted).");
+            if (error.message.includes('violates row-level security policy')) {
+                setFeedback({ message: "You are currently muted and cannot send messages.", type: 'error' });
             } else {
-                setSendMessageError("Failed to send message. Please try again.");
+                setFeedback({ message: "Failed to send message.", type: 'error' });
             }
         }
     };
@@ -506,10 +559,10 @@ export const ChatRail: React.FC<ChatRailProps> = ({ session, profile, onClose, o
                 {session ? (
                     <form onSubmit={handleSendMessage} className="relative">
                         {isPickerOpen && <MediaPicker onEmojiSelect={handleEmojiSelect} onGifSelect={handleGifSelect} />}
-                        {sendMessageError && (
-                            <p className="text-xs text-red-400 text-center mb-2">{sendMessageError}</p>
+                        {feedback && (
+                            <p className={`text-xs text-left mb-2 p-2 rounded-md ${feedback.type === 'error' ? 'text-red-400 bg-red-500/10' : 'text-green-400 bg-green-500/10'} whitespace-pre-wrap`}>{feedback.message}</p>
                         )}
-                        <input ref={inputRef} type="text" value={newMessage} onChange={e => setNewMessage(e.target.value)} placeholder="Type a message..." className="w-full bg-background border border-border-color rounded-lg py-3 pl-4 pr-24 text-sm placeholder-text-muted focus:ring-2 focus:ring-primary focus:outline-none transition" />
+                        <input ref={inputRef} type="text" value={newMessage} onChange={e => setNewMessage(e.target.value)} placeholder="Type a message or command..." className="w-full bg-background border border-border-color rounded-lg py-3 pl-4 pr-24 text-sm placeholder-text-muted focus:ring-2 focus:ring-primary focus:outline-none transition" />
                          <div className="absolute inset-y-0 right-0 flex items-center">
                              <button type="button" onClick={() => setIsPickerOpen(o => !o)} className="px-3 text-text-muted hover:text-white" aria-label="Open emoji and GIF picker"><FaceSmileIcon className="w-6 h-6" /></button>
                              <button type="submit" disabled={loading || newMessage.trim() === ''} className="px-3 text-primary disabled:text-text-muted" aria-label="Send message" title="Send"><svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 5l7 7-7 7M5 5l7 7-7 7" /></svg></button>

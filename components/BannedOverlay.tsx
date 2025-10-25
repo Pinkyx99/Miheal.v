@@ -43,7 +43,7 @@ export const BannedOverlay: React.FC<BannedOverlayProps> = ({ banDetails }) => {
 
                 <button
                     onClick={handleLogout}
-                    className="mt-8 w-full bg-primary hover:bg-primary-light text-background font-bold py-3 rounded-lg transition-colors"
+                    className="mt-8 w-full bg-primary hover:bg-primary-light text-white font-bold py-3 rounded-lg transition-colors"
                 >
                     Log Out
                 </button>

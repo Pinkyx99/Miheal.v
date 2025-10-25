@@ -19,6 +19,9 @@ export interface Profile {
   has_claimed_welcome_bonus: boolean;
   claimed_ranks: string[] | null;
   is_admin: boolean;
+  role?: string;
+  muted_until?: string | null;
+  banned_until?: string | null;
 }
 
 export interface ProfileLink {

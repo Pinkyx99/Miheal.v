@@ -1,4 +1,5 @@
 
+
 import React from 'react';
 import { DiceIcon } from '../icons';
 import { Profile, RollResult } from '../../types';
@@ -51,8 +52,8 @@ export const DiceControls: React.FC<DiceControlsProps> = (props) => {
         switch(modifier) {
             case '1/2': setBetAmount(Math.max(0.01, parseFloat((betAmount / 2).toFixed(2)))); break;
             case 'x2': setBetAmount(parseFloat((betAmount * 2).toFixed(2))); break;
-            // Safely convert profile balance to a number.
-            case 'max': setBetAmount(Number(profile?.balance ?? 0)); break;
+            // FIX: Safely convert profile balance to a number, handling potential non-numeric values.
+            case 'max': setBetAmount(Number(profile?.balance) || 0); break;
         }
     };
 

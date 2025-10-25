@@ -1,5 +1,3 @@
-
-
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import { Profile } from '../types';
 import { Session } from '@supabase/supabase-js';
@@ -185,9 +183,9 @@ const KenoGamePage: React.FC<KenoGamePageProps> = ({ profile, session, onProfile
             if (payout > 0) {
                  const { data: currentProfile, error: fetchError } = await supabase.from('profiles').select('balance').eq('id', session.user.id).single();
                  if (fetchError || !currentProfile) return;
-                // FIX: Safely access the 'balance' property using optional chaining to prevent potential runtime errors if 'currentProfile' is null or its structure is unexpected. This aligns with similar safe-access patterns in other components.
-                // The type of `balance` from Supabase can be inferred as `unknown`. Casting to `any` and providing a fallback of 0 is a robust way to handle this.
-                 const newBalance = Number((currentProfile as any)?.balance ?? 0) + payout;
+                // FIX: Safely calculate the new balance by explicitly converting the balance from the database to a number.
+                // The previous `(as any)?.` cast was unnecessary and causing a type error.
+                 const newBalance = (Number(currentProfile.balance) || 0) + payout;
                  const { error: payoutError } = await supabase.from('profiles').update({ balance: newBalance }).eq('id', session.user.id);
                  if (payoutError) {
                     console.error("Keno payout error:", payoutError);
