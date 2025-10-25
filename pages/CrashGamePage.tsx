@@ -1,3 +1,4 @@
+
 import React, { useState, useCallback, useEffect, createContext } from 'react';
 import { Session } from '@supabase/supabase-js';
 import { Profile, CashoutEvent } from '../types';

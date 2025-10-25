@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback, useRef, Suspense, lazy } from 'react';
 import { Header } from './components/Header';
 import { Hero } from './components/HeroCarousel';
@@ -224,10 +225,10 @@ const App: React.FC = () => {
     const user = session.user;
 
     try {
-        // Fetch core profile data
+        // Fetch core profile data, now including the 'role'
         const { data: profileData, error: profileError } = await supabase
             .from('profiles')
-            .select('id, username, avatar_url, balance, wagered, games_played, has_claimed_welcome_bonus, claimed_ranks')
+            .select('id, username, avatar_url, balance, wagered, games_played, has_claimed_welcome_bonus, claimed_ranks, role')
             .eq('id', user.id)
             .single();
 
@@ -237,8 +238,10 @@ const App: React.FC = () => {
         }
 
         if (profileData) {
-            // Hardcode admin check for the site owner
-            const isAdmin = profileData.username === 'Owner' && user.email === 'userr.98a@gmail.com';
+            // An admin is either the hardcoded owner OR has the 'Admin' role in the database.
+            const isOwner = profileData.username === 'Owner' && user.email === 'userr.98a@gmail.com';
+            const isAdminRole = profileData.role === 'Admin';
+            const isAdmin = isOwner || isAdminRole;
 
             const fullProfile: Profile = {
                 id: profileData.id,

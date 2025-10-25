@@ -1,3 +1,4 @@
+
 // This Deno edge function is the heartbeat of the roulette game.
 // It should be scheduled to run every 2 seconds via a cron job.
 // See Supabase docs for setting up "Cron Jobs" with pg_cron.

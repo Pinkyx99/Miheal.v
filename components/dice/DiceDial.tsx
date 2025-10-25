@@ -1,3 +1,4 @@
+
 import React, { useRef, useCallback, useEffect, useState } from 'react';
 // Update import path for RollResult type
 import { RollResult } from '../../types';

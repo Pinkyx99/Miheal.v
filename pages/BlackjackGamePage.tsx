@@ -1,6 +1,5 @@
 
 
-
 import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import { Session } from '@supabase/supabase-js';
 import { Profile } from '../types';
