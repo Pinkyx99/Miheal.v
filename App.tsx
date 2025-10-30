@@ -18,11 +18,18 @@ const PromoPanel: React.FC = () => {
 
 const FloatingPromoImage: React.FC = () => {
   return (
-    <div className="flex justify-center mt-6">
+    <div className="relative mt-6 w-72 h-48">
       <img 
-        src="https://i.imgur.com/TxgRSeZ.png" 
+        src="https://i.imgur.com/mBJnW3o.png"
+        alt="Floating money bill" 
+        className="absolute top-0 right-0 w-48 h-auto animate-bob-float transform -rotate-12"
+        style={{ animationDuration: '3.5s', animationDelay: '0.5s' }}
+      />
+      <img 
+        src="https://i.imgur.com/TxgRSeZ.png"
         alt="Floating money" 
-        className="w-48 h-auto animate-bob-float"
+        className="absolute bottom-0 left-0 w-56 h-auto animate-bob-float"
+        style={{ animationDuration: '3s' }}
       />
     </div>
   );
