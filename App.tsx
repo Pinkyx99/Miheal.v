@@ -4,33 +4,33 @@ import { Hero } from './components/HeroCarousel';
 
 const PromoPanel: React.FC = () => {
   return (
-    <div className="bg-card/50 backdrop-blur-sm border border-outline rounded-lg p-6 w-80 shadow-lg flex flex-col gap-4 text-center">
-        <div className="flex justify-center items-center gap-3">
-            <img src="https://i.imgur.com/cGalbSS.png" alt="Kick Stream Logo" className="h-12" />
-            <span className="text-3xl font-bold text-white">STREAM</span>
+    <div className="bg-card/50 backdrop-blur-sm border border-outline rounded-lg p-4 sm:p-6 w-full max-w-[288px] sm:w-80 shadow-lg flex flex-col gap-2 sm:gap-4 text-center">
+        <div className="flex justify-center items-center gap-2 sm:gap-3">
+            <img src="https://i.imgur.com/cGalbSS.png" alt="Kick Stream Logo" className="h-10 sm:h-12" />
+            <span className="text-2xl sm:text-3xl font-bold text-white">STREAM</span>
         </div>
-        <div className="bg-white/10 h-px w-full my-2"></div>
-        <p className="text-text-main text-lg font-semibold">22:00PM svako veče</p>
-        <p className="text-text-muted">Giveaway <span className="font-bold text-primary-light">3000$+</span> svaki mesec</p>
-        <p className="text-text-muted">Zaradi novac gledajući stream!</p>
+        <div className="bg-white/10 h-px w-full my-1 sm:my-2"></div>
+        <p className="text-text-main text-base sm:text-lg font-semibold">22:00PM svako veče</p>
+        <p className="text-text-muted text-sm sm:text-base">Giveaway <span className="font-bold text-primary-light">3000$+</span> svaki mesec</p>
+        <p className="text-text-muted text-sm sm:text-base">Zaradi novac gledajući stream!</p>
     </div>
   );
 };
 
 const FloatingPromoImage: React.FC = () => {
   return (
-    <div className="relative mt-6 w-80 h-64">
+    <div className="relative mt-4 sm:mt-6 w-full max-w-[288px] sm:w-80 h-40 sm:h-64">
       {/* Background floating money - will be on z-index 0 by default */}
       <img 
         src="https://i.imgur.com/mBJnW3o.png"
         alt="Floating money bill" 
-        className="absolute top-4 right-2 w-48 h-auto animate-bob-float transform -rotate-12"
+        className="absolute top-2 right-1 sm:top-4 sm:right-2 w-32 sm:w-48 h-auto animate-bob-float transform -rotate-12"
         style={{ animationDuration: '3.5s', animationDelay: '0.5s' }}
       />
       <img 
         src="https://i.imgur.com/TxgRSeZ.png"
         alt="Floating money" 
-        className="absolute bottom-4 left-2 w-56 h-auto animate-bob-float"
+        className="absolute bottom-2 left-1 sm:bottom-4 sm:left-2 w-40 sm:w-56 h-auto animate-bob-float"
         style={{ animationDuration: '3s' }}
       />
     </div>
@@ -77,7 +77,7 @@ const App: React.FC = () => {
        <img
         src="https://imgur.com/itdGOoJ.png"
         alt="Money chain"
-        className="absolute w-[200px] top-[-70px] right-[-70px] lg:w-[350px] lg:top-[-120px] lg:right-[-120px] max-w-none pointer-events-none z-20 opacity-80 transform rotate-12"
+        className="absolute w-[150px] top-[-50px] right-[-50px] sm:w-[200px] sm:top-[-70px] sm:right-[-70px] lg:w-[350px] lg:top-[-120px] lg:right-[-120px] max-w-none pointer-events-none z-20 opacity-80 transform rotate-12"
       />
       <div className="absolute inset-0 z-0 overflow-hidden bg-black">
          <video
@@ -95,14 +95,14 @@ const App: React.FC = () => {
          <FloatingMoney />
       </div>
       
-      <div className="relative z-10 h-full w-full flex items-center justify-center p-4 lg:gap-16 flex-wrap">
-        <main className="flex flex-col items-center gap-6 order-2 lg:order-1">
+      <div className="relative z-10 h-full w-full flex flex-col lg:flex-row items-center justify-center p-4 lg:gap-16">
+        <main className="flex flex-col items-center gap-4 sm:gap-6 order-2 lg:order-1">
             <div className="w-full max-w-2xl xl:max-w-3xl aspect-video bg-black rounded-lg shadow-2xl overflow-hidden border-2 border-primary/30 hover:border-primary/70 transition-all duration-300">
                 <video src="https://i.imgur.com/vC8MZLN.mp4" autoPlay loop muted playsInline className="w-full h-full object-cover" />
             </div>
             <Hero />
         </main>
-        <aside className="order-1 lg:order-2 mb-8 lg:mb-0 flex flex-col items-center">
+        <aside className="order-1 lg:order-2 mb-4 lg:mb-0 flex flex-col items-center">
           <PromoPanel />
           <FloatingPromoImage />
         </aside>
