@@ -302,8 +302,8 @@ const BlackjackGamePage: React.FC<BlackjackGamePageProps> = ({ profile, session,
               const { data: currentProfile, error: fetchError } = await supabase.from('profiles').select('balance').eq('id', session.user.id).single();
               if (fetchError || !currentProfile) throw new Error(fetchError?.message || "Profile not found");
               
-              // FIX: Cast balance to number to handle 'unknown' type from Supabase query.
-              const newBalance = (Number(currentProfile.balance as number) || 0) + payout;
+              // FIX: Safely convert balance to a number to handle potential 'unknown' type from Supabase query.
+              const newBalance = (Number(currentProfile.balance) || 0) + payout;
   
               const { error: updateError } = await supabase.from('profiles').update({ balance: newBalance }).eq('id', session.user.id);
               if (updateError) throw updateError;

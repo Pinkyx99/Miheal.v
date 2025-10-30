@@ -3,7 +3,7 @@ import React from 'react';
 
 const CHIP_VALUES = [1, 5, 10, 25, 100, 500];
 
-const Chip: React.FC<{ value: number; onClick: () => void; disabled: boolean }> = ({ value, onClick, disabled }) => {
+const Chip: React.FC<{ value: number; onClick: () => void; disabled: boolean }> = React.memo(({ value, onClick, disabled }) => {
     let colorClasses = '';
     if (value === 1) colorClasses = 'bg-blue-600 border-blue-400';
     if (value === 5) colorClasses = 'bg-red-600 border-red-400';
@@ -28,7 +28,7 @@ const Chip: React.FC<{ value: number; onClick: () => void; disabled: boolean }> 
             </div>
         </button>
     );
-};
+});
 
 
 interface ChipSelectorProps {

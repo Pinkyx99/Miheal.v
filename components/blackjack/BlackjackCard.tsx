@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card } from '../../pages/BlackjackGamePage';
 import { MihaelBetSymbolIcon } from '../icons';
@@ -25,7 +26,7 @@ interface BlackjackCardProps {
     highlight?: 'win' | 'lose' | 'push' | null;
 }
 
-export const BlackjackCard: React.FC<BlackjackCardProps> = ({ card, isFaceDown, style, highlight }) => {
+export const BlackjackCard: React.FC<BlackjackCardProps> = React.memo(({ card, isFaceDown, style, highlight }) => {
     
     let highlightClasses = '';
     switch(highlight) {
@@ -106,4 +107,4 @@ export const BlackjackCard: React.FC<BlackjackCardProps> = ({ card, isFaceDown, 
             `}</style>
         </div>
     );
-};
+});

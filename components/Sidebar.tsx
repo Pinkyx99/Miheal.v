@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { SIDEBAR_NAV_ITEMS, SIDEBAR_BOTTOM_NAV_ITEMS } from '../constants';
 import { Logo, ChevronDownIcon } from './icons';
@@ -44,7 +45,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, onNavigate, cur
         </button>
       </div>
       
-      <div className="flex flex-col flex-1 min-h-0">
+      <div className="flex flex-col flex-1 min-h-0 overflow-y-auto no-scrollbar">
           <nav>
             <ul className="space-y-2">
               {SIDEBAR_NAV_ITEMS.map(item => (
@@ -58,7 +59,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, onNavigate, cur
             </ul>
           </nav>
           
-          <SidebarLiveFeed isSidebarOpen={true} />
+          <SidebarLiveFeed isSidebarOpen={isSidebarOpen} />
           
           <div className="flex-shrink-0 mt-auto pt-4 border-t border-border-color">
             <ul className="space-y-2">

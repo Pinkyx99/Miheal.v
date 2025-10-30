@@ -1,7 +1,9 @@
+
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import { GameBet } from '../types';
 import { DiceIcon, CrashIcon, RouletteIcon, MinesIcon, BlackjackIcon, ChartBarIcon } from './icons';
+import { RealtimeChannel } from '@supabase/supabase-js';
 
 interface SidebarLiveFeedProps {
     isSidebarOpen: boolean;
@@ -44,45 +46,62 @@ export const SidebarLiveFeed: React.FC<SidebarLiveFeedProps> = ({ isSidebarOpen 
     const [totalGamesPlayed, setTotalGamesPlayed] = useState<number | null>(null);
 
     useEffect(() => {
-        const fetchInitialData = async () => {
-            const { data: gamesData } = await supabase.rpc('get_total_games_played');
-            if (gamesData) setTotalGamesPlayed(gamesData);
-            
-            const { data: betsData } = await supabase
-                .from('game_bets')
-                .select('*, profiles(username, avatar_url)')
-                .order('created_at', { ascending: false })
-                .limit(15);
-            if (betsData) setBets(betsData as any);
-        };
-        fetchInitialData();
-    }, []);
-
-    useEffect(() => {
-        const channel = supabase
+        const isDesktop = window.innerWidth >= 1024;
+        let channel: RealtimeChannel | null = null;
+    
+        const setupLiveFeed = async () => {
+          // Fetch initial data
+          const { data: gamesData } = await supabase.rpc('get_total_games_played');
+          if (gamesData) setTotalGamesPlayed(gamesData);
+    
+          const { data: betsData } = await supabase
+            .from('game_bets')
+            .select('*, profiles(username, avatar_url)')
+            .order('created_at', { ascending: false })
+            .limit(15);
+          if (betsData) setBets(betsData as any);
+    
+          // Set up subscription
+          channel = supabase
             .channel('sidebar-live-bets-feed')
             .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'game_bets' }, async (payload) => {
-                const newBet = payload.new as Omit<GameBet, 'profiles'>;
-                
-                setTotalGamesPlayed(current => (current ?? 0) + 1);
-
-                const { data: profileData } = await supabase
-                    .from('profiles')
-                    .select('username, avatar_url')
-                    .eq('id', newBet.user_id)
-                    .single();
-
-                if (profileData) {
-                    const betWithProfile: GameBet = { ...newBet, profiles: profileData, id: newBet.id, created_at: newBet.created_at, game_name: newBet.game_name, bet_amount: newBet.bet_amount, payout: newBet.payout, multiplier: newBet.multiplier, user_id: newBet.user_id };
-                    setBets(currentBets => [betWithProfile, ...currentBets].slice(0, 30));
-                }
+              const newBet = payload.new as Omit<GameBet, 'profiles'>;
+    
+              setTotalGamesPlayed(current => (current ?? 0) + 1);
+    
+              const { data: profileData } = await supabase
+                .from('profiles')
+                .select('username, avatar_url')
+                .eq('id', newBet.user_id)
+                .single();
+    
+              if (profileData) {
+                const betWithProfile: GameBet = { ...newBet, profiles: profileData, id: newBet.id, created_at: newBet.created_at, game_name: newBet.game_name, bet_amount: newBet.bet_amount, payout: newBet.payout, multiplier: newBet.multiplier, user_id: newBet.user_id };
+                setBets(currentBets => [betWithProfile, ...currentBets].slice(0, 30));
+              }
             })
             .subscribe();
-
-        return () => {
-            supabase.removeChannel(channel);
         };
-    }, []);
+    
+        const cleanupLiveFeed = () => {
+          if (channel) {
+            supabase.removeChannel(channel);
+            channel = null;
+          }
+        };
+    
+        if (isSidebarOpen || isDesktop) {
+          setupLiveFeed();
+        } else {
+          // Clear data when not visible on mobile to prevent stale data showing briefly on reopen
+          setBets([]);
+          setTotalGamesPlayed(null);
+        }
+    
+        return () => {
+          cleanupLiveFeed();
+        };
+      }, [isSidebarOpen]);
 
     return (
         <div className="flex-1 flex flex-col min-h-0 py-4 space-y-4">

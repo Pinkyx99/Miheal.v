@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { ORIGINAL_GAMES } from '../constants';
 
@@ -6,7 +7,7 @@ const OriginalGameCard: React.FC<{
   image: string;
   comingSoon?: boolean;
   onClick: () => void;
-}> = ({ name, image, comingSoon, onClick }) => (
+}> = React.memo(({ name, image, comingSoon, onClick }) => (
   <div
     onClick={onClick}
     className="flex flex-col items-center gap-3 cursor-pointer group flex-shrink-0"
@@ -22,7 +23,7 @@ const OriginalGameCard: React.FC<{
     </div>
     <span className="text-white font-semibold text-sm" style={{textShadow: '0 1px 4px rgba(0,0,0,0.8)'}}>{name}</span>
   </div>
-);
+));
 
 
 export const OriginalsRow: React.FC<{ onGameSelect: (name: string) => void }> = ({ onGameSelect }) => {
