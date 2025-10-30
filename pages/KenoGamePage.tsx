@@ -183,8 +183,8 @@ const KenoGamePage: React.FC<KenoGamePageProps> = ({ profile, session, onProfile
             if (payout > 0) {
                  const { data: currentProfile, error: fetchError } = await supabase.from('profiles').select('balance').eq('id', session.user.id).single();
                  if (fetchError || !currentProfile) return;
-                // FIX: Argument of type 'unknown' is not assignable to parameter of type 'number'. Safely convert balance to number.
-                 const newBalance = (Number(currentProfile.balance as number) || 0) + payout;
+                // FIX: Safely convert balance to number, as Supabase can return 'unknown' type.
+                 const newBalance = (Number(currentProfile.balance) || 0) + payout;
                  const { error: payoutError } = await supabase.from('profiles').update({ balance: newBalance }).eq('id', session.user.id);
                  if (payoutError) {
                     console.error("Keno payout error:", payoutError);

@@ -48,6 +48,7 @@ const App: React.FC = () => {
   const [isChatPinned, setIsChatPinned] = useState(false);
   const [viewingProfileId, setViewingProfileId] = useState<string | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isAdminPanelOpen, setIsAdminPanelOpen] = useState(false);
   const [theme, setTheme] = useState<'light' | 'dark'>('dark');
   const [showPromotionModal, setShowPromotionModal] = useState(false);
@@ -78,15 +79,28 @@ const App: React.FC = () => {
 
   useEffect(() => {
       try {
-          const savedState = localStorage.getItem('chatPinned');
-          if (savedState !== null) {
-              setIsChatPinned(JSON.parse(savedState));
-          }
+          const savedChatState = localStorage.getItem('chatPinned');
+          if (savedChatState !== null) setIsChatPinned(JSON.parse(savedChatState));
+          
+          const savedSidebarState = localStorage.getItem('sidebarCollapsed');
+          if (savedSidebarState !== null) setIsSidebarCollapsed(JSON.parse(savedSidebarState));
       } catch (e) {
-          console.error("Could not load pinned chat state from localStorage", e);
+          console.error("Could not load state from localStorage", e);
       }
   }, []);
   
+  const toggleSidebarCollapsed = useCallback(() => {
+    setIsSidebarCollapsed(prev => {
+        const newState = !prev;
+        try {
+            localStorage.setItem('sidebarCollapsed', JSON.stringify(newState));
+        } catch (e) {
+            console.error("Could not save sidebar state to localStorage", e);
+        }
+        return newState;
+    });
+  }, []);
+
   useEffect(() => {
     const handleResize = () => {
         if (window.innerWidth < 1024 && isChatPinned) { // 1024px is lg breakpoint
@@ -345,7 +359,7 @@ const App: React.FC = () => {
       case 'home':
         return (
           <>
-            <div className="flex-grow flex items-center">
+            <div>
                 <Hero />
             </div>
             <OriginalsRow onGameSelect={handleGameSelect} />
@@ -426,16 +440,18 @@ const App: React.FC = () => {
             <AdminPage show={isAdminPanelOpen} onClose={() => setIsAdminPanelOpen(false)} profile={profile} />
         </Suspense>
 
-        {/* This div contains the sidebar and main content for a correct desktop layout */}
         <div className="flex h-full">
-            {/* Sidebar and its backdrop */}
-            <div>
-                <div 
-                    className={`fixed inset-0 bg-black/60 z-30 transition-opacity duration-300 lg:hidden ${isSidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
-                    onClick={() => setIsSidebarOpen(false)}
-                />
-                <Sidebar isSidebarOpen={isSidebarOpen} onNavigate={(page) => { navigateTo(page as View); setIsSidebarOpen(false); }} currentView={currentView} />
-            </div>
+            <Sidebar 
+                isSidebarOpen={isSidebarOpen} 
+                onNavigate={(page) => { navigateTo(page as View); setIsSidebarOpen(false); }} 
+                currentView={currentView}
+                isCollapsed={isSidebarCollapsed}
+                setIsCollapsed={toggleSidebarCollapsed}
+            />
+            <div 
+                className={`fixed inset-0 bg-black/60 z-30 transition-opacity duration-300 lg:hidden ${isSidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+                onClick={() => setIsSidebarOpen(false)}
+            />
 
             <div className={`flex-1 min-w-0 flex flex-col h-full transition-all duration-300 ${isChatPinned ? 'pr-0 lg:pr-[320px]' : 'pr-0'}`}>
                 <Header 

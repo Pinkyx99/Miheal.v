@@ -47,7 +47,7 @@ export const Header: React.FC<HeaderProps> = ({ session, profile, onSignInClick,
   return (
     <header className="flex-shrink-0 relative z-30 flex items-center justify-between h-20 px-4 md:px-6">
       {/* Left Side: Menu Toggle */}
-      <button onClick={onSidebarToggle} className="p-2 rounded-md text-text-muted hover:text-white hover:bg-white/10 transition-colors">
+      <button onClick={onSidebarToggle} className="p-2 rounded-md text-text-muted hover:text-white hover:bg-white/10 transition-colors lg:hidden">
           <Bars3Icon className="w-6 h-6" />
       </button>
       
@@ -100,7 +100,7 @@ export const Header: React.FC<HeaderProps> = ({ session, profile, onSignInClick,
                   onClick={onSignInClick}
                   className="px-3 sm:px-5 py-2 rounded-full text-white font-semibold text-xs sm:text-sm transition bg-white/5 hover:bg-white/10"
                 >
-                  Log in
+                  Sign In
                 </button>
                 <button
                   onClick={onSignUpClick}

@@ -1,4 +1,5 @@
 
+
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import { GameBet } from '../types';
@@ -6,7 +7,7 @@ import { DiceIcon, CrashIcon, RouletteIcon, MinesIcon, BlackjackIcon, ChartBarIc
 import { RealtimeChannel } from '@supabase/supabase-js';
 
 interface SidebarLiveFeedProps {
-    isSidebarOpen: boolean;
+    isCollapsed: boolean;
 }
 
 const gameIcons: { [key: string]: React.FC<{ className?: string }> } = {
@@ -17,7 +18,7 @@ const gameIcons: { [key: string]: React.FC<{ className?: string }> } = {
   Blackjack: BlackjackIcon,
 };
 
-const BetItem: React.FC<{ bet: GameBet; isSidebarOpen: boolean }> = React.memo(({ bet, isSidebarOpen }) => {
+const BetItem: React.FC<{ bet: GameBet; isExpanded: boolean }> = React.memo(({ bet, isExpanded }) => {
     const GameIcon = gameIcons[bet.game_name] || DiceIcon;
     const isWin = bet.payout !== null && bet.payout > bet.bet_amount;
     const profit = bet.payout !== null ? bet.payout - bet.bet_amount : -bet.bet_amount;
@@ -26,8 +27,8 @@ const BetItem: React.FC<{ bet: GameBet; isSidebarOpen: boolean }> = React.memo((
         <div className="bg-background/50 p-2 rounded-md flex items-center space-x-2 animate-fade-in-fast">
             <GameIcon className="w-6 h-6 text-primary flex-shrink-0 p-1 bg-sidebar rounded-md" />
             <div 
-                className={`flex-1 min-w-0 transition-all duration-300 ${isSidebarOpen ? 'opacity-100' : 'opacity-0 w-0'}`}
-                style={{ transitionDelay: isSidebarOpen ? '150ms' : '0ms' }}
+                className={`flex-1 min-w-0 transition-all duration-300 ${isExpanded ? 'opacity-100' : 'opacity-0 w-0'}`}
+                style={{ transitionDelay: isExpanded ? '150ms' : '0ms' }}
             >
                 <div className="flex items-center space-x-2">
                     <img src={bet.profiles.avatar_url} alt={bet.profiles.username} className="w-4 h-4 rounded-full" />
@@ -41,12 +42,12 @@ const BetItem: React.FC<{ bet: GameBet; isSidebarOpen: boolean }> = React.memo((
     );
 });
 
-export const SidebarLiveFeed: React.FC<SidebarLiveFeedProps> = ({ isSidebarOpen }) => {
+export const SidebarLiveFeed: React.FC<SidebarLiveFeedProps> = ({ isCollapsed }) => {
     const [bets, setBets] = useState<GameBet[]>([]);
     const [totalGamesPlayed, setTotalGamesPlayed] = useState<number | null>(null);
+    const isExpanded = !isCollapsed;
 
     useEffect(() => {
-        const isDesktop = window.innerWidth >= 1024;
         let channel: RealtimeChannel | null = null;
     
         const setupLiveFeed = async () => {
@@ -83,50 +84,39 @@ export const SidebarLiveFeed: React.FC<SidebarLiveFeedProps> = ({ isSidebarOpen 
             .subscribe();
         };
     
-        const cleanupLiveFeed = () => {
-          if (channel) {
-            supabase.removeChannel(channel);
-            channel = null;
-          }
-        };
-    
-        if (isSidebarOpen || isDesktop) {
-          setupLiveFeed();
-        } else {
-          // Clear data when not visible on mobile to prevent stale data showing briefly on reopen
-          setBets([]);
-          setTotalGamesPlayed(null);
-        }
+        setupLiveFeed();
     
         return () => {
-          cleanupLiveFeed();
+          if (channel) {
+            supabase.removeChannel(channel);
+          }
         };
-      }, [isSidebarOpen]);
+      }, []);
 
     return (
         <div className="flex-1 flex flex-col min-h-0 py-4 space-y-4">
             {/* Total Games Played */}
             <div className="px-1">
-                <div className={`bg-background rounded-lg p-3 text-center transition-all duration-300 ${isSidebarOpen ? '' : 'flex items-center justify-center space-x-2'}`}>
-                    <ChartBarIcon className={`text-primary ${isSidebarOpen ? 'w-8 h-8 mx-auto mb-2' : 'w-5 h-5 flex-shrink-0'}`} />
+                <div className={`bg-background rounded-lg p-3 text-center transition-all duration-300 ${!isExpanded ? 'flex items-center justify-center space-x-2' : ''}`}>
+                    <ChartBarIcon className={`text-primary ${isExpanded ? 'w-8 h-8 mx-auto mb-2' : 'w-5 h-5 flex-shrink-0'}`} />
                      <div className="min-w-0">
-                        {isSidebarOpen && <h3 className="text-xs font-semibold text-text-muted uppercase tracking-wider">Total Games Played</h3>}
+                        {isExpanded && <h3 className="text-xs font-semibold text-text-muted uppercase tracking-wider">Total Games Played</h3>}
                         {totalGamesPlayed !== null ? (
-                            <p className={`font-mono font-bold text-white tracking-wider ${isSidebarOpen ? 'text-2xl mt-1' : 'text-sm'}`}>
+                            <p className={`font-mono font-bold text-white tracking-wider ${isExpanded ? 'text-2xl mt-1' : 'text-sm'}`}>
                                 {totalGamesPlayed.toLocaleString()}
                             </p>
                         ) : (
-                            <div className={`bg-sidebar rounded animate-pulse ${isSidebarOpen ? 'h-7 mt-1 w-24 mx-auto' : 'h-5 w-16'}`} />
+                            <div className={`bg-sidebar rounded animate-pulse ${isExpanded ? 'h-7 mt-1 w-24 mx-auto' : 'h-5 w-16'}`} />
                         )}
                      </div>
                 </div>
             </div>
 
             {/* Live Bet Feed */}
-            <h3 className={`px-3 text-sm font-bold text-white transition-opacity duration-200 ${isSidebarOpen ? 'opacity-100' : 'opacity-0'}`}>Live Bets</h3>
+            <h3 className={`px-3 text-sm font-bold text-white transition-opacity duration-200 ${isExpanded ? 'opacity-100' : 'opacity-0'}`}>Live Bets</h3>
             <div className={`flex-1 min-h-0 overflow-y-auto no-scrollbar px-1`}>
                 <div className="space-y-2">
-                    {bets.map(bet => <BetItem key={bet.id} bet={bet} isSidebarOpen={isSidebarOpen} />)}
+                    {bets.map(bet => <BetItem key={bet.id} bet={bet} isExpanded={isExpanded} />)}
                 </div>
             </div>
              <style>{`
