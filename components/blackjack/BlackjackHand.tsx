@@ -24,15 +24,15 @@ export const BlackjackHand: React.FC<BlackjackHandProps> = ({ hand, score, isDea
     }
 
     return (
-        <div className="relative flex flex-col items-center w-full min-h-[220px]">
-            <div className="flex justify-center h-48 items-center">
+        <div className="relative flex flex-col items-center w-full min-h-[180px] md:min-h-[220px]">
+            <div className="flex justify-center h-36 md:h-48 items-center">
                 {hand.map((card, index) => (
                     <div
                         key={index}
                         className="absolute"
                         style={{
                             // Final resting position
-                            transform: `translateX(${(index - (hand.length - 1) / 2) * 40}px) rotateZ(${(index - (hand.length - 1) / 2) * 3}deg)`,
+                            transform: `translateX(${(index - (hand.length - 1) / 2) * 24}px) rotateZ(${(index - (hand.length - 1) / 2) * 3}deg)`,
                             // Animation applied
                             animation: `deal-in 0.5s cubic-bezier(0.25, 1, 0.5, 1) ${index * 0.15}s both`
                         }}
@@ -47,7 +47,7 @@ export const BlackjackHand: React.FC<BlackjackHandProps> = ({ hand, score, isDea
             </div>
 
             {(hand.length > 0) && (
-                <div className={`mt-4 bg-black/50 backdrop-blur-sm text-white text-lg font-bold px-4 py-2 rounded-full border-2 border-gray-600 shadow-lg`}>
+                <div className={`mt-2 md:mt-4 bg-black/50 backdrop-blur-sm text-white text-base md:text-lg font-bold px-4 py-2 rounded-full border-2 border-gray-600 shadow-lg`}>
                    {scoreLabel}
                 </div>
             )}

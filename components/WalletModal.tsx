@@ -26,7 +26,7 @@ export const WalletModal: React.FC<WalletModalProps> = ({ show, onClose }) => {
         onClick={e => e.stopPropagation()}
       >
         {/* Decorative Left Panel */}
-        <div className="hidden md:block w-1/3 bg-background p-8 flex-col justify-between relative overflow-hidden">
+        <div className="hidden md:flex w-1/3 bg-background p-8 flex-col justify-between relative overflow-hidden">
             <LogoIcon className="h-8 w-8 mb-4 text-white" />
             <div className="mt-8">
                 <h2 className="text-3xl font-bold text-white">Crypto</h2>
@@ -40,18 +40,18 @@ export const WalletModal: React.FC<WalletModalProps> = ({ show, onClose }) => {
         <div className="w-full md:w-2/3 p-6 sm:p-8 flex flex-col overflow-y-auto">
           {/* Header & Close Button */}
           <div className="flex justify-between items-center mb-6">
-             <div className="flex items-center border-b border-outline">
+             <div className="flex items-center border-b border-outline overflow-x-auto no-scrollbar">
                 {tabs.map(tab => (
                     <button 
                         key={tab} 
                         onClick={() => setActiveTab(tab)}
-                        className={`px-3 py-2 text-sm font-medium transition-colors ${activeTab === tab ? 'text-white border-b-2 border-accent-green' : 'text-text-muted hover:text-white'}`}
+                        className={`px-3 py-2 text-sm font-medium transition-colors whitespace-nowrap ${activeTab === tab ? 'text-white border-b-2 border-accent-green' : 'text-text-muted hover:text-white'}`}
                     >
                         {tab}
                     </button>
                 ))}
              </div>
-            <button onClick={onClose} className="p-2 text-text-muted hover:text-white" aria-label="Close wallet">
+            <button onClick={onClose} className="p-2 text-text-muted hover:text-white ml-4" aria-label="Close wallet">
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
             </button>
           </div>

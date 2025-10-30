@@ -177,32 +177,36 @@ export const RouletteBettingTable: React.FC<RouletteBettingTableProps> = ({ onBe
 
     return (
         <div className="bg-[#0a1f14] p-2 rounded-xl border border-green-300/20 shadow-lg" style={{backgroundImage: 'radial-gradient(circle, rgba(10, 40, 20, 0.5) 0%, #0D1316 80%)'}}>
-            <div className="grid grid-cols-[4rem_repeat(12,_minmax(0,_1fr))_4rem] grid-rows-[repeat(5,_3.5rem)] gap-1.5">
-                {/* Zero */}
-                <BetSpot {...commonProps('number_0')} label="0" className="row-span-3 col-start-1" />
+            <div className="flex flex-col gap-1.5">
+                <div className="overflow-x-auto no-scrollbar">
+                    <div className="grid grid-rows-3 gap-1.5 min-w-[800px]" style={{gridTemplateColumns: '4rem repeat(12, minmax(0, 1fr)) 4rem'}}>
+                         {/* Zero */}
+                        <BetSpot {...commonProps('number_0')} label="0" className="row-span-3 col-start-1" />
 
-                {/* Number Rows */}
-                {row3Numbers.map((num, i) => <BetSpot key={num} {...commonProps(`number_${num}`)} label={num.toString()} className={`col-start-${i+2} row-start-1`} />)}
-                {row2Numbers.map((num, i) => <BetSpot key={num} {...commonProps(`number_${num}`)} label={num.toString()} className={`col-start-${i+2} row-start-2`} />)}
-                {row1Numbers.map((num, i) => <BetSpot key={num} {...commonProps(`number_${num}`)} label={num.toString()} className={`col-start-${i+2} row-start-3`} />)}
-                
-                {/* Column Bets */}
-                <BetSpot {...commonProps('col3')} label="2:1" className="col-start-14 row-start-1" />
-                <BetSpot {...commonProps('col2')} label="2:1" className="col-start-14 row-start-2" />
-                <BetSpot {...commonProps('col1')} label="2:1" className="col-start-14 row-start-3" />
-                
-                {/* Dozen Bets */}
-                <BetSpot {...commonProps('1st12')} label="1st 12" className="col-start-2 col-span-4 row-start-4" />
-                <BetSpot {...commonProps('2nd12')} label="2nd 12" className="col-start-6 col-span-4 row-start-4" />
-                <BetSpot {...commonProps('3rd12')} label="3rd 12" className="col-start-10 col-span-4 row-start-4" />
-
-                {/* Outside Bets */}
-                <BetSpot {...commonProps('1-18')} label="1-18" className="col-start-2 col-span-2 row-start-5" />
-                <BetSpot {...commonProps('even')} label="EVEN" className="col-start-4 col-span-2 row-start-5" />
-                <BetSpot {...commonProps('red')} label="RED" className="col-start-6 col-span-2 row-start-5" />
-                <BetSpot {...commonProps('black')} label="BLACK" className="col-start-8 col-span-2 row-start-5" />
-                <BetSpot {...commonProps('odd')} label="ODD" className="col-start-10 col-span-2 row-start-5" />
-                <BetSpot {...commonProps('19-36')} label="19-36" className="col-start-12 col-span-2 row-start-5" />
+                        {/* Number Rows */}
+                        {row3Numbers.map((num, i) => <BetSpot key={num} {...commonProps(`number_${num}`)} label={num.toString()} className={`col-start-${i+2} row-start-1`} />)}
+                        {row2Numbers.map((num, i) => <BetSpot key={num} {...commonProps(`number_${num}`)} label={num.toString()} className={`col-start-${i+2} row-start-2`} />)}
+                        {row1Numbers.map((num, i) => <BetSpot key={num} {...commonProps(`number_${num}`)} label={num.toString()} className={`col-start-${i+2} row-start-3`} />)}
+                        
+                        {/* Column Bets */}
+                        <BetSpot {...commonProps('col3')} label="2:1" className="col-start-14 row-start-1" />
+                        <BetSpot {...commonProps('col2')} label="2:1" className="col-start-14 row-start-2" />
+                        <BetSpot {...commonProps('col1')} label="2:1" className="col-start-14 row-start-3" />
+                    </div>
+                </div>
+                 <div className="grid grid-cols-3 gap-1.5">
+                    <BetSpot {...commonProps('1st12')} label="1st 12" />
+                    <BetSpot {...commonProps('2nd12')} label="2nd 12" />
+                    <BetSpot {...commonProps('3rd12')} label="3rd 12" />
+                 </div>
+                 <div className="grid grid-cols-2 sm:grid-cols-6 gap-1.5">
+                    <BetSpot {...commonProps('1-18')} label="1-18" />
+                    <BetSpot {...commonProps('even')} label="EVEN" />
+                    <BetSpot {...commonProps('red')} label="RED" />
+                    <BetSpot {...commonProps('black')} label="BLACK" />
+                    <BetSpot {...commonProps('odd')} label="ODD" />
+                    <BetSpot {...commonProps('19-36')} label="19-36" />
+                 </div>
             </div>
              <style>{`
                 @keyframes winner-glow-animation {

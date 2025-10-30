@@ -25,7 +25,7 @@ export const Wallet: React.FC<WalletProps> = ({ onWalletButtonClick, balance }) 
     }, []);
 
     return (
-        <div className="flex items-center space-x-2" ref={dropdownRef}>
+        <div className="flex items-center space-x-1 sm:space-x-2" ref={dropdownRef}>
             <div className="relative">
                 <button
                     onClick={() => setIsDropdownOpen(!isDropdownOpen)}
@@ -45,7 +45,7 @@ export const Wallet: React.FC<WalletProps> = ({ onWalletButtonClick, balance }) 
 
             <button
                 onClick={onWalletButtonClick}
-                className="bg-primary text-background font-semibold px-6 py-2 rounded-md text-sm transition-transform duration-200 hover:scale-105 active:scale-100"
+                className="bg-primary text-background font-semibold px-3 sm:px-6 py-2 rounded-md text-sm transition-transform duration-200 hover:scale-105 active:scale-100"
             >
                 Wallet
             </button>

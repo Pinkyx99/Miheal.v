@@ -84,12 +84,12 @@ export const AuthModal: React.FC<AuthModalProps> = ({ show, onClose, view, setVi
   return (
     <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4 modal-backdrop" onClick={onClose}>
       <div 
-        className="bg-card w-full max-w-4xl min-h-[600px] rounded-2xl flex overflow-hidden shadow-2xl border border-outline modal-content"
+        className="bg-card w-full max-w-md lg:max-w-4xl lg:min-h-[600px] rounded-2xl flex flex-col lg:flex-row overflow-hidden shadow-2xl border border-outline modal-content"
         onClick={e => e.stopPropagation()}
       >
         {/* Decorative Left Panel */}
         <div 
-            className="hidden md:block w-1/3 bg-background p-8 relative overflow-hidden"
+            className="hidden lg:block w-1/3 bg-background p-8 relative overflow-hidden"
             style={{
                 backgroundImage: 'url(https://i.imgur.com/BLxw7CY.png)',
                 backgroundPosition: 'center',
@@ -100,7 +100,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ show, onClose, view, setVi
         </div>
 
         {/* Auth Form */}
-        <div className="w-full md:w-2/3 p-6 sm:p-8 flex flex-col justify-center">
+        <div className="w-full lg:w-2/3 p-6 sm:p-8 flex flex-col justify-center">
           <div className="flex justify-between items-start mb-6">
              <div className="flex items-center space-x-2">
                 <LogoIcon className="h-8 w-8 text-white" />

@@ -85,6 +85,17 @@ const App: React.FC = () => {
           console.error("Could not load pinned chat state from localStorage", e);
       }
   }, []);
+  
+  useEffect(() => {
+    const handleResize = () => {
+        if (window.innerWidth < 1024 && isChatPinned) { // 1024px is lg breakpoint
+            setIsChatPinned(false);
+        }
+    };
+    window.addEventListener('resize', handleResize);
+    handleResize(); // Initial check
+    return () => window.removeEventListener('resize', handleResize);
+  }, [isChatPinned]);
 
   useEffect(() => {
     const savedTheme = localStorage.getItem('theme') as 'light' | 'dark' | null;
@@ -414,12 +425,12 @@ const App: React.FC = () => {
 
         {/* Sidebar and its backdrop */}
         <div 
-            className={`fixed inset-0 bg-black/60 z-30 transition-opacity duration-300 ${isSidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+            className={`fixed inset-0 bg-black/60 z-30 transition-opacity duration-300 lg:hidden ${isSidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
             onClick={() => setIsSidebarOpen(false)}
         />
         <Sidebar isSidebarOpen={isSidebarOpen} onNavigate={(page) => { navigateTo(page as View); setIsSidebarOpen(false); }} currentView={currentView} />
 
-        <div className={`h-full transition-all duration-300 ${isChatPinned ? 'pr-[320px]' : 'pr-0'}`}>
+        <div className={`h-full transition-all duration-300 ${isChatPinned ? 'pr-0 lg:pr-[320px]' : 'pr-0'}`}>
             <div className="flex flex-col h-full">
                 <Header 
                     session={session} 
@@ -439,7 +450,7 @@ const App: React.FC = () => {
                     isMuted={isMuted}
                     onToggleMute={toggleMute}
                 />
-                <main className={`flex-1 overflow-y-auto no-scrollbar p-6 lg:p-8 flex flex-col ${currentView === 'home' ? 'justify-center' : ''}`}>
+                <main className={`flex-1 overflow-y-auto no-scrollbar p-4 sm:p-6 lg:p-8 flex flex-col ${currentView === 'home' ? 'justify-center' : ''}`}>
                   <Suspense fallback={<LoadingFallback />}>
                     {renderMainContent()}
                   </Suspense>
@@ -448,7 +459,7 @@ const App: React.FC = () => {
         </div>
         
         {/* Chat Rail Container (Single Instance) */}
-        <div className={`fixed top-0 right-0 h-full z-40 w-[320px] transform transition-transform duration-300 ease-in-out ${ isChatOpen || isChatPinned ? 'translate-x-0' : 'translate-x-full'}`}>
+        <div className={`fixed top-0 right-0 h-full z-40 w-full sm:w-[320px] transform transition-transform duration-300 ease-in-out ${ isChatOpen || isChatPinned ? 'translate-x-0' : 'translate-x-full'}`}>
             <ChatRail
                 session={session}
                 profile={profile}
@@ -461,10 +472,10 @@ const App: React.FC = () => {
 
         {/* Overlay for unpinned chat */}
         <div
-            className={`fixed inset-0 bg-black/50 z-30 transition-opacity duration-300 ${isChatOpen && !isChatPinned ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+            className={`fixed inset-0 bg-black/50 z-30 transition-opacity duration-300 lg:hidden ${isChatOpen && !isChatPinned ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
             onClick={() => setIsChatOpen(false)}
         />
-        <footer className={`absolute bottom-2 text-xs text-text-muted/50 z-50 transition-all duration-300 ${isChatPinned ? 'right-[calc(320px+0.5rem)]' : 'right-2'}`}>
+        <footer className={`absolute bottom-2 text-xs text-text-muted/50 z-50 transition-all duration-300 ${isChatPinned ? 'right-2 lg:right-[calc(320px+0.5rem)]' : 'right-2'}`}>
           Made by{' '}
           <a
             href="https://www.instagram.com/site.builderhub/"

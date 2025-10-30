@@ -231,14 +231,14 @@ const MinesGamePage: React.FC<MinesGamePageProps> = ({ profile, session, onProfi
     
     return (
         <div className="flex-1 flex items-center justify-center p-4 overflow-hidden">
-            <div className="w-full max-w-[1200px] aspect-[1200/715] bg-card border border-outline rounded-lg shadow-2xl relative">
+            <div className="w-full max-w-full lg:max-w-[1200px] lg:aspect-[1200/715] bg-card border border-outline rounded-lg shadow-2xl relative flex flex-col lg:block">
                 
-                <header className="absolute top-5 left-8 right-8 flex justify-between items-start z-10">
+                <header className="absolute top-5 left-4 right-4 sm:left-8 sm:right-8 flex justify-between items-start z-10">
                     <Logo />
                     <TopToolbar />
                 </header>
                 
-                <main className="w-full h-full flex items-center justify-center gap-6">
+                <main className="w-full h-full flex flex-col lg:flex-row items-center justify-center gap-6 pt-24 lg:pt-0">
                     <MinesControls
                         betAmount={betAmount}
                         setBetAmount={setBetAmount}
@@ -262,7 +262,7 @@ const MinesGamePage: React.FC<MinesGamePageProps> = ({ profile, session, onProfi
                     </div>
                 </main>
                 
-                <footer className="absolute bottom-5 left-8 z-10">
+                <footer className="absolute bottom-5 left-4 sm:left-8 z-10 hidden lg:block">
                     <Logo className="h-8 opacity-70" />
                 </footer>
             </div>

@@ -534,11 +534,13 @@ export const ChatRail: React.FC<ChatRailProps> = ({ session, profile, onClose, o
             {contextMenu && <ChatUserContextMenu user={contextMenu.user} position={contextMenu.position} onClose={() => setContextMenu(null)} onProfile={onViewProfile} onIgnore={handleIgnore} />}
             <header className="flex-shrink-0 flex items-center justify-between p-4 border-b border-border-color">
                  <div className="flex items-center space-x-2">
-                    {onPinToggle && (
-                        <button onClick={onPinToggle} className={`p-1 rounded-md ${isPinned ? 'text-primary' : 'text-text-muted'} hover:bg-white/10`} aria-label={isPinned ? 'Unpin chat' : 'Pin chat'}>
-                            <PinIcon className="w-5 h-5" filled={isPinned} />
-                        </button>
-                    )}
+                    <div className="hidden lg:flex items-center space-x-2">
+                        {onPinToggle && (
+                            <button onClick={onPinToggle} className={`p-1 rounded-md ${isPinned ? 'text-primary' : 'text-text-muted'} hover:bg-white/10`} aria-label={isPinned ? 'Unpin chat' : 'Pin chat'}>
+                                <PinIcon className="w-5 h-5" filled={isPinned} />
+                            </button>
+                        )}
+                    </div>
                     <h2 className="font-bold text-white">Chat</h2>
                  </div>
                 <div className="flex items-center space-x-2">

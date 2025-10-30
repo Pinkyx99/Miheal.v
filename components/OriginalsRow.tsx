@@ -9,13 +9,13 @@ const OriginalGameCard: React.FC<{
 }> = ({ name, image, comingSoon, onClick }) => (
   <div
     onClick={onClick}
-    className="flex flex-col items-center gap-3 cursor-pointer group"
+    className="flex flex-col items-center gap-3 cursor-pointer group flex-shrink-0"
   >
-    <div className="relative w-44 h-32 bg-black/20 backdrop-blur-xl border border-white/5 rounded-xl flex items-center justify-center transition-all duration-300 transform-gpu group-hover:-translate-y-1 group-hover:border-primary/50 group-hover:shadow-lg group-hover:shadow-primary/20 overflow-hidden">
+    <div className="relative w-40 sm:w-44 h-28 sm:h-32 bg-black/20 backdrop-blur-xl border border-white/5 rounded-xl flex items-center justify-center transition-all duration-300 transform-gpu group-hover:-translate-y-1 group-hover:border-primary/50 group-hover:shadow-lg group-hover:shadow-primary/20 overflow-hidden">
         {/* Shine effect */}
         <div className="absolute top-0 left-[-100%] w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent transition-all duration-700 ease-in-out group-hover:left-[100%]"></div>
       
-        <img src={image} alt={name} className="w-20 h-20 object-contain transition-transform duration-300 group-hover:scale-110" />
+        <img src={image} alt={name} className="w-16 h-16 sm:w-20 sm:h-20 object-contain transition-transform duration-300 group-hover:scale-110" />
         {comingSoon && (
             <div className="absolute top-1 right-1 bg-yellow-500 text-black text-[10px] font-bold px-1.5 py-0.5 rounded-full z-10">SOON</div>
         )}
@@ -31,7 +31,7 @@ export const OriginalsRow: React.FC<{ onGameSelect: (name: string) => void }> = 
             <div className="mb-6">
                 <h2 className="text-2xl font-bold text-white uppercase tracking-wider" style={{textShadow: '0 2px 8px rgba(0,0,0,0.7)'}}>Mihael Originals</h2>
             </div>
-            <div className="flex justify-start items-center gap-4 lg:gap-6 flex-wrap">
+            <div className="flex items-center gap-4 lg:gap-6 overflow-x-auto no-scrollbar pb-2">
                 {ORIGINAL_GAMES.map(game => (
                     <OriginalGameCard
                         key={game.name}

@@ -35,22 +35,22 @@ export const BlackjackCard: React.FC<BlackjackCardProps> = ({ card, isFaceDown, 
     }
 
     return (
-        <div className="w-32 h-48 perspective-1000" style={style}>
+        <div className="w-24 h-36 md:w-32 md:h-48 perspective-1000" style={style}>
             <div className={`card-inner ${isFaceDown ? 'is-flipped' : ''} ${highlightClasses}`}>
                 {/* Face Up */}
                 <div className="card-face card-front">
                     {card && (
                         <>
                             <div className="absolute top-1 left-2 text-center">
-                                <p className="text-2xl font-bold">{card.rank}</p>
-                                <SuitIcon suit={card.suit} className="text-xl" />
+                                <p className="text-xl md:text-2xl font-bold">{card.rank}</p>
+                                <SuitIcon suit={card.suit} className="text-lg md:text-xl" />
                             </div>
                             <div className="absolute bottom-1 right-2 text-center transform rotate-180">
-                                <p className="text-2xl font-bold">{card.rank}</p>
-                                <SuitIcon suit={card.suit} className="text-xl" />
+                                <p className="text-xl md:text-2xl font-bold">{card.rank}</p>
+                                <SuitIcon suit={card.suit} className="text-lg md:text-xl" />
                             </div>
                              <div className="absolute inset-0 flex items-center justify-center">
-                                <SuitIcon suit={card.suit} className="text-6xl opacity-80" />
+                                <SuitIcon suit={card.suit} className="text-5xl md:text-6xl opacity-80" />
                             </div>
                         </>
                     )}
@@ -58,7 +58,7 @@ export const BlackjackCard: React.FC<BlackjackCardProps> = ({ card, isFaceDown, 
                 {/* Face Down */}
                 <div className="card-face card-back bg-red-900 flex items-center justify-center p-2 relative overflow-hidden" style={{ background: 'radial-gradient(circle, #991b1b, #7f1d1d)'}}>
                     <div className="w-full h-full border-2 border-yellow-400/20 rounded-md flex items-center justify-center bg-black/10 backdrop-blur-sm">
-                         <MihaelBetSymbolIcon className="w-16 h-16 text-yellow-400/50 opacity-50" />
+                         <MihaelBetSymbolIcon className="w-12 h-12 md:w-16 md:h-16 text-yellow-400/50 opacity-50" />
                     </div>
                 </div>
             </div>

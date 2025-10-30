@@ -134,9 +134,8 @@ const DiceGamePage: React.FC<DiceGamePageProps> = ({ profile, session, onProfile
                 if (fetchError) throw new Error(fetchError.message);
                 if (!currentProfile) throw new Error("Could not find user profile to update balance.");
 
-                // FIX: Safely calculate the new balance by explicitly converting the balance from the database to a number, handling potential `unknown` or `NaN` values.
-                // FIX: Removed unnecessary `(as any)?` cast which was causing a type error. Direct access is safe after the null check.
-                const newBalance = (Number(currentProfile.balance) || 0) + payout;
+                // FIX: Cast balance to number to handle 'unknown' type from Supabase query.
+                const newBalance = (Number(currentProfile.balance as number) || 0) + payout;
                 
                 const { error: payoutError } = await supabase
                     .from('profiles')
@@ -195,7 +194,7 @@ const DiceGamePage: React.FC<DiceGamePageProps> = ({ profile, session, onProfile
     return (
         <div className="flex flex-col flex-1 bg-[#081018] font-sans">
             <div className="w-full max-w-[1600px] mx-auto px-4 lg:px-6 py-4 lg:py-6 flex-1 flex flex-col justify-center">
-                <div className="grid grid-cols-1 lg:grid-cols-[400px,1fr] gap-6">
+                <div className="flex flex-col lg:grid lg:grid-cols-[400px,1fr] gap-6">
                     <DiceControls
                         betAmount={betAmount}
                         setBetAmount={setBetAmount}

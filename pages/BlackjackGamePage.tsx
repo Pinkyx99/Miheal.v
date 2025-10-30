@@ -302,9 +302,8 @@ const BlackjackGamePage: React.FC<BlackjackGamePageProps> = ({ profile, session,
               const { data: currentProfile, error: fetchError } = await supabase.from('profiles').select('balance').eq('id', session.user.id).single();
               if (fetchError || !currentProfile) throw new Error(fetchError?.message || "Profile not found");
               
-              // FIX: Safely calculate the new balance by explicitly converting the balance from the database to a number, handling potential `unknown` or `NaN` values.
-              // FIX: Removed unnecessary `(as any)?` cast which was causing a type error. Direct access is safe after the null check.
-              const newBalance = (Number(currentProfile.balance) || 0) + payout;
+              // FIX: Cast balance to number to handle 'unknown' type from Supabase query.
+              const newBalance = (Number(currentProfile.balance as number) || 0) + payout;
   
               const { error: updateError } = await supabase.from('profiles').update({ balance: newBalance }).eq('id', session.user.id);
               if (updateError) throw updateError;
@@ -324,7 +323,7 @@ const BlackjackGamePage: React.FC<BlackjackGamePageProps> = ({ profile, session,
       backgroundSize: 'cover',
       backgroundPosition: 'center',
     }}>
-      <div className="flex flex-col justify-between items-center w-full h-full max-w-[1920px] mx-auto p-4 relative">
+      <div className="flex flex-col justify-between items-center w-full h-full max-w-[1920px] mx-auto p-2 sm:p-4 relative">
         
         {/* Dealer's Hand */}
         <BlackjackHand
@@ -337,7 +336,7 @@ const BlackjackGamePage: React.FC<BlackjackGamePageProps> = ({ profile, session,
         {/* Game Result Notification */}
         {gameState === 'finished' && gameResult && (
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center z-10 p-4 bg-black/50 rounded-lg backdrop-blur-sm">
-                <div className="text-4xl font-black uppercase text-white tracking-wider" style={{textShadow: '0 2px 10px rgba(0,0,0,0.7)'}}>
+                <div className="text-2xl sm:text-4xl font-black uppercase text-white tracking-wider" style={{textShadow: '0 2px 10px rgba(0,0,0,0.7)'}}>
                     {gameResult === 'blackjack' && 'Blackjack!'}
                     {gameResult === 'win' && 'You Win!'}
                     {gameResult === 'lose' && 'Dealer Wins'}
@@ -348,7 +347,7 @@ const BlackjackGamePage: React.FC<BlackjackGamePageProps> = ({ profile, session,
         )}
 
         {/* Player's Area */}
-        <div className="flex flex-col items-center gap-4">
+        <div className="flex flex-col items-center gap-2 sm:gap-4">
             <BlackjackHand
                 hand={playerHand}
                 score={playerScore}
@@ -356,7 +355,7 @@ const BlackjackGamePage: React.FC<BlackjackGamePageProps> = ({ profile, session,
                 isTurn={gameState === 'player_turn'}
                 result={gameResult}
             />
-            <div className="flex flex-col items-center gap-4">
+            <div className="flex flex-col items-center gap-2 sm:gap-4">
                  {gameState === 'betting' ? (
                     <ChipSelector
                         onChipSelect={handleAddChipAmount}
@@ -364,9 +363,9 @@ const BlackjackGamePage: React.FC<BlackjackGamePageProps> = ({ profile, session,
                         disabled={gameState !== 'betting'}
                     />
                 ) : (
-                    <div className="h-[100px] flex items-center justify-center">
+                    <div className="h-[60px] sm:h-[100px] flex items-center justify-center">
                          {roundBetAmount > 0 && (
-                            <div className="bg-black/50 backdrop-blur-sm px-6 py-3 rounded-full text-lg font-bold text-white border-2 border-gray-600">
+                            <div className="bg-black/50 backdrop-blur-sm px-4 sm:px-6 py-2 sm:py-3 rounded-full text-base sm:text-lg font-bold text-white border-2 border-gray-600">
                                 Bet: ${roundBetAmount.toFixed(2)}
                             </div>
                          )}

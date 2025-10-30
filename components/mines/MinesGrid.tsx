@@ -18,15 +18,15 @@ const Tile: React.FC<{
     const isFinished = gameState === 'busted' || gameState === 'cashed_out';
 
     let content = null;
-    let baseClasses = 'w-24 h-24 rounded-lg relative transition-all duration-300 ease-in-out transform';
+    let baseClasses = 'w-14 h-14 sm:w-20 sm:h-20 lg:w-24 lg:h-24 rounded-lg relative transition-all duration-300 ease-in-out transform';
     let buttonDisabled = !isPlaying || isRevealed;
 
     if (state === 'gem') {
         baseClasses += ' bg-[#2f4553] scale-105';
-        content = <img src="https://i.imgur.com/aUjzAIT.png" alt="Gem" className="w-16 h-16 object-contain animate-reveal" />;
+        content = <img src="https://i.imgur.com/aUjzAIT.png" alt="Gem" className="w-10 h-10 sm:w-16 sm:h-16 object-contain animate-reveal" />;
     } else if (state === 'mine') {
         baseClasses += ' bg-red-800/60 scale-105';
-        content = <img src="https://i.imgur.com/u9aNSVd.png" alt="Mine" className="w-16 h-16 object-contain animate-reveal" />;
+        content = <img src="https://i.imgur.com/u9aNSVd.png" alt="Mine" className="w-10 h-10 sm:w-16 sm:h-16 object-contain animate-reveal" />;
     } else { // 'hidden' state
         content = <img src="https://i.imgur.com/Ny2KcZC.png" alt="Hidden Tile" className="w-full h-full object-cover rounded-lg" />;
         
@@ -58,7 +58,7 @@ const Tile: React.FC<{
 
 export const MinesGrid: React.FC<MinesGridProps> = ({ gridState, onTileClick, gameState }) => {
     return (
-        <div className="grid grid-cols-5 gap-3">
+        <div className="grid grid-cols-5 gap-1.5 sm:gap-3">
             {gridState.map((state, index) => (
                 <Tile 
                     key={index}

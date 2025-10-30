@@ -37,7 +37,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, onNavigate, cur
 
   return (
     <aside 
-      className={`fixed inset-y-0 left-0 z-40 bg-sidebar h-screen flex flex-col p-4 flex-shrink-0 transition-transform duration-300 ease-in-out w-64 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+      className={`fixed inset-y-0 left-0 z-40 bg-sidebar h-screen flex flex-col p-4 flex-shrink-0 transition-transform duration-300 ease-in-out w-64 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 lg:static`}>
       <div className="px-2 mb-6 h-12 flex items-center">
         <button onClick={() => onNavigate('home')} className="w-full">
             <Logo className="text-white h-10" />
