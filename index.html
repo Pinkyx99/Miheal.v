@@ -20,7 +20,6 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="components/ProfileCard.css">
     <script>
       tailwind.config = {
         theme: {
@@ -57,7 +56,7 @@
             animation: {
               'spin-slow': 'spin 3s linear infinite',
               'pulse-glow': 'pulse-glow 2s ease-in-out infinite',
-              'bell-shake': 'bell-shake 0.8s cubic-bezier(.36,.07,.19,.97) both',
+              'bob-float': 'bob-float 3s ease-in-out infinite',
             }
           }
         }
@@ -88,14 +87,6 @@
         border-color: rgba(var(--color-border-color-rgb), 0.1);
       }
       
-      /* For custom scrollbar in webkit browsers */
-      .no-scrollbar::-webkit-scrollbar {
-        display: none;
-      }
-      .no-scrollbar {
-        -ms-overflow-style: none; /* IE and Edge */
-        scrollbar-width: none; /* Firefox */
-      }
       body {
           color: rgb(var(--color-text-main)); /* text-main */
           overflow: hidden; /* To contain the app within viewport */
@@ -106,303 +97,26 @@
         50% { opacity: 0.7; transform: scale(1.1); }
       }
       
-      @keyframes bell-shake {
-        0% { transform: rotate(0); }
-        15% { transform: rotate(5deg); }
-        30% { transform: rotate(-5deg); }
-        45% { transform: rotate(4deg); }
-        60% { transform: rotate(-4deg); }
-        75% { transform: rotate(2deg); }
-        85% { transform: rotate(-2deg); }
-        92% { transform: rotate(1deg); }
-        100% { transform: rotate(0); }
-      }
-
-      /* START: Punt Originals Card Animation */
-      .card {
-        position: relative;
-        width: 200px;
-        height: 250px;
-        border-radius: 14px;
-        z-index: 1;
-        overflow: hidden;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        background: rgb(var(--color-card));
-        border: 1px solid rgba(var(--color-border-color-rgb), 0.1);
-        transition: transform 0.3s ease-out, box-shadow 0.3s ease-out;
-      }
-
-      .card:hover {
-        transform: translateY(-5px) scale(1.03);
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3), 0 0 20px rgba(220, 38, 38, 0.2);
-      }
-
-      .bg {
-        position: absolute;
-        top: 5px;
-        left: 5px;
-        width: 190px;
-        height: 240px;
-        z-index: 2;
-        background: rgb(var(--color-sidebar));
-        border-radius: 10px;
-        overflow: hidden;
-      }
-
-      .blob {
-        position: absolute;
-        z-index: 1;
-        top: 50%;
-        left: 50%;
-        width: 150px;
-        height: 150px;
-        border-radius: 50%;
-        background-color: #dc2626; /* primary */
-        opacity: 1;
-        filter: blur(12px);
-        animation: blob-bounce 5s infinite ease;
-      }
-
-      @keyframes blob-bounce {
+      @keyframes float-up {
         0% {
-          transform: translate(-100%, -100%) translate3d(0, 0, 0);
-        }
-        25% {
-          transform: translate(-100%, -100%) translate3d(100%, 0, 0);
-        }
-        50% {
-          transform: translate(-100%, -100%) translate3d(100%, 100%, 0);
-        }
-        75% {
-          transform: translate(-100%, -100%) translate3d(0, 100%, 0);
+          transform: translateY(0) rotate(0deg);
+          opacity: 0.8;
         }
         100% {
-          transform: translate(-100%, -100%) translate3d(0, 0, 0);
+          transform: translateY(-100vh) rotate(360deg);
+          opacity: 0;
         }
       }
-      /* END: Punt Originals Card Animation */
+
+      @keyframes bob-float {
+        0%, 100% {
+          transform: translateY(0);
+        }
+        50% {
+          transform: translateY(-20px);
+        }
+      }
       
-      /* START: Animated Google Button */
-      .g-button {
-        padding: 10px;
-        font-weight: bold;
-        display: flex;
-        position: relative;
-        overflow: hidden;
-        border-radius: 35px;
-        align-items: center;
-        border: solid rgba(var(--color-border-color-rgb), 0.1) 2px;
-        outline: none;
-        cursor: pointer;
-      }
-
-      .g-svg {
-        height: 25px;
-        margin-right: 10px;
-      }
-
-      .g-button .g-text {
-        z-index: 10;
-        font-size: 14px;
-        color: rgb(var(--color-text-main));
-      }
-
-      .g-button:hover .g-text {
-        animation: g-text forwards 0.3s;
-      }
-
-      @keyframes g-text {
-        from {
-          color: rgb(var(--color-text-main));
-        }
-
-        to {
-          color: white;
-        }
-      }
-
-      .g-svg {
-        z-index: 6;
-      }
-
-      .g-button:hover::before {
-        content: "";
-        display: block;
-        position: absolute;
-        top: 50%;
-        left: 9%;
-        transform: translate(-50%, -50%);
-        width: 0;
-        height: 0;
-        opacity: 0;
-        border-radius: 300px;
-        animation: g-wave1 2.5s ease-in-out forwards;
-      }
-
-      .g-button:hover::after {
-        content: "";
-        display: block;
-        position: absolute;
-        top: 50%;
-        left: 9%;
-        transform: translate(-50%, -50%);
-        width: 0;
-        height: 0;
-        opacity: 0;
-        border-radius: 300px;
-        animation: g-wave2 2.5s ease-in-out forwards;
-      }
-
-      @keyframes g-wave1 {
-        0% {
-          z-index: 1;
-          background: #EB4335;
-          width: 0;
-          height: 0;
-          opacity: 1;
-        }
-
-        1% {
-          z-index: 1;
-          background: #EB4335;
-          width: 0;
-          height: 0;
-          opacity: 1;
-        }
-
-        25% {
-          z-index: 1;
-          background: #EB4335;
-          width: 800px;
-          height: 800px;
-          opacity: 1;
-        }
-
-        26% {
-          z-index: 3;
-          background: #34A853;
-          width: 0;
-          height: 0;
-          opacity: 1;
-        }
-
-        50% {
-          z-index: 3;
-          background: #34A853;
-          width: 800px;
-          height: 800px;
-          opacity: 1;
-        }
-
-        70% {
-          z-index: 3;
-          background: #34A853;
-          width: 800px;
-          height: 800px;
-          opacity: 1;
-        }
-
-        100% {
-          z-index: 3;
-          background: #34A853;
-          width: 800px;
-          height: 800px;
-          opacity: 1;
-        }
-      }
-
-      @keyframes g-wave2 {
-        0% {
-          z-index: 2;
-          background: #FBBC05;
-          width: 0;
-          height: 0;
-          opacity: 1;
-        }
-
-        11% {
-          z-index: 2;
-          background: #FBBC05;
-          width: 0;
-          height: 0;
-          opacity: 1;
-        }
-
-        35% {
-          z-index: 2;
-          background: #FBBC05;
-          width: 800px;
-          height: 800px;
-          opacity: 1;
-        }
-
-        39% {
-          z-index: 2;
-          background: #FBBC05;
-          width: 800px;
-          height: 800px;
-          opacity: 1;
-        }
-
-        40% {
-          z-index: 4;
-          background: #4285F4;
-          width: 0;
-          height: 0;
-          opacity: 1;
-        }
-
-        64% {
-          z-index: 4;
-          background: #4285F4;
-          width: 800px;
-          height: 800px;
-          opacity: 1;
-        }
-
-        100% {
-          z-index: 4;
-          background: #4285F4;
-          width: 800px;
-          height: 800px;
-          opacity: 1;
-        }
-      }
-
-      .g-button:hover .g-red {
-        animation: g-disappear 0.1s forwards;
-        animation-delay: 0.1s;
-      }
-
-      .g-button:hover .g-yellow {
-        animation: g-disappear 0.1s forwards;
-        animation-delay: 0.3s;
-      }
-
-      .g-button:hover .g-green {
-        animation: g-disappear 0.1s forwards;
-        animation-delay: 0.7s;
-      }
-
-      .g-button:hover .g-blue {
-        animation: g-disappear 0.1s forwards;
-        animation-delay: 1.1s;
-      }
-
-      @keyframes g-disappear {
-        from {
-          filter: brightness(1);
-        }
-
-        to {
-          filter: brightness(100);
-        }
-      }
-      /* END: Animated Google Button */
-
       /* START: Fullscreen Layout */
       html, body, #root {
         height: 100%;
@@ -418,25 +132,6 @@
       }
       /* END: Fullscreen Layout */
 
-      .form-input {
-        background-color: rgb(var(--color-background));
-        border: 1px solid rgba(var(--color-border-color-rgb), 0.1);
-        border-radius: 0.5rem; /* rounded-lg */
-        padding: 0.75rem 1rem; /* py-3 px-4 */
-        margin-top: 0.25rem; /* mt-1 */
-        font-size: 0.875rem; /* text-sm */
-        color: rgb(var(--color-text-main));
-        width: 100%;
-        transition: border-color 0.2s, box-shadow 0.2s;
-      }
-      .form-input::placeholder {
-        color: rgb(var(--color-text-muted));
-      }
-      .form-input:focus {
-        outline: none;
-        border-color: #dc2626; /* primary */
-        box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.3);
-      }
     </style>
   <script type="importmap">
 {
@@ -444,7 +139,6 @@
     "react": "https://aistudiocdn.com/react@^19.2.0",
     "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
     "react/": "https://aistudiocdn.com/react@^19.2.0/",
-    "@supabase/supabase-js": "https://aistudiocdn.com/@supabase/supabase-js@^2.75.1",
     "tslib": "https://aistudiocdn.com/tslib@^2.6.0"
   }
 }
