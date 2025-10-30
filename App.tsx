@@ -1,4 +1,5 @@
 
+
 import React, { useState, useEffect, useCallback, useRef, Suspense, lazy } from 'react';
 import { Header } from './components/Header';
 import { Hero } from './components/HeroCarousel';
@@ -344,7 +345,9 @@ const App: React.FC = () => {
       case 'home':
         return (
           <>
-            <Hero />
+            <div className="flex-grow flex items-center">
+                <Hero />
+            </div>
             <OriginalsRow onGameSelect={handleGameSelect} />
           </>
         );
@@ -423,15 +426,18 @@ const App: React.FC = () => {
             <AdminPage show={isAdminPanelOpen} onClose={() => setIsAdminPanelOpen(false)} profile={profile} />
         </Suspense>
 
-        {/* Sidebar and its backdrop */}
-        <div 
-            className={`fixed inset-0 bg-black/60 z-30 transition-opacity duration-300 lg:hidden ${isSidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
-            onClick={() => setIsSidebarOpen(false)}
-        />
-        <Sidebar isSidebarOpen={isSidebarOpen} onNavigate={(page) => { navigateTo(page as View); setIsSidebarOpen(false); }} currentView={currentView} />
+        {/* This div contains the sidebar and main content for a correct desktop layout */}
+        <div className="flex h-full">
+            {/* Sidebar and its backdrop */}
+            <div>
+                <div 
+                    className={`fixed inset-0 bg-black/60 z-30 transition-opacity duration-300 lg:hidden ${isSidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+                    onClick={() => setIsSidebarOpen(false)}
+                />
+                <Sidebar isSidebarOpen={isSidebarOpen} onNavigate={(page) => { navigateTo(page as View); setIsSidebarOpen(false); }} currentView={currentView} />
+            </div>
 
-        <div className={`h-full transition-all duration-300 ${isChatPinned ? 'pr-0 lg:pr-[320px]' : 'pr-0'}`}>
-            <div className="flex flex-col h-full">
+            <div className={`flex-1 min-w-0 flex flex-col h-full transition-all duration-300 ${isChatPinned ? 'pr-0 lg:pr-[320px]' : 'pr-0'}`}>
                 <Header 
                     session={session} 
                     profile={profile} 
@@ -450,7 +456,7 @@ const App: React.FC = () => {
                     isMuted={isMuted}
                     onToggleMute={toggleMute}
                 />
-                <main className={`flex-1 overflow-y-auto no-scrollbar p-4 sm:p-6 lg:p-8 flex flex-col ${currentView === 'home' ? 'justify-center' : ''}`}>
+                <main className={`flex-1 overflow-y-auto no-scrollbar p-4 sm:p-6 lg:p-8 flex flex-col`}>
                   <Suspense fallback={<LoadingFallback />}>
                     {renderMainContent()}
                   </Suspense>
