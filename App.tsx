@@ -77,7 +77,7 @@ const App: React.FC = () => {
        <img
         src="https://imgur.com/itdGOoJ.png"
         alt="Money chain"
-        className="absolute top-[-120px] right-[-120px] w-[350px] max-w-none pointer-events-none z-20 opacity-80 transform rotate-12"
+        className="absolute w-[200px] top-[-70px] right-[-70px] lg:w-[350px] lg:top-[-120px] lg:right-[-120px] max-w-none pointer-events-none z-20 opacity-80 transform rotate-12"
       />
       <div className="absolute inset-0 z-0 overflow-hidden bg-black">
          <video
