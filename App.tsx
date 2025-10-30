@@ -4,16 +4,23 @@ import { Hero } from './components/HeroCarousel';
 
 const PromoPanel: React.FC = () => {
   return (
-    <div className="bg-card/50 backdrop-blur-sm border border-outline rounded-lg p-4 sm:p-6 w-full max-w-[288px] sm:w-80 shadow-lg flex flex-col gap-2 sm:gap-4 text-center">
-        <div className="flex justify-center items-center gap-2 sm:gap-3">
-            <img src="https://i.imgur.com/cGalbSS.png" alt="Kick Stream Logo" className="h-10 sm:h-12" />
-            <span className="text-2xl sm:text-3xl font-bold text-white">STREAM</span>
-        </div>
-        <div className="bg-white/10 h-px w-full my-1 sm:my-2"></div>
-        <p className="text-text-main text-base sm:text-lg font-semibold">22:00PM svako veče</p>
-        <p className="text-text-muted text-sm sm:text-base">Giveaway <span className="font-bold text-primary-light">3000$+</span> svaki mesec</p>
-        <p className="text-text-muted text-sm sm:text-base">Zaradi novac gledajući stream!</p>
-    </div>
+    <a
+      href="https://kick.com/michaelhere"
+      target="_blank"
+      rel="noopener noreferrer"
+      className="block transition-transform duration-300 hover:scale-105"
+    >
+      <div className="bg-card/50 backdrop-blur-sm border border-outline rounded-lg p-4 sm:p-6 w-full max-w-[288px] sm:w-80 shadow-lg flex flex-col gap-2 sm:gap-4 text-center">
+          <div className="flex justify-center items-center gap-2 sm:gap-3">
+              <img src="https://i.imgur.com/cGalbSS.png" alt="Kick Stream Logo" className="h-10 sm:h-12" />
+              <span className="text-2xl sm:text-3xl font-bold text-white">STREAM</span>
+          </div>
+          <div className="bg-white/10 h-px w-full my-1 sm:my-2"></div>
+          <p className="text-text-main text-base sm:text-lg font-semibold">22:00PM svako veče</p>
+          <p className="text-text-muted text-sm sm:text-base">Giveaway <span className="font-bold text-primary-light">3000$+</span> svaki mesec</p>
+          <p className="text-text-muted text-sm sm:text-base">Zaradi novac gledajući stream!</p>
+      </div>
+    </a>
   );
 };
 
