@@ -1,3 +1,4 @@
+
 import React, { useEffect, useRef, useMemo } from 'react';
 import { Hero } from './components/HeroCarousel';
 
@@ -18,17 +19,18 @@ const PromoPanel: React.FC = () => {
 
 const FloatingPromoImage: React.FC = () => {
   return (
-    <div className="relative mt-6 w-72 h-48">
+    <div className="relative mt-6 w-80 h-64">
+      {/* Background floating money - will be on z-index 0 by default */}
       <img 
         src="https://i.imgur.com/mBJnW3o.png"
         alt="Floating money bill" 
-        className="absolute top-0 right-0 w-48 h-auto animate-bob-float transform -rotate-12"
+        className="absolute top-4 right-2 w-48 h-auto animate-bob-float transform -rotate-12"
         style={{ animationDuration: '3.5s', animationDelay: '0.5s' }}
       />
       <img 
         src="https://i.imgur.com/TxgRSeZ.png"
         alt="Floating money" 
-        className="absolute bottom-0 left-0 w-56 h-auto animate-bob-float"
+        className="absolute bottom-4 left-2 w-56 h-auto animate-bob-float"
         style={{ animationDuration: '3s' }}
       />
     </div>
@@ -72,6 +74,11 @@ const App: React.FC = () => {
 
   return (
     <div className="h-full font-sans text-text-main relative">
+       <img
+        src="https://imgur.com/itdGOoJ.png"
+        alt="Money chain"
+        className="absolute top-[-120px] right-[-120px] w-[350px] max-w-none pointer-events-none z-20 opacity-80 transform rotate-12"
+      />
       <div className="absolute inset-0 z-0 overflow-hidden bg-black">
          <video
             ref={videoRef}
